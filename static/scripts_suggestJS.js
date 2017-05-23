@@ -40,14 +40,14 @@ $(function() {
         // fetch records for the term typed in the form
         $("form").submit(function(e) {
             $("#q").typeahead('destroy'); // remove drop-down
-            suggestion = {"term": this.q.value};
+            suggestion = { "term": this.q.value };
             $("form").trigger("reset");
             $("svg").remove();
             typeAhead();
-            $("#q").focus();            
+            $("#q").focus();
             e.preventDefault();
             records(suggestion);
-        });        
+        });
     }
 
     typeAhead();
@@ -99,18 +99,18 @@ function records(suggestion) {
     }
 
     // fetch records
-    request = 
+    request =
         $.getJSON(Flask.url_for("records"), parameters)
-            .done(function(data, textStatus, jqXHR) {
-                // console.log(data);
-                drawGraphs(data);
-            })
+        .done(function(data, textStatus, jqXHR) {
+            // console.log(data);
+            drawGraphs(data);
+        })
 
-        .fail(function(jqXHR, textStatus, errorThrown) {
+    .fail(function(jqXHR, textStatus, errorThrown) {
 
-            // log error to browser's console
-            console.log(errorThrown.toString());
-        });
+        // log error to browser's console
+        console.log(errorThrown.toString());
+    });
 }
 
 function NSuggest_CreateData(q, matches, count) {
@@ -122,7 +122,50 @@ function NSuggest_CreateData(q, matches, count) {
     return matches_dic;
 }
 
+
 function drawGraphs(data) {
+
+    // // Create SVG elements
+    // var svg_pl1 = d3.select("body")
+    //     .append("svg")
+    //     .attr("class", "pl1"),        
+    //     svg_pl2 = d3.select("body")
+    //     .append("svg")
+    //     .attr("class", "pl2");
+
+    // bar chart (svg)
+    // width, height and paddings
+
+    var barOrigin = 400;
+    var barHeight = 30;
+    var barP = barHeight * 0.1; // "P" for padding
+
+    var fontSize = barHeight * 0.75;
+
+    var margin = {
+            top: 20,
+            right: 30,
+            bottom: 40,
+            left: 30
+        },
+        w = 1200 - margin.left - margin.right,
+        h = 250 - margin.top - margin.bottom;
+
+    // var sideP = w * 0.01;
+
+    // Create SVG element
+    var svgPl1 = d3.select("body")
+        .append("svg")
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .attr("class", "pl1"),
+        svgPl2 = d3.select("body")
+        .append("svg")
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .attr("class", "pl1")
+
+
     var pl1 = []; // authors (x-axis) and number of publications (y-axis)
     var pl2 = []; // years (x-axis) and number of publications (y-axis)
 
@@ -131,17 +174,17 @@ function drawGraphs(data) {
         // authors
         for (var j of data[i]) {
             // each author
-            for (var k in j) {
+            for (var au in j) {
                 // plot 1 data
-                var auPubs = parseInt(j[k][0]["total"]);
+                var auPubs = parseInt(j[au][0]["total"]);
                 pl1.push({
                     "x": auPubs, // publications count for author\
-                    "y": k // author
+                    "y": au // author
                 });
 
                 // plot 2 data (per author)
-                var years = Object.keys(j[k][2]["years"]);
-                var yearPubs = Object.values(j[k][2]["years"]);
+                var years = Object.keys(j[au][2]["years"]);
+                var yearPubs = Object.values(j[au][2]["years"]);
                 for (var l in years) {
                     pl2.push({
                         "x": yearPubs[l], // publication count per year
@@ -150,7 +193,7 @@ function drawGraphs(data) {
                 }
 
                 // draw plot 2
-                drawBarChart(pl2, k);
+                drawBarChart(svgPl2, pl2, "pl2", au);
 
                 pl2 = [];
             }
@@ -158,18 +201,13 @@ function drawGraphs(data) {
     }
 
 
-    // Create SVG elements
-    var svg_pl1 = d3.select("body")
-        .append("svg")
-        .attr("class", "pl1"),        
-        svg_pl2 = d3.select("body")
-        .append("svg")
-        .attr("class", "pl2");
+
+
 
     console.log(data);
     // console.log(pl1);plotDataLength
     // console.log(pl2);
-    drawBarChart(pl1, "pl1");
+    drawBarChart(svgPl1, pl1, "pl1");
 
     function insertSVG(plotDataLength, svgClass) {
         // bar chart (svg)
@@ -190,7 +228,7 @@ function drawGraphs(data) {
         var fontSize = w / 50;
     }
 
-    function drawBarChart(plotData, svgClass, gClass) {
+    function drawBarChart(svgElement, plotData, svgClass, gClass = null) {
         // determine number of ticks on X-axis (number of publications)
         var xAxis_max = d3.max(plotData, function(d) {
             return d.x
@@ -204,32 +242,7 @@ function drawGraphs(data) {
             xTicks = xAxis_max;
         }
 
-        // bar chart (svg)
-        // width, height and paddings
 
-        var barOrigin = 400;
-        var barHeight = 30;
-        var barP = barHeight * 0.1; // "P" for padding
-
-        var fontSize = barHeight * 0.75;
-
-        var margin = {
-                top: 20,
-                right: 30,
-                bottom: 40,
-                left: 30
-            },
-            w = 1200 - margin.left - margin.right,
-            h = (barHeight + barP) * plotData.length + fontSize * 4 - margin.top - margin.bottom;
-
-        // var sideP = w * 0.01;
-
-        // Create SVG element
-        var svg1 = d3.select("body")
-            .append("svg")
-            .attr("width", w + margin.left + margin.right)
-            .attr("height", h + margin.top + margin.bottom)
-            .attr("class", svgClass);
 
         // scales
         /*    var yScale = d3.scaleLinear()
@@ -244,11 +257,11 @@ function drawGraphs(data) {
         // Define X axis
         var xAxis = d3.axisBottom()
             .scale(xScale)
-            .ticks(xAxis_max) // Set rough # of ticks
-            // .tickFormat(formatAsPercentage);
+            .ticks(xAxis_max); // Set rough # of ticks
+        // .tickFormat(formatAsPercentage);
 
         // Add chart
-        var chart = svg1.append("g")
+        var chart = svgElement.append("g")
             .attr("class", gClass)
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -259,7 +272,7 @@ function drawGraphs(data) {
             .append("g")
             .attr("class", "bar")
             .attr("transform", function(d, i) {
-                    return "translate(" + barOrigin + "," + (i * (barHeight + barP)) + ")";
+                return "translate(" + barOrigin + "," + (i * (barHeight + barP)) + ")";
             });
 
         // Add bars
@@ -334,7 +347,8 @@ function drawGraphs(data) {
                     $(this).closest(':has(rect)').find('rect').attr("fill", "green"); // http://stackoverflow.com/a/2679026
                 }
             })
-            .mouseleave(function() {
+
+        .mouseleave(function() {
                 if ($(this).prop("tagName") == "rect") {
                     $(this).attr("fill", "#e600e6");
                 } else {
@@ -343,30 +357,30 @@ function drawGraphs(data) {
             })
             .click(function() {
                 console.log(jQuery(this)[0].__data__["x"]);
-            });
-
-        /*
-            // Define Y axis
-            var yAxis = d3.axisLeft()
-                .scale(yScale)
-                .ticks(3) // Set rough # of ticks
-                // .tickFormat(formatAsPercentage);
-
-            // Create Y axis
-            svg1.append("g")
-                .attr("class", "axis")
-                .call(yAxis)
-                .transition()
-                .duration(500)
-                .attr("transform", "translate(" + sideP + ", 0)");
-        */
-        // data for plot 2 (journals and number of publications)
-
-
-
+            })
     }
-
 }
+
+/*
+    // Define Y axis
+    var yAxis = d3.axisLeft()
+        .scale(yScale)
+        .ticks(3) // Set rough # of ticks
+        // .tickFormat(formatAsPercentage);
+
+    // Create Y axis
+    svg1.append("g")
+        .attr("class", "axis")
+        .call(yAxis)
+        .transition()
+        .duration(500)
+        .attr("transform", "translate(" + sideP + ", 0)");
+*/
+// data for plot 2 (journals and number of publications)
+
+
+
+
 
 /*
 
