@@ -1,0 +1,4 @@
+feedparser
+Flask
+Flask-JSGlue
+xmltodict

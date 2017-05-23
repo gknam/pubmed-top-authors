@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>D3 test</title>
+    <script type="text/javascript" src="d3.v4.min.js"></script>
+    <!--  "style" tag seems to override those in "script" tag below.
+        To test this, uncomment "width" in "style".
+         -->
+    <style type="text/css">
+    .chart rect {
+        fill: steelblue;
+    }
+    
+    .axis text {
+        /*  */
+        fill: black;
+        /* Without this, the text "Frequency" is not visible. */
+        font: 10px sans-serif;
+    }
+    
+    .axis path .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    svg {
+        display: block;
+        margin: left;
+    }
+    </style>
+</head>
+
+<body>
+    <!-- http://getbootstrap.com/css/#forms -->
+    <form id="form">
+        <div class="form-group">
+            <b>Type in a keyword!</b>
+            <label class="sr-only" for="q">Keyword</label>
+            <input class="form-control" id="q" placeholder="Keyword" type="text" autofocus/>
+        </div>
+        <div>
+            <g class="pl1"></g>
+        </div>
+    </form>
+    <script type="text/javascript">
+    data = {
+            "4": [{
+                "Boylan, Geraldine B": [{
+                    "total": 4
+                }, {
+                    "journals": {
+                        "Dev Neurosci": 1,
+                        "J Pediatr": 2,
+                        "Med Eng Phys": 1
+                    }
+                }, {
+                    "years": {
+                        "2017": 4
+                    }
+                }]
+            }, {
+                "Dani, Carlo": [{
+                    "total": 4
+                }, {
+                    "journals": {
+                        "Ital J Pediatr": 1,
+                        "J Matern Fetal Neonatal Med": 1,
+                        "Neuropediatrics": 1,
+                        "Transfusion": 1
+                    }
+                }, {
+                    "years": {
+                        "2017": 4
+                    }
+                }]
+            }],
+            "5": [{
+                "Lee, Shoo K": [{
+                    "total": 5
+                }, {
+                    "journals": {
+                        "Acta Paediatr": 1,
+                        "Am J Perinatol": 1,
+                        "Arch Dis Child Fetal Neonatal Ed": 1,
+                        "Br J Ophthalmol": 1,
+                        "JAMA Pediatr": 1
+                    }
+                }, {
+                    "years": {
+                        "2017": 5
+                    }
+                }]
+            }],
+            "6": [{
+                "Shah, Prakesh S": [{
+                    "total": 6
+                }, {
+                    "journals": {
+                        "Acta Paediatr": 1,
+                        "Am J Perinatol": 2,
+                        "Br J Ophthalmol": 1,
+                        "J Matern Fetal Neonatal Med": 1,
+                        "JAMA Pediatr": 1
+                    }
+                }, {
+                    "years": {
+                        "2017": 6
+                    }
+                }]
+            }, {
+                "Vento, Maximo": [{
+                    "total": 6
+                }, {
+                    "journals": {
+                        "Acta Paediatr": 2,
+                        "Br J Ophthalmol": 1,
+                        "Cochrane Database Syst Rev": 1,
+                        "J Pediatric Infect Dis Soc": 1,
+                        "Redox Biol": 1
+                    }
+                }, {
+                    "years": {
+                        "2017": 6
+                    }
+                }]
+            }]
+        }
+        /*plot 1*/
+
+    pl1_fontsize = 20;
+    xAxisLabelFontSize = 30;
+
+    // plot 1 data
+    var pl1 = []; // authors (x-axis) and number of publications (y-axis)
+    for (i in data) {
+        for (j of data[i]) {
+            for (k in j) {
+                var auPubs = parseInt(j[k][0]["total"]);
+                pl1.push({
+                    "au": k,
+                    "auPubs": auPubs
+                });
+            }
+        }
+    }
+
+    // determine number of ticks on Y-axis (number of publications)
+    var pl1_auPubs_max = d3.max(pl1, function(d) {
+        return d.auPubs
+    });
+    var yTicks;
+
+    if (pl1_auPubs_max % 5 > 0) {
+        yTicks = pl1_auPubs_max + 5 - (pl1_auPubs_max % 5);
+    } else {
+        yTicks = pl1_auPubs_max;
+    }
+
+    // bar chart (svg)
+    // width, height and paddings
+var margin = {top: 20, right: 30, bottom: 30, left: 40},
+    w = 1200 - margin.left - margin.right,
+    h = 300 - margin.top - margin.bottom;
+
+    var barOrigin = 400;
+    var barP = w * 0.01;
+    var sideP = w * 0.01;
+
+    // Create SVG element
+    var svg1 = d3.select("body")
+        .append("svg")
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("class", "pl1");
+
+    // scales
+/*    var yScale = d3.scaleLinear()
+        .domain([0, pl1.length])
+        .range([sideP, w - sideP]);*/
+
+    var xScale = d3.scaleLinear()
+        .domain([0, pl1_auPubs_max])
+        .range([0, w - barOrigin]);
+
+
+    // Define X axis
+    var xAxis = d3.axisBottom()
+        .scale(xScale)
+        .ticks(5) // Set rough # of ticks
+        // .tickFormat(formatAsPercentage);
+
+
+    // Add bars
+    svg1.selectAll("rect")
+        .data(pl1)
+        .enter()
+        .append("rect")
+        .attr("y", function(d, i) {
+            return i * (h / pl1.length);
+        })
+        .attr("x", barOrigin)
+        .attr("height", h / pl1.length - barP)
+        .attr("width", function(d) {
+            return d.auPubs * (w / pl1_auPubs_max) - barOrigin;
+        })
+        .attr("class", "bar")
+        .attr("fill", " #e600e6");
+
+    // Add texts - preparation
+    var texts = svg1.selectAll("text")
+        .data(pl1)
+        .enter()
+
+    // Add texts (number of publications)
+    texts.append("text")
+        .text(function(d) {
+            console.log(d.auPubs);
+            return d.auPubs;
+        })
+        .attr("y", function(d, i) {
+            return i * (h / pl1.length) + (h / pl1.length - barP) / 1.55 ;
+        })
+        .attr("x", function(d) {
+            return barOrigin + d.auPubs * (w / pl1_auPubs_max) - barOrigin - 25;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", pl1_fontsize)
+        .attr("font-weight", "bold")
+        .attr("fill", "white")
+        .attr("text-anchor", "middle");
+
+    // Add texts (authors)
+    texts.append("text")
+        .text(function(d) {
+            return d.au;
+        })
+        .attr("y", function(d, i) {
+            return i * (h / pl1.length) + (h / pl1.length - barP) / 1.55 ;
+        })
+        .attr("x", function(d) {
+            return barOrigin - 10;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", pl1_fontsize + "px")
+        .attr("font-weight", "bold")
+        .attr("fill", "black")
+        .attr("text-anchor", "end");
+
+
+
+    // Create X axis
+    svg1.append("g")
+        .attr("class", "axis") // Assign "axis" class
+        .call(xAxis)
+        .attr("transform", "translate(" + barOrigin + "," + (h + 50) + ")")
+        .append("text")
+        .attr("y", -50)
+        .attr("x", (w - barOrigin) / 2)
+        .attr("dy", ".71em")
+        .style("text-anchor", "middle") // this can go into <style> --> ".axis text" as "text-anchor: end;"
+        .style("font-size", xAxisLabelFontSize)
+        .text("Number of publications per author");
+
+/*
+    // Define Y axis
+    var yAxis = d3.axisLeft()
+        .scale(yScale)
+        .ticks(3) // Set rough # of ticks
+        // .tickFormat(formatAsPercentage);
+
+    // Create Y axis
+    svg1.append("g")
+        .attr("class", "axis")
+        .call(yAxis)
+        .transition()
+        .duration(500)
+        .attr("transform", "translate(" + sideP + ", 0)");
+*/
+    // data for plot 2 (journals and number of publications)
+    </script>
+</body>
+
+</html>
