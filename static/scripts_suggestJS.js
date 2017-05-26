@@ -130,10 +130,6 @@ function drawGraphs(data) {
     var pl2Svg = insertSVG("pl2Svg");
     var pl3Svg = insertSVG("pl3Svg");
 
-    // SVG dimensions defined?
-    var pl2SvgDim = false;
-    var pl3SvgDim = false;
-
     // dimension for chart within SVG
     var pl1Dim;
     var pl2Dim;
@@ -219,10 +215,7 @@ function drawGraphs(data) {
                     }
                 }
 
-                if (!pl2SvgDim) {
-                    pl2Dim = chartDim(pl2Svg, yearCount, yearStrLengthMax);
-                    pl2SvgDim = true;
-                }                
+                pl2Dim = chartDim(pl2Svg, yearCount, yearStrLengthMax);
 
                 drawBarChart(pl2Svg, pl2, "pl2Svg", chartClass, barID = false, pl2Dim, "hidden");
                 pl2 = [];
@@ -246,10 +239,7 @@ function drawGraphs(data) {
                     }
                 }
 
-                if (!pl3SvgDim) {
-                    pl3Dim = chartDim(pl3Svg, journalCount, journalStrLengthMax);
-                    pl3SvgDim = true;
-                }
+                pl3Dim = chartDim(pl3Svg, journalCount, journalStrLengthMax);
 
                 drawBarChart(pl3Svg, pl3, "pl3Svg", chartClass, barID = false, pl3Dim, "hidden");
                 pl3 = [];
