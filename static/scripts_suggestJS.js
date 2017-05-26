@@ -125,23 +125,14 @@ function NSuggest_CreateData(q, matches, count) {
 
 function drawGraphs(data) {
 
-    // SVG dimensions
-    var svgWidth = 1400;
-    var svgHeight = 250;
-
-    function insertSVG(svgClass) {
-        return d3.select("body")
-            .append("svg")
-            .attr("class", svgClass)
-            .attr("width", svgWidth)
-            .attr("height", svgHeight)
-            .attr("shape-rendering", "crispEdges");
-    }
-
     // Create SVG element
-    var svgPl1 = insertSVG("pl1");
-    var svgPl2 = insertSVG("pl2");
-    var svgPl3 = insertSVG("pl3");
+    var pl1Svg = insertSVG("pl1Svg");
+    var pl2Svg = insertSVG("pl2Svg");
+    var pl3Svg = insertSVG("pl3Svg");
+
+    // SVG dimensions defined?
+    var pl2SvgDim = false;
+    var pl3SvgDim = false;
 
     // dimension for chart within SVG
     var pl1Dim;
@@ -154,13 +145,13 @@ function drawGraphs(data) {
     //     .attr("height", height + marginTop + marginBottom)
     //     .attr("class", "pl1")
     //     .attr("shape-rendering", "crispEdges"),
-    //     svgPl2 = d3.select("body")
+    //     pl2Svg = d3.select("body")
     //     .append("svg")
     //     .attr("width", width + marginLeft + marginRight)
     //     .attr("height", height + marginTop + marginBottom)
     //     .attr("class", "pl2")
     //     .attr("shape-rendering", "crispEdges"),
-    //     svgPl3 = d3.select("body")
+    //     pl3Svg = d3.select("body")
     //     .append("svg")
     //     .attr("width", width + marginLeft + marginRight)
     //     .attr("height", height + marginTop + marginBottom)
@@ -171,8 +162,6 @@ function drawGraphs(data) {
     var pl1 = []; // authors (x-axis) and number of publications (y-axis)
     var pl2 = []; // years (x-axis) and number of publications (y-axis)
     var pl3 = []; // journals (x-axis) and number of publications (y-axis)
-
-
 
     // number of data points in each plot
     var auCount = 0;
@@ -194,6 +183,12 @@ function drawGraphs(data) {
 
             // each author
             for (var au in j) {
+                // plot 1
+                var auPubs = parseInt(j[au][0]["total"]);
+                pl1.push({
+                    "x": auPubs, // publications count for author\
+                    "y": au // author
+                });
 
                 auCount += 1;
                 
@@ -206,32 +201,30 @@ function drawGraphs(data) {
                 var chartClass = "au" + auCount.toString();
                 chartClassList.push(chartClass);
 
-                // plot 1
-                var auPubs = parseInt(j[au][0]["total"]);
-                pl1.push({
-                    "x": auPubs, // publications count for author\
-                    "y": au // author
-                });
 
                 // plot 2 (one plot per author)
                 var years = Object.keys(j[au][2]["years"]);
                 var yearPubs = Object.values(j[au][2]["years"]);
 
                 for (var year in years) {
-                    yearCount += 1;
-
-                    if (year.length >= yearStrLengthMax) {
-                        yearStrLengthMax = year.length;
-                    }
-
                     pl2.push({
                         "x": yearPubs[year], // publication count per year
                         "y": years[year]
                     });
+
+                    yearCount += 1;
+
+                    if (years[year].length >= yearStrLengthMax) {
+                        yearStrLengthMax = years[year].length;
+                    }
                 }
 
-                pl2Dim = chartDim(yearCount, yearStrLengthMax);
-                drawBarChart(svgPl2, pl2, "pl2Chart", chartClass, barID = false, pl2Dim, "hidden");
+                if (!pl2SvgDim) {
+                    pl2Dim = chartDim(pl2Svg, yearCount, yearStrLengthMax);
+                    pl2SvgDim = true;
+                }                
+
+                drawBarChart(pl2Svg, pl2, "pl2Svg", chartClass, barID = false, pl2Dim, "hidden");
                 pl2 = [];
                 yearCount = 0;
                 yearStrLengthMax = 0;
@@ -241,20 +234,24 @@ function drawGraphs(data) {
                 var journalPubs = Object.values(j[au][1]["journals"]);
 
                 for (var journal in journals) {
-                    journalCount += 1;
-
-                    if (journal.length >= journalStrLengthMax) {
-                        journalStrLengthMax = journal.length;
-                    }
-
                     pl3.push({
                         "x": journalPubs[journal], // publication count per year
                         "y": journals[journal]
                     });
+
+                    journalCount += 1;
+
+                    if (journals[journal].length >= journalStrLengthMax) {
+                        journalStrLengthMax = journals[journal].length;
+                    }
                 }
 
-                pl3Dim = chartDim(journalCount, journalStrLengthMax);
-                drawBarChart(svgPl3, pl3, "pl3Chart", chartClass, barID = false, pl3Dim, "hidden");
+                if (!pl3SvgDim) {
+                    pl3Dim = chartDim(pl3Svg, journalCount, journalStrLengthMax);
+                    pl3SvgDim = true;
+                }
+
+                drawBarChart(pl3Svg, pl3, "pl3Svg", chartClass, barID = false, pl3Dim, "hidden");
                 pl3 = [];
                 journalCount = 0;
                 journalStrLengthMax = 0;
@@ -264,21 +261,34 @@ function drawGraphs(data) {
 
 
     // plot 1
-    pl1Dim = chartDim(auCount, auStrLengthMax);
-    drawBarChart(svgPl1, pl1, "pl1", "pl1Chart", barID = true, pl1Dim);
+    pl1Dim = chartDim(pl1Svg, auCount, auStrLengthMax);
+    drawBarChart(pl1Svg, pl1, "pl1Svg", "pl1Chart", barID = true, pl1Dim);
 
+    function insertSVG(svgClass) {
+        return d3.select("body")
+            .append("svg")
+            .attr("class", svgClass)
+            .attr("shape-rendering", "auto");
+            // width and height will be defined in chartDim
+    }
 
-    function chartDim(dataCount, dataStrLengthMax) {
-        var marginTop = dataCount * 0.01;
-        var marginBottom = dataCount * 0.05;
-        var height = svgHeight - marginTop - marginBottom;
-        var barHeight = (height / dataCount) * 0.9;
+    function chartDim(svgElement, dataCount, dataStrLengthMax) {
+
+        svgElement.attr("width", 1400)
+                .attr("height", dataCount * 40);
+
+        var marginTop = dataCount;
+        var marginBottom = dataCount * 10;
+        var height = svgElement.attr("height") - marginTop - marginBottom;
+        var barHeight = ((height / dataCount) * 0.9 <= 35) ? (height / dataCount) * 0.9: 35;
         var fontSize = barHeight * 0.75;
-        var barPadding = (height / dataCount) - barHeight;
-        var barOrigin = dataStrLengthMax * fontSize / 10 // replacible by marginLeft?
-        var marginLeft = dataStrLengthMax * fontSize / 2;
+        var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
+        var marginLeft = dataStrLengthMax * fontSize / 3.5 + fontSize;
         var marginRight = fontSize;
-        var width = svgWidth - marginLeft - marginRight;
+        var width = svgElement.attr("width") - marginLeft - marginRight;
+
+        var temp = parseInt(svgElement.attr("height"));
+        svgElement.attr("height", function() { return parseInt(svgElement.attr("height")) + (fontSize * 2);} )
 
         return {
             width: width,
@@ -291,9 +301,10 @@ function drawGraphs(data) {
             
             barHeight: barHeight,
             barPadding: barPadding,
-            barOrigin: barOrigin,
             
-            fontSize: fontSize
+            fontSize: fontSize,
+
+            dataCount: dataCount
         }
     }
 
@@ -303,10 +314,15 @@ function drawGraphs(data) {
         var height = chartDim.height;
         var barHeight = chartDim.barHeight;
         var barPadding = chartDim.barPadding;
-        var barOrigin = chartDim.barOrigin;
         var marginTop = chartDim.marginTop;
         var marginLeft = chartDim.marginLeft;
         var fontSize = chartDim.fontSize;
+        var dataCount = chartDim.dataCount;
+
+        // quit if no data
+        if (dataCount == 0) {
+            return;
+        }
 
         // determine number of ticks on X-axis (number of publications)
         var xAxis_max = d3.max(plotData, function(d) {
@@ -330,7 +346,7 @@ function drawGraphs(data) {
 
         var xScale = d3.scaleLinear()
             .domain([0, xAxis_max])
-            .range([0, width - barOrigin]);
+            .range([0, width - marginLeft]);
 
 
         // Define X axis
@@ -352,7 +368,7 @@ function drawGraphs(data) {
             .append("g")
             .attr("class", "bar")
             .attr("transform", function(d, i) {
-                return "translate(" + barOrigin + "," + (i * (barHeight + barPadding)) + ")";
+                return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
             })
             .attr("id", function(d, i) {
                 if (barID) {
@@ -366,8 +382,8 @@ function drawGraphs(data) {
                 return d.y;
             })
             .attr("width", function(d) {
-                console.log(d.x + ',' + xAxis_max + ',' + width + ',' + barOrigin);
-                return (d.x / xAxis_max) * (width - barOrigin);
+                // console.log(d.x + ',' + xAxis_max + ',' + width + ',' + marginLeft);
+                return (d.x / xAxis_max) * (width - marginLeft);
             })
             .attr("height", barHeight)
             .attr("fill", "#e600e6");
@@ -375,7 +391,7 @@ function drawGraphs(data) {
         // Add text (number of publications)
         bar.append("text")
             .attr("x", function(d) {
-                return (d.x / xAxis_max) * (width - barOrigin) - fontSize;
+                return (d.x / xAxis_max) * (width - marginLeft) - fontSize;
             })
             .attr("y", function(d, i) {
                 return (barHeight) / 2 + fontSize * (1 / 3);
@@ -411,9 +427,9 @@ function drawGraphs(data) {
         chart.append("g")
             .attr("class", "axis") // Assign "axis" class
             .call(xAxis)
-            .attr("transform", "translate(" + barOrigin + "," + height + ")")
+            .attr("transform", "translate(" + marginLeft + "," + ((barHeight + barPadding) * dataCount + fontSize) + ")")
             .append("text")
-            .attr("x", (width - barOrigin) / 2)
+            .attr("x", (width - marginLeft) / 2)
             .attr("text-anchor", "middle") // this can go into <style> --> ".axis text" as "text-anchor: end;"
             .attr("font-size", fontSize)
             .attr("font-weight", "bold")
