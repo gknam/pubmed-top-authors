@@ -169,7 +169,7 @@ function drawGraphs(data) {
     var yearStrLengthMax = 0;
     var journalStrLengthMax = 0;
 
-    var chartClassList = [];
+    var auIdList = [];
     
 
     // each publication
@@ -194,8 +194,8 @@ function drawGraphs(data) {
 
                 // for displaying plots 2 and 3 (author's records)
                 // on bar-click in plot 1 (one bar per author)
-                var chartClass = "au" + auCount.toString();
-                chartClassList.push(chartClass);
+                var auId = "au" + auCount.toString();
+                auIdList.push(auId);
 
 
                 // plot 2 (one plot per author)
@@ -217,7 +217,7 @@ function drawGraphs(data) {
 
                 pl2Dim = chartDim(pl2Svg, yearCount, yearStrLengthMax);
 
-                drawBarChart(pl2Svg, pl2, "pl2Svg", chartClass, barID = false, pl2Dim, "hidden");
+                drawBarChart(pl2Svg, pl2, "pl2Svg", auId, barID = false, pl2Dim, "hidden");
                 pl2 = [];
                 yearCount = 0;
                 yearStrLengthMax = 0;
@@ -241,7 +241,7 @@ function drawGraphs(data) {
 
                 pl3Dim = chartDim(pl3Svg, journalCount, journalStrLengthMax);
 
-                drawBarChart(pl3Svg, pl3, "pl3Svg", chartClass, barID = false, pl3Dim, "hidden");
+                drawBarChart(pl3Svg, pl3, "pl3Svg", auId, barID = false, pl3Dim, "hidden");
                 pl3 = [];
                 journalCount = 0;
                 journalStrLengthMax = 0;
@@ -252,6 +252,9 @@ function drawGraphs(data) {
 
     // plot 1
     pl1Dim = chartDim(pl1Svg, auCount, auStrLengthMax);
+    console.log(pl1Dim.marginLeft);
+    console.log(pl2Dim.marginLeft);
+    console.log(pl3Dim.marginLeft);
     drawBarChart(pl1Svg, pl1, "pl1Svg", "pl1Chart", barID = true, pl1Dim);
 
     function insertSVG(svgClass) {
@@ -277,7 +280,6 @@ function drawGraphs(data) {
         var marginRight = fontSize;
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
-        var temp = parseInt(svgElement.attr("height"));
         svgElement.attr("height", function() { return parseInt(svgElement.attr("height")) + (fontSize * 2);} )
 
         return {
@@ -298,7 +300,7 @@ function drawGraphs(data) {
         }
     }
 
-    function drawBarChart(svgElement, plotData, svgClass, chartClass = null, barId = false, chartDim, visibility = "visible") {
+    function drawBarChart(svgElement, plotData, svgClass, auId = null, barId = false, chartDim, visibility = "visible") {
 
         var width = chartDim.width;
         var height = chartDim.height;
@@ -347,7 +349,7 @@ function drawGraphs(data) {
 
         // Add chart
         var chart = svgElement.append("g")
-            .attr("class", chartClass)
+            .attr("class", "chart " + auId)
             .attr("visibility", visibility)
             .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
 
@@ -362,15 +364,13 @@ function drawGraphs(data) {
             })
             .attr("id", function(d, i) {
                 if (barID) {
-                    return chartClassList[i];
+                    return auIdList[i];
                 }
             });
 
         // Add bars
         bar.append("rect")
-            .attr("class", function(d) {
-                return d.y;
-            })
+            // .attr("class", "rect")
             .attr("width", function(d) {
                 // console.log(d.x + ',' + xAxis_max + ',' + width + ',' + marginLeft);
                 return (d.x / xAxis_max) * (width - marginLeft);
@@ -445,22 +445,33 @@ function drawGraphs(data) {
                 }
             })
 
-        .mouseleave(function() {
+            .mouseleave(function() {
                 if ($(this).prop("tagName") == "rect") {
                     $(this).attr("fill", "#e600e6");
                 } else {
                     $(this).closest('rect').attr("fill", "#e600e6");
                 }
             })
+            
             .click(function() {
-                // fetch <rect> class
-                $('.' + oldAuClass).attr("visibility", "hidden");
+                
+                console.log(oldAuClass);
+                // get bar group ID (author) of clicked bar
                 auClass = $(this).closest('.bar').attr("id");
-                $('.' + auClass).attr("visibility", "visible");
-                oldAuClass = auClass;
 
-                // $(".Farahbakhsh, Nazanin")
-                // $("." + chartClass).attr("visibility", "visible");
+                // do nothing if same bar was clicked before
+                if (oldAuClass == auClass) {
+                }
+                
+                // if different bar is clicked
+                else {
+                    // hide previously displayed plot
+                    $('.' + oldAuClass).attr("visibility", "hidden");                        
+                    // display plots 2 and 3 of corresponding author
+                    $('.' + auClass).attr("visibility", "visible");
+
+                    oldAuClass = auClass;
+                }
             })
     }
 
