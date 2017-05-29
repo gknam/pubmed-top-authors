@@ -6,7 +6,7 @@ import urllib, json
 from flask import Flask, jsonify, render_template, request, url_for
 from flask_jsglue import JSGlue
 
-from helpers import getUids, getFullRecs, topFive
+from helpers import getUids, getFullRecs, topAuthorsRecs
 
 
 # configure application
@@ -33,7 +33,7 @@ def index():
 
 @app.route("/records")
 def records():
-    """Retreive key records of five authors with most publications."""
+    """Retreive key records of authors with most publications."""
 
     # ensure parameter is present
     if not request.args.get("term"):
@@ -47,8 +47,8 @@ def records():
     records = getFullRecs(uids)
     
     # get summary from full records
-    fiveRecs = topFive(records)
-    return(jsonify(fiveRecs))
+    topRecs = topAuthorsRecs(records)
+    return(jsonify(topRecs))
     
 @app.route("/search")
 def suggest():

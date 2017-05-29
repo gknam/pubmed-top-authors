@@ -5,8 +5,8 @@ import urllib, json
 def getUids(term):
     """Get UIDs for term."""
 
-    # get UIDs from Pubmed (for the last 5 years's records)
-    retmax = 100 # number of articles to fetch
+    # get UIDs from Pubmed
+    retmax = 1000 # number of articles to fetch
     reldate = 1827 # number of days from now
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(reldate)))
     feed = urllib.request.urlopen(url)
@@ -95,8 +95,18 @@ def getFullRecs(uids):
     
     return records
 
-def topFive(records):
-    """ get records of 5 authors with most publication """
+def topAuthorsRecs(records):
+    """ get records of authors with most publication """
+    
+    # max plot dimensions (for equalising plot dimensions in the browser)
+    # "scripts_suggestJS.js" file --> "chartDim" function --> "dataCount" variable
+    authorCountMax = 5 # number of top authors to find
+    journalCountMax = 0
+    yearCountMax = 0
+    # "scripts_suggestJS.js" file --> "chartDim" function --> "dataStrLengthMax" variable    
+    authorStrLenMax = 0
+    journalStrLenMax = 0
+    yearStrLenMax = 0
 
     # get total number of publication for each author
     totals = {}
@@ -107,42 +117,60 @@ def topFive(records):
         else:
             totals[total] = [author]
     totals = collections.OrderedDict(sorted(totals.items(), reverse=True))
-    
-    # get records of five authors with most publication
-    fiveRecs = {}
-    fiveRecsLen = 0
+
+    # get records of authors with most publication
+    topAuthorsRecs = {}
+    topAuthorsRecsLen = 0
     for total, authors in totals.items():
         for author in authors:
-            fiveRecsLen += 1
-            if fiveRecsLen <= 5:
-                if total in fiveRecs:
-                    fiveRecs[total].append({author: records[author]})
+            if topAuthorsRecsLen < authorCountMax and topAuthorsRecsLen < len(records):
+                topAuthorsRecsLen += 1
+                if total in topAuthorsRecs:
+                    topAuthorsRecs[total].append({author: records[author]})
                 else:
-                    fiveRecs[total] = [{author: records[author]}]
+                    topAuthorsRecs[total] = [{author: records[author]}]
             else:
                 break
 
-    fiveRecs = collections.OrderedDict(sorted(fiveRecs.items()))
-
-    # sort the five authors' records
-    for total, recs in fiveRecs.items():
+    topAuthorsRecs = collections.OrderedDict(sorted(topAuthorsRecs.items()))
+    
+    # sort the top authors' records
+    for total, recs in topAuthorsRecs.items():
         for rec in range(len(recs)):
-            for author, info in fiveRecs[total][rec].items():
-                
+            for author, info in topAuthorsRecs[total][rec].items():
+
                 # sort journal records
-                journals = fiveRecs[total][rec][author][1]["journals"]
+                journals = topAuthorsRecs[total][rec][author][1]["journals"]
                 # by keys
                 journals = collections.OrderedDict(sorted(journals.items()))
                 # then by values (code from https://goo.gl/1ikwL0)
                 # another way is to convert dict to sorted list of tuples
                 # (http://stackoverflow.com/a/613218)
                 journals = collections.OrderedDict(sorted(journals.items(), key=lambda t: t[1]))
-                fiveRecs[total][rec][author][1]["journals"] = journals
+                topAuthorsRecs[total][rec][author][1]["journals"] = journals
                 
                 # sort publication year records
-                years = fiveRecs[total][rec][author][2]["years"]
+                years = topAuthorsRecs[total][rec][author][2]["years"]
                 # by keys
                 years = collections.OrderedDict(sorted(years.items()))
-                fiveRecs[total][rec][author][2]["years"] = years
+                topAuthorsRecs[total][rec][author][2]["years"] = years
                 
-    return fiveRecs
+                # max records of journals and years
+                if len(journals) > journalCountMax:
+                    journalCountMax = len(journals)
+                if len(years) > yearCountMax:
+                    yearCountMax = len(years)
+                    
+                # max string lengths of author names, journal names and years
+                if len(author) > authorStrLenMax:
+                    authorStrLenMax = len(author)
+                if max(map(len, journals)) > journalStrLenMax:
+                    journalStrLenMax = max(map(len, journals))
+                if max(map(len, years)) > yearStrLenMax:
+                    yearStrLenMax = max(map(len, years))
+    
+    # add info for max plot dimensions
+    topAuthorsRecs.update({"dataCount": {"authorCountMax": authorCountMax, "journalCountMax": journalCountMax, "yearCountMax": yearCountMax}})
+    topAuthorsRecs.update({"dataStrLengthMax": {"authorStrLenMax": authorStrLenMax, "journalStrLenMax": journalStrLenMax, "yearStrLenMax": yearStrLenMax}})
+    
+    return topAuthorsRecs

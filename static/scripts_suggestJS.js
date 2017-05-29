@@ -172,89 +172,113 @@ function drawGraphs(data) {
     var auIdList = [];
     
 
+    // get max string length among author names, journal names and years
+    // this will be the left margin of all plots
+    var authorStrLenMax = data.dataStrLengthMax.authorStrLenMax;
+    var journalStrLenMax = data.dataStrLengthMax.journalStrLenMax;
+    var yearStrLenMax = data.dataStrLengthMax.yearStrLenMax;
+
+    var allStrLenMax = Math.max(authorStrLenMax, journalStrLenMax, yearStrLenMax);
+
+    // max data counts --> consider removing these as these are not being used
+    var authorCountMax = data.dataCount.authorCountMax;
+    var journalCountMax = data.dataCount.journalCountMax;
+    var yearCountMax = data.dataCount.yearCountMax;    
+
+    // console.log(authorCountMax + ',' + journalCountMax + ',' + yearCountMax + ',' + authorStrLenMax + ',' + journalStrLenMax + ',' + yearStrLenMax);
+    
+    // process data and draw plots 2 and 3
     // each publication
     for (var i in data) {
-        // authors
-        for (var j of data[i]) {
+        
+        // skip max plot dimensions info
+        if (i == "dataCount" || i == "dataStrLengthMax") {
+        }
+        
+        // process publication records
+        else {
+            // authors
+            for (var j of data[i]) {
 
-            // each author
-            for (var au in j) {
-                // plot 1
-                var auPubs = parseInt(j[au][0]["total"]);
-                pl1.push({
-                    "x": auPubs, // publications count for author\
-                    "y": au // author
-                });
-
-                auCount += 1;
-                
-                if (au.length >= auStrLengthMax) {
-                    auStrLengthMax = au.length;
-                }
-
-                // for displaying plots 2 and 3 (author's records)
-                // on bar-click in plot 1 (one bar per author)
-                var auId = "au" + auCount.toString();
-                auIdList.push(auId);
-
-
-                // plot 2 (one plot per author)
-                var years = Object.keys(j[au][2]["years"]);
-                var yearPubs = Object.values(j[au][2]["years"]);
-
-                for (var year in years) {
-                    pl2.push({
-                        "x": yearPubs[year], // publication count per year
-                        "y": years[year]
+                // each author
+                for (var au in j) {
+                    // plot 1
+                    var auPubs = parseInt(j[au][0]["total"]);
+                    pl1.push({
+                        "x": auPubs, // publications count for author\
+                        "y": au // author
                     });
 
-                    yearCount += 1;
-
-                    if (years[year].length >= yearStrLengthMax) {
-                        yearStrLengthMax = years[year].length;
+                    auCount += 1;
+                    
+                    if (au.length >= auStrLengthMax) {
+                        auStrLengthMax = au.length;
                     }
-                }
 
-                pl2Dim = chartDim(pl2Svg, yearCount, yearStrLengthMax);
+                    // for displaying plots 2 and 3 (author's records)
+                    // on bar-click in plot 1 (one bar per author)
+                    var auId = "au" + auCount.toString();
+                    auIdList.push(auId);
 
-                drawBarChart(pl2Svg, pl2, "pl2Svg", auId, barID = false, pl2Dim, "hidden");
-                pl2 = [];
-                yearCount = 0;
-                yearStrLengthMax = 0;
 
-                // plot 3 (one plot per author)
-                var journals = Object.keys(j[au][1]["journals"]);
-                var journalPubs = Object.values(j[au][1]["journals"]);
+                    // plot 2 (one plot per author)
+                    var years = Object.keys(j[au][2]["years"]);
+                    var yearPubs = Object.values(j[au][2]["years"]);
 
-                for (var journal in journals) {
-                    pl3.push({
-                        "x": journalPubs[journal], // publication count per year
-                        "y": journals[journal]
-                    });
+                    for (var year in years) {
+                        pl2.push({
+                            "x": yearPubs[year], // publication count per year
+                            "y": years[year]
+                        });
 
-                    journalCount += 1;
+                        yearCount += 1;
 
-                    if (journals[journal].length >= journalStrLengthMax) {
-                        journalStrLengthMax = journals[journal].length;
+                        if (years[year].length >= yearStrLengthMax) {
+                            yearStrLengthMax = years[year].length;
+                        }
                     }
+
+                    pl2Dim = chartDim(pl2Svg, yearCount, allStrLenMax);
+
+                    drawBarChart(pl2Svg, pl2, "pl2Svg", auId, barID = false, pl2Dim, "hidden");
+                    pl2 = [];
+                    yearCount = 0;
+                    yearStrLengthMax = 0;
+
+                    // plot 3 (one plot per author)
+                    var journals = Object.keys(j[au][1]["journals"]);
+                    var journalPubs = Object.values(j[au][1]["journals"]);
+
+                    for (var journal in journals) {
+                        pl3.push({
+                            "x": journalPubs[journal], // publication count per year
+                            "y": journals[journal]
+                        });
+
+                        journalCount += 1;
+
+                        if (journals[journal].length >= journalStrLengthMax) {
+                            journalStrLengthMax = journals[journal].length;
+                        }
+                    }
+
+                    pl3Dim = chartDim(pl3Svg, journalCount, allStrLenMax);
+
+                    drawBarChart(pl3Svg, pl3, "pl3Svg", auId, barID = false, pl3Dim, "hidden");
+                    pl3 = [];
+                    journalCount = 0;
+                    journalStrLengthMax = 0;
                 }
-
-                pl3Dim = chartDim(pl3Svg, journalCount, journalStrLengthMax);
-
-                drawBarChart(pl3Svg, pl3, "pl3Svg", auId, barID = false, pl3Dim, "hidden");
-                pl3 = [];
-                journalCount = 0;
-                journalStrLengthMax = 0;
             }
         }
     }
 
 
     // plot 1
-    pl1Dim = chartDim(pl1Svg, auCount, auStrLengthMax);
-    console.log(pl1Dim.marginLeft);
-    console.log(pl2Dim.marginLeft);
-    console.log(pl3Dim.marginLeft);
+    pl1Dim = chartDim(pl1Svg, auCount, allStrLenMax);
+    // console.log(pl1Dim.marginLeft);
+    // console.log(pl2Dim.marginLeft);
+    // console.log(pl3Dim.marginLeft);
     drawBarChart(pl1Svg, pl1, "pl1Svg", "pl1Chart", barID = true, pl1Dim);
 
     function insertSVG(svgClass) {
@@ -455,7 +479,6 @@ function drawGraphs(data) {
             
             .click(function() {
                 
-                console.log(oldAuClass);
                 // get bar group ID (author) of clicked bar
                 auClass = $(this).closest('.bar').attr("id");
 
