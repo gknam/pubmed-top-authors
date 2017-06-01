@@ -6,7 +6,7 @@ def getUids(term):
     """Get UIDs for term."""
 
     # get UIDs from Pubmed
-    retmax = 10 # number of articles to fetch
+    retmax = 1000 # number of articles to fetch
     reldate = 18270 # number of days from now
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(reldate)))
     feed = urllib.request.urlopen(url)
@@ -157,17 +157,21 @@ def topAuthorsRecs(records):
 
                 # fill in missing years with 0
                 # (e.g. if record exists for only 2014 and 2016, add {'2015': 0})
-                yearsFillGap = list(years.items())
-                if len(years) > 1:
+                yearS = topAuthorsRecs[total][rec][author][2]["years"]
+                yearsFillGap = list(yearS.items())
+                if len(yearS) > 1:
                     startYr = int(yearsFillGap[0][0])
                     for i in range(0, len(yearsFillGap)):
                         endYr = int(yearsFillGap[i][0])
                         if endYr - startYr > 1:
                             missingYrs = set(range(startYr + 1, endYr))
-                            startYrIndex = list(years).index(str(startYr))
+                            print(yearsFillGap)
+                            print('_' + str(startYr))
+                            startYrIndex = list(yearS).index(str(startYr))
                             for yr in missingYrs:
                                 yearsFillGap.insert(startYrIndex + 1, (str(yr), 0))
-                                topAuthorsRecs[total][rec][author][2]["years"] = dict(yearsFillGap)
+                                yearS = dict(yearsFillGap)
+                                topAuthorsRecs[total][rec][author][2]["years"] = yearS
                         startYr = endYr
                 
                 # max records of journals and years

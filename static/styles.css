@@ -72,14 +72,17 @@ body {
     padding: 6px 12px;
 }
 
-.axis text {
-    /*  */
+.barChartAxis text {
+    fill: black;
+}
+
+.lineChartAxis text {
     fill: black;
 }
 
 /* Make axis invisible */
-.domain,
-.tick {
+.barChartAxis .domain,
+.barChartAxis .tick {
     opacity: 0;
 }
 

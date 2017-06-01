@@ -102,7 +102,6 @@ function records(suggestion) {
     request =
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
-            // console.log(data);
             drawGraphs(data);
         })
 
@@ -126,9 +125,9 @@ function NSuggest_CreateData(q, matches, count) {
 function drawGraphs(data) {
 
     // Create SVG element
-    var pl1Svg = insertSVG("pl1Svg");
-    var pl2Svg = insertSVG("pl2Svg");
-    var pl3Svg = insertSVG("pl3Svg");
+    var pl1Svg = insertSVG("author");
+    var pl2Svg = insertSVG("year");
+    var pl3Svg = insertSVG("journal");
 
     // dimension for chart within SVG
     var pl1Dim;
@@ -170,7 +169,7 @@ function drawGraphs(data) {
     var journalStrLengthMax = 0;
 
     var auIdList = [];
-    
+
 
     // get max string length among author names, journal names and years
     // this will be the left margin of all plots
@@ -183,18 +182,16 @@ function drawGraphs(data) {
     // max data counts --> consider removing these as these are not being used
     var authorCountMax = data.dataCount.authorCountMax;
     var journalCountMax = data.dataCount.journalCountMax;
-    var yearCountMax = data.dataCount.yearCountMax;    
+    var yearCountMax = data.dataCount.yearCountMax;
 
-    // console.log(authorCountMax + ',' + journalCountMax + ',' + yearCountMax + ',' + authorStrLenMax + ',' + journalStrLenMax + ',' + yearStrLenMax);
-    
+
     // process data and draw plots 2 and 3
     // each publication
     for (var i in data) {
-        
+
         // skip max plot dimensions info
-        if (i == "dataCount" || i == "dataStrLengthMax") {
-        }
-        
+        if (i == "dataCount" || i == "dataStrLengthMax") {}
+
         // process publication records
         else {
             // authors
@@ -210,7 +207,7 @@ function drawGraphs(data) {
                     });
 
                     auCount += 1;
-                    
+
                     if (au.length >= auStrLengthMax) {
                         auStrLengthMax = au.length;
                     }
@@ -225,10 +222,12 @@ function drawGraphs(data) {
                     var years = Object.keys(j[au][2]["years"]);
                     var yearPubs = Object.values(j[au][2]["years"]);
 
+                    var yearPubsAll = [];
+
                     for (var year in years) {
                         pl2.push({
-                            "x": yearPubs[year], // publication count per year
-                            "y": years[year]
+                            "y": yearPubs[year],
+                            "x": years[year]
                         });
 
                         yearCount += 1;
@@ -236,14 +235,26 @@ function drawGraphs(data) {
                         if (years[year].length >= yearStrLengthMax) {
                             yearStrLengthMax = years[year].length;
                         }
+
+                        if (!(yearPubsAll.includes(yearPubs[year]))) {
+                            yearPubsAll.push(yearPubs[year]);
+                        }
                     }
 
-                    pl2Dim = chartDim(pl2Svg, yearCount, allStrLenMax);
+                    if (yearCount === 1) {
+                        pl2[0].y = [pl2[0].x, pl2[0].x = pl2[0].y][0]; // swap x and y value (https://stackoverflow.com/a/16201730)
+                        pl2Dim = chartDim(pl2Svg, yearCount, null, allStrLenMax);
+                        drawBarChart(pl2Svg, pl2, auId, barID = false, pl2Dim, "hidden", "barChartAxis");
+                    }
+                    else if (yearCount > 1) {
+                        pl2Dim = chartDim(pl2Svg, yearCount, yearPubsAll.length, allStrLenMax);
+                        drawLineChart(pl2Svg, pl2, auId, pl2Dim, "hidden", "lineChartAxis");
+                    }
 
-                    drawBarChart(pl2Svg, pl2, "pl2Svg", auId, barID = false, pl2Dim, "hidden");
                     pl2 = [];
                     yearCount = 0;
                     yearStrLengthMax = 0;
+                    yearPubsAll = [];
 
                     // plot 3 (one plot per author)
                     var journals = Object.keys(j[au][1]["journals"]);
@@ -262,9 +273,9 @@ function drawGraphs(data) {
                         }
                     }
 
-                    pl3Dim = chartDim(pl3Svg, journalCount, allStrLenMax);
+                    pl3Dim = chartDim(pl3Svg, journalCount, null, allStrLenMax);
 
-                    drawBarChart(pl3Svg, pl3, "pl3Svg", auId, barID = false, pl3Dim, "hidden");
+                    drawBarChart(pl3Svg, pl3, auId, barID = false, pl3Dim, "hidden", "barChartAxis");
                     pl3 = [];
                     journalCount = 0;
                     journalStrLengthMax = 0;
@@ -275,56 +286,82 @@ function drawGraphs(data) {
 
 
     // plot 1
-    pl1Dim = chartDim(pl1Svg, auCount, allStrLenMax);
-    // console.log(pl1Dim.marginLeft);
-    // console.log(pl2Dim.marginLeft);
-    // console.log(pl3Dim.marginLeft);
-    drawBarChart(pl1Svg, pl1, "pl1Svg", "pl1Chart", barID = true, pl1Dim);
+    pl1Dim = chartDim(pl1Svg, auCount, null, allStrLenMax);
+    drawBarChart(pl1Svg, pl1, "pl1Chart", barID = true, pl1Dim, "visible", "barChartAxis");
 
     function insertSVG(svgClass) {
         return d3.select("body")
             .append("svg")
             .attr("class", svgClass)
             .attr("shape-rendering", "auto");
-            // width and height will be defined in chartDim
+        // width and height will be defined in chartDim
     }
 
-    function chartDim(svgElement, dataCount, dataStrLengthMax) {
+    function chartDim(svgElement, dataCount, dataValuesCount, dataStrLengthMax) {
 
+        // SVG heights for plots 1 and 3 (made by "drawBarChart") depends on "dataCount" (numbers of authors and journals)
         svgElement.attr("width", 1400)
-                .attr("height", dataCount * 40);
+            .attr("height", function() {
+                return dataCount * 40;
+            });
 
         var marginTop = dataCount;
-        var marginBottom = dataCount * 10;
+        var marginBottom = marginTop * 10;
         var height = svgElement.attr("height") - marginTop - marginBottom;
-        var barHeight = ((height / dataCount) * 0.9 <= 35) ? (height / dataCount) * 0.9: 35;
+        var barHeight = ((height / dataCount) * 0.9 <= 35) ? (height / dataCount) * 0.9 : 35;
         var fontSize = barHeight * 0.75;
         var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
         var marginLeft = dataStrLengthMax * fontSize / 3.5 + fontSize;
         var marginRight = fontSize;
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
-        svgElement.attr("height", function() { return parseInt(svgElement.attr("height")) + (fontSize * 2);} )
+
+        // update
+        if (dataValuesCount == null) {
+            // adjust SVG height for plots 1 and 3
+            svgElement.attr("height", parseInt(svgElement.attr("height")) + (fontSize * 2));
+        }
+        else {
+            // adjust height-related parameters for plot 2
+            svgElement.attr("height", dataValuesCount * 80 + (fontSize * 2));
+            marginTop = dataValuesCount;
+            marginBottom = marginTop * 30;
+            height = svgElement.attr("height") - marginTop - marginBottom;
+            barHeight = ((height / dataValuesCount) * 0.9 <= 35) ? (height / dataValuesCount) * 0.9 : 35;
+            barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
+
+        }
+
+        // svgElement.attr("height", function() {
+        //     if (dataValuesCount == null) {
+        //         return parseInt(svgElement.attr("height")) + (fontSize * 2);
+        //     } else {
+        //         return dataValuesCount * 40 + (fontSize * 2);
+        //     }
+        // });
+
+
 
         return {
             width: width,
             height: height,
-            
+
             marginTop: marginTop,
             marginBottom: marginBottom,
             marginLeft: marginLeft,
             marginRight: marginRight,
-            
+
             barHeight: barHeight,
             barPadding: barPadding,
-            
+
             fontSize: fontSize,
 
-            dataCount: dataCount
+            dataCount: dataCount,
+            dataValuesCount: dataValuesCount
         }
     }
 
-    function drawBarChart(svgElement, plotData, svgClass, auId = null, barId = false, chartDim, visibility = "visible") {
+    function drawBarChart(svgElement, plotData, auId = null, barId = false, chartDim, visibility, xAxisClass) {
 
         var width = chartDim.width;
         var height = chartDim.height;
@@ -342,7 +379,7 @@ function drawGraphs(data) {
 
         // determine number of ticks on X-axis (number of publications)
         var xAxis_max = d3.max(plotData, function(d) {
-            return d.x
+            return d.x;
         });
 
         var xTicks;
@@ -396,7 +433,6 @@ function drawGraphs(data) {
         bar.append("rect")
             // .attr("class", "rect")
             .attr("width", function(d) {
-                // console.log(d.x + ',' + xAxis_max + ',' + width + ',' + marginLeft);
                 return (d.x / xAxis_max) * (width - marginLeft);
             })
             .attr("height", barHeight)
@@ -415,7 +451,7 @@ function drawGraphs(data) {
             .attr("font-size", fontSize)
             .attr("font-weight", "bold")
             .attr("fill", "black")
-            .attr("text-anchor", "middle")
+            .attr("text-anchor", "end")
             .text(function(d) {
                 return d.x;
             });
@@ -439,15 +475,15 @@ function drawGraphs(data) {
 
         // Create X axis
         chart.append("g")
-            .attr("class", "axis") // Assign "axis" class
-            .call(xAxis)
+            .attr("class", xAxisClass)
             .attr("transform", "translate(" + marginLeft + "," + ((barHeight + barPadding) * dataCount + fontSize) + ")")
+            .call(xAxis)
             .append("text")
             .attr("x", (width - marginLeft) / 2)
-            .attr("text-anchor", "middle") // this can go into <style> --> ".axis text" as "text-anchor: end;"
+            .attr("text-anchor", "middle")
             .attr("font-size", fontSize)
             .attr("font-weight", "bold")
-            .text("Number of publications");
+            .text("Number of publications per " + svgElement.attr("class"));
 
 
 
@@ -469,34 +505,345 @@ function drawGraphs(data) {
                 }
             })
 
-            .mouseleave(function() {
-                if ($(this).prop("tagName") == "rect") {
-                    $(this).attr("fill", "#e600e6");
-                } else {
-                    $(this).closest('rect').attr("fill", "#e600e6");
-                }
-            })
-            
-            .click(function() {
-                
-                // get bar group ID (author) of clicked bar
-                auClass = $(this).closest('.bar').attr("id");
+        .mouseleave(function() {
+            if ($(this).prop("tagName") == "rect") {
+                $(this).attr("fill", "#e600e6");
+            } else {
+                $(this).closest('rect').attr("fill", "#e600e6");
+            }
+        })
 
-                // do nothing if same bar was clicked before
-                if (oldAuClass == auClass) {
-                }
-                
-                // if different bar is clicked
-                else {
-                    // hide previously displayed plot
-                    $('.' + oldAuClass).attr("visibility", "hidden");                        
-                    // display plots 2 and 3 of corresponding author
-                    $('.' + auClass).attr("visibility", "visible");
+        .click(function() {
 
-                    oldAuClass = auClass;
-                }
-            })
+            // get bar group ID (author) of clicked bar
+            auClass = $(this).closest('.bar').attr("id");
+
+            // do nothing if same bar was clicked before
+            if (oldAuClass == auClass) {}
+
+            // if different bar is clicked
+            else {
+                // hide previously displayed plot
+                $('.' + oldAuClass).attr("visibility", "hidden");
+                // display plots 2 and 3 of corresponding author
+                $('.' + auClass).attr("visibility", "visible");
+
+                oldAuClass = auClass;
+            }
+        })
     }
+
+    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass) {
+
+        var width = chartDim.width;
+        var height = chartDim.height;
+        // var barHeight = chartDim.barHeight;
+        var barPadding = chartDim.barPadding;
+        var marginTop = chartDim.marginTop;
+        var marginLeft = chartDim.marginLeft;
+        var fontSize = chartDim.fontSize;
+        var dataCount = chartDim.dataCount;
+        var dataValuesCount = chartDim.dataValuesCount;
+
+        // quit if no data
+        if (dataCount == 0) {
+            return;
+        }
+
+
+        // parse and format the year
+        var parseYear = d3.timeParse("%Y");
+
+        plotData.forEach(function(d) {
+            d.x = parseYear(d.x);
+        });
+
+        // determine number of ticks on x (number of years) and y-axes (number of publications)
+        var xTicks = dataCount;
+
+        var yAxis_max = d3.max(plotData, function(d) {
+            return d.y;
+        });
+        var yTicks = yAxis_max;
+
+        // scales
+        var xScale = d3.scaleTime()
+                    .domain(d3.extent(plotData, function(d) {
+                        return d.x;
+                    }))
+                    .range([0, width - marginLeft]);
+
+        var yScale = d3.scaleLinear()
+                    .domain([0, d3.max(plotData, function(d) {
+                        return d.y;
+                    })])
+                    .range([height, 0]);
+
+        // define axes
+        xAxis = d3.axisBottom(xScale)
+                .ticks(xTicks)
+                .tickFormat(d3.timeFormat("%Y"));
+        yAxis = d3.axisLeft(yScale)
+                .ticks(yTicks)
+                .tickFormat(d3.format("d"));
+
+        // define the line
+        var valueline = d3.line()
+            .x(function(d) {
+                return xScale(d.x);
+            })
+            .y(function(d) {
+                return yScale(d.y);
+            });
+
+        // // append the svg obgect to the body of the page
+        // // appends a 'group' element to 'svg'
+        // // moves the 'group' element to the top left margin
+
+
+
+
+        // var svg = d3.select("body").append("svg")
+        //     .attr("width", width + marginLeft + marginRight)
+        //     .attr("height", height + margin.top + margin.bottom)
+        //     .append("g")
+        //     .attr("transform",
+        //         "translate(" + marginLeft + "," + margin.top + ")");
+
+        // add chart
+        var chart = svgElement.append("g")
+            .attr("class", "chart " + auId)
+            .attr("visibility", visibility)
+            .attr("transform", "translate(" + (marginLeft * 2) + "," + marginTop + ")");
+
+        // // Scale the range of the data
+        // xScale.domain(d3.extent(plotData, function(d) {
+        //     return d.x;
+        // }));
+
+
+        // xScale.ticks(d3.timeYear.every(function(d) {
+        //     return 1;
+        // }));
+
+        // yScale.domain([0, d3.max(plotData, function(d) {
+        //     return d.y;
+        // })]);
+
+        // Add the valueline path.
+        chart.append("path")
+            .data([plotData])
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", "2px")
+            .attr("d", valueline);
+
+        // Add the X Axis
+        chart.append("g")
+            .attr("class", xAxisClass)
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .append("text")
+            .attr("x", (width - marginLeft) / 2)
+            .attr("y", parseInt($(".lineChartAxis .tick line").attr("y2")) + parseInt($(".lineChartAxis .tick text").attr("y")) + (barPadding / 2 + fontSize)) // first two are tick size and tick font size
+            .attr("text-anchor", "middle")
+            .attr("font-size", fontSize)
+            .attr("font-weight", "bold")
+            .text("Number of publications per " + svgElement.attr("class"));
+
+            // // pull the transform data out of the tick
+            // var transform = d3.transform(tick.attr("transform")).translate;
+
+            // // passed in "data" is the value of the tick, transform[0] holds the X value
+
+
+        // Add the Y Axis
+        chart.append("g")
+            .attr("class", xAxisClass)
+            .call(yAxis);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // scales
+        /*    var yScale = d3.scaleLinear()
+                .domain([0, plotData.length])
+                .range([sideP, width - sideP]);*/
+
+        // var xScale = d3.scaleLinear()
+        //     .domain([0, xAxis_max])
+        //     .range([0, width - marginLeft]);
+
+
+        // // Define X axis
+        // var xAxis = d3.axisBottom()
+        //     .scale(xScale)
+        //     .ticks(xAxis_max); // Set rough # of ticks
+        // .tickFormat(formatAsPercentage);
+
+        // Add chart
+        // var chart = svgElement.append("g")
+        //     .attr("class", "chart " + auId)
+        //     .attr("visibility", visibility)
+        //     .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
+
+        // Add bar groups (bars + texts)
+        // var bar = chart.selectAll("g")
+        //     .data(plotData)
+        //     .enter()
+        //     .append("g")
+        //     .attr("class", "bar")
+        //     .attr("transform", function(d, i) {
+        //         return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
+        //     })
+        //     .attr("id", function(d, i) {
+        //         if (barID) {
+        //             return auIdList[i];
+        //         }
+        //     });
+
+        // // Add bars
+        // bar.append("rect")
+        //     // .attr("class", "rect")
+        //     .attr("width", function(d) {
+        //         return (d.x / xAxis_max) * (width - marginLeft);
+        //     })
+        //     .attr("height", barHeight)
+        //     .attr("fill", "#e600e6");
+
+        // // Add text (number of publications)
+        // bar.append("text")
+        //     .attr("x", function(d) {
+        //         return (d.x / xAxis_max) * (width - marginLeft) - fontSize;
+        //     })
+        //     .attr("y", function(d, i) {
+        //         return (barHeight) / 2 + fontSize * (1 / 3);
+        //     })
+        //     .attr("class", "pubNum")
+        //     .attr("font-family", "sans-serif")
+        //     .attr("font-size", fontSize)
+        //     .attr("font-weight", "bold")
+        //     .attr("fill", "black")
+        //     .attr("text-anchor", "middle")
+        //     .text(function(d) {
+        //         return d.x;
+        //     });
+
+        // // Add text (y axis)
+        // bar.append("text")
+        //     .text(function(d) {
+        //         return d.y;
+        //     })
+        //     .attr("x", function(d) {
+        //         return -fontSize / 2;
+        //     })
+        //     .attr("y", function(d, i) {
+        //         return (barHeight) / 2 + fontSize * (1 / 3);
+        //     })
+        //     .attr("font-family", "sans-serif")
+        //     .attr("font-size", fontSize + "px")
+        //     .attr("font-weight", "bold")
+        //     .attr("fill", "black")
+        //     .attr("text-anchor", "end");
+
+        // // Create X axis
+        // chart.append("g")
+        //     .attr("class", "axis")
+        //     .call(xAxis)
+        //     .attr("transform", "translate(" + marginLeft + "," + ((barHeight + barPadding) * dataCount + fontSize) + ")")
+        //     .append("text")
+        //     .attr("x", (width - marginLeft) / 2)
+        //     .attr("text-anchor", "middle")
+        //     .attr("font-size", fontSize)
+        //     .attr("font-weight", "bold")
+        //     .text("Number of publications");
+
+
+
+        // // interact with bars and text within them
+        // var oldAuClass;
+        // var auClass;
+
+        // $("rect, .pubNum")
+        //     .mouseover(function() {
+        //         // bar
+        //         if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
+        //             $(this).attr("fill", "green");
+        //         }
+        //         // text in bar
+        //         else {
+        //             $(this).closest('rect').attr("fill", "green");
+        //             // alternative code (http://stackoverflow.com/a/2679026):
+        //             // $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+        //         }
+        //     })
+
+        // .mouseleave(function() {
+        //     if ($(this).prop("tagName") == "rect") {
+        //         $(this).attr("fill", "#e600e6");
+        //     } else {
+        //         $(this).closest('rect').attr("fill", "#e600e6");
+        //     }
+        // })
+
+        // .click(function() {
+
+        //     // get bar group ID (author) of clicked bar
+        //     auClass = $(this).closest('.bar').attr("id");
+
+        //     // do nothing if same bar was clicked before
+        //     if (oldAuClass == auClass) {}
+
+        //     // if different bar is clicked
+        //     else {
+        //         // hide previously displayed plot
+        //         $('.' + oldAuClass).attr("visibility", "hidden");
+        //         // display plots 2 and 3 of corresponding author
+        //         $('.' + auClass).attr("visibility", "visible");
+
+        //         oldAuClass = auClass;
+        //     }
+        // })
+    }
+
 
 }
 
@@ -582,7 +929,6 @@ function suggest(query, syncResults, asyncResults) {
         .fail(function(jqXHR, textStatus, errorThrown) {
 
             // log error to browser's console
-            console.log(errorThrown.toString());
 
             // call typeahead's callback with no results
             asyncResults([]);
