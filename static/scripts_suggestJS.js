@@ -293,21 +293,20 @@ function drawGraphs(data) {
         return d3.select("body")
             .append("svg")
             .attr("class", svgClass)
-            .attr("shape-rendering", "auto");
-        // width and height will be defined in chartDim
+            .attr("shape-rendering", "auto")
+            .attr("width", 1400)
+            .attr("height", 0); // will be adjusted in chartDim
     }
 
     function chartDim(svgElement, dataCount, dataValuesCount, dataStrLengthMax) {
 
         // SVG heights for plots 1 and 3 (made by "drawBarChart") depends on "dataCount" (numbers of authors and journals)
-        svgElement.attr("width", 1400)
-            .attr("height", function() {
-                return dataCount * 40;
-            });
+        
+        var svgHeight_temp = dataCount * 40;
 
         var marginTop = dataCount;
         var marginBottom = marginTop * 10;
-        var height = svgElement.attr("height") - marginTop - marginBottom;
+        var height = svgHeight_temp - marginTop - marginBottom;
         var barHeight = ((height / dataCount) * 0.9 <= 35) ? (height / dataCount) * 0.9 : 35;
         var fontSize = barHeight * 0.75;
         var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
@@ -318,12 +317,24 @@ function drawGraphs(data) {
 
         // update
         if (dataValuesCount == null) {
+
             // adjust SVG height for plots 1 and 3
-            svgElement.attr("height", parseInt(svgElement.attr("height")) + (fontSize * 2));
+            if (svgElement.attr("height") < svgHeight_temp + fontSize * 2) {
+                svgElement.attr("height", svgHeight_temp + (fontSize * 2));
+            }
+
+            // if (svgElement.attr("class") == "author") {
+            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgElement.attr("height"));
+            // }
+
+
+            // if (svgElement.attr("class") == "journal") {
+            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgElement.attr("height"));
+            // }            
         }
         else {
             // adjust height-related parameters for plot 2
-            svgElement.attr("height", dataValuesCount * 80 + (fontSize * 2));
+            svgElement.attr("height", svgHeight_temp * 2 + (fontSize * 2));
             marginTop = dataValuesCount;
             marginBottom = marginTop * 30;
             height = svgElement.attr("height") - marginTop - marginBottom;
