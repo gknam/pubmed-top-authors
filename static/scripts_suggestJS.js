@@ -314,41 +314,43 @@ function drawGraphs(data) {
         var marginRight = fontSize;
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
-
         // update height-related parameters
+        var svgHeight_current = svgElement.attr("height");
         if (dataValuesCount == null) { // for plot 3
-            // ensure SVG height accommodates biggest chart
-            if (svgElement.attr("height") < svgHeight_temp + (fontSize * 2)) {
+            // set SVG height, ensuring it accommodates biggest chart
+            if (svgHeight_current < svgHeight_temp + (fontSize * 2)) {
                 svgElement.attr("height", svgHeight_temp + (fontSize * 2));
             }
 
             // if (svgElement.attr("class") == "author") {
-            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgElement.attr("height"));
+            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
             // }
 
 
             // if (svgElement.attr("class") == "journal") {
-            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgElement.attr("height"));
+            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
             // }            
         }
         else { // for plot 2's line graph
-            // ensure SVG height accommodates biggest chart
-            if (svgElement.attr("height") < (dataValuesCount * 80) + (fontSize * 2)) {
-                svgElement.attr("height", (dataValuesCount * 80) + (fontSize * 2));
-            }
+            // set SVG height for first graph
+            svgElement.attr("height", (dataValuesCount * 100) + (fontSize * 2));
 
             // adjust height-related parameters
             marginTop = dataValuesCount * 5;
-            marginBottom = marginTop * 5;
+            marginBottom = marginTop * 10;
             height = svgElement.attr("height") - marginTop - marginBottom;
             barHeight = ((height / dataValuesCount) * 0.9 <= 35) ? (height / dataValuesCount) * 0.9 : 35;
             barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
 
+            // update SVG height so that it accommodates biggest chart
+            if (svgHeight_current > (dataValuesCount * 80) + (fontSize * 2)) {
+                svgElement.attr("height", svgHeight_current);
+            }
         }
 
         // svgElement.attr("height", function() {
         //     if (dataValuesCount == null) {
-        //         return parseInt(svgElement.attr("height")) + (fontSize * 2);
+        //         return parseInt(svgHeight_current) + (fontSize * 2);
         //     } else {
         //         return dataValuesCount * 40 + (fontSize * 2);
         //     }
