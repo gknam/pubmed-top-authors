@@ -315,11 +315,10 @@ function drawGraphs(data) {
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
 
-        // update
-        if (dataValuesCount == null) {
-
-            // adjust SVG height for plots 1 and 3
-            if (svgElement.attr("height") < svgHeight_temp + fontSize * 2) {
+        // update height-related parameters
+        if (dataValuesCount == null) { // for plot 3
+            // ensure SVG height accommodates biggest chart
+            if (svgElement.attr("height") < svgHeight_temp + (fontSize * 2)) {
                 svgElement.attr("height", svgHeight_temp + (fontSize * 2));
             }
 
@@ -332,9 +331,13 @@ function drawGraphs(data) {
             //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgElement.attr("height"));
             // }            
         }
-        else {
-            // adjust height-related parameters for plot 2
-            svgElement.attr("height", dataValuesCount * 80 + (fontSize * 2));
+        else { // for plot 2's line graph
+            // ensure SVG height accommodates biggest chart
+            if (svgElement.attr("height") < (dataValuesCount * 80) + (fontSize * 2)) {
+                svgElement.attr("height", (dataValuesCount * 80) + (fontSize * 2));
+            }
+
+            // adjust height-related parameters
             marginTop = dataValuesCount * 5;
             marginBottom = marginTop * 5;
             height = svgElement.attr("height") - marginTop - marginBottom;
@@ -958,7 +961,7 @@ function suggest(query, syncResults, asyncResults) {
 
 
     // Cancel previous request after new request is made (http://stackoverflow.com/a/12713532)
-    if (typeof request !== "undefined") {
+    if (typeof request !== "undefined") {2
         request.abort();
     }
 
