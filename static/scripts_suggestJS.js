@@ -655,13 +655,32 @@ function drawGraphs(data) {
         //     return d.y;
         // })]);
 
+        // add the X gridlines (code from http://bit.ly/2sm1iZr)
+        chart.append("g")
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale)
+                .ticks(xTicks)
+                .tickSize(-height)
+                .tickFormat("")
+            );
+
+        // add the Y gridlines (code from http://bit.ly/2sm1iZr)
+        chart.append("g")
+            .attr("class", "grid")
+            .call(d3.axisLeft(yScale)
+                .ticks(yTicks)
+                .tickSize(-width + marginLeft)
+                .tickFormat("")
+            );
+
         // Add the valueline path.
         chart.append("path")
             .data([plotData])
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", "steelblue")
-            .attr("stroke-width", "2px")
+            // .attr("stroke-width", "2px")
             .attr("d", valueline);
 
 
@@ -689,27 +708,6 @@ function drawGraphs(data) {
         chart.append("g")
             .attr("class", xAxisClass)
             .call(yAxis);
-
-        // add the X gridlines (code from http://bit.ly/2sm1iZr)
-        chart.append("g")
-            .attr("class", "grid")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(xScale)
-                .ticks(xTicks)
-                .tickSize(-height)
-                .tickFormat("")
-            );
-
-        // add the Y gridlines (code from http://bit.ly/2sm1iZr)
-        chart.append("g")
-            .attr("class", "grid")
-            .call(d3.axisLeft(yScale)
-                .ticks(yTicks)
-                .tickSize(-width)
-                .tickFormat("")
-            );
-
-
 
 
 

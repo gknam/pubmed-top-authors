@@ -80,7 +80,7 @@ body {
     fill: black;
 }
 
-/* Make axis invisible */
+/* Make bar chart axis invisible */
 .barChartAxis .domain,
 .barChartAxis .tick {
     opacity: 0;
@@ -89,4 +89,14 @@ body {
 svg {
     display: block;
     margin: left;
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
 }
