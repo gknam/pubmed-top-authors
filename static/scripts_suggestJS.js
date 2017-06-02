@@ -334,7 +334,7 @@ function drawGraphs(data) {
         }
         else {
             // adjust height-related parameters for plot 2
-            svgElement.attr("height", svgHeight_temp * 2 + (fontSize * 2));
+            svgElement.attr("height", dataValuesCount * 80 + (fontSize * 2));
             marginTop = dataValuesCount;
             marginBottom = marginTop * 30;
             height = svgElement.attr("height") - marginTop - marginBottom;
