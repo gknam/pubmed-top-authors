@@ -335,8 +335,8 @@ function drawGraphs(data) {
         else {
             // adjust height-related parameters for plot 2
             svgElement.attr("height", dataValuesCount * 80 + (fontSize * 2));
-            marginTop = dataValuesCount;
-            marginBottom = marginTop * 30;
+            marginTop = dataValuesCount * 5;
+            marginBottom = marginTop * 5;
             height = svgElement.attr("height") - marginTop - marginBottom;
             barHeight = ((height / dataValuesCount) * 0.9 <= 35) ? (height / dataValuesCount) * 0.9 : 35;
             barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
@@ -545,6 +545,7 @@ function drawGraphs(data) {
     }
 
     function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass) {
+        // this function is based on codes at http://bit.ly/2qNRPbF
 
         var width = chartDim.width;
         var height = chartDim.height;
@@ -598,6 +599,19 @@ function drawGraphs(data) {
                 .ticks(yTicks)
                 .tickFormat(d3.format("d"));
 
+        // define grid lines
+        function make_x_gridlines() {       
+            return d3.axisBottom(x)
+                .ticks(xTicks)
+        }
+
+        function make_y_gridlines() {       
+            return d3.axisLeft(y)
+                .ticks(yTicks)
+        }
+
+
+
         // define the line
         var valueline = d3.line()
             .x(function(d) {
@@ -650,6 +664,8 @@ function drawGraphs(data) {
             .attr("stroke-width", "2px")
             .attr("d", valueline);
 
+
+
         // Add the X Axis
         chart.append("g")
             .attr("class", xAxisClass)
@@ -673,6 +689,25 @@ function drawGraphs(data) {
         chart.append("g")
             .attr("class", xAxisClass)
             .call(yAxis);
+
+        // add the X gridlines (code from http://bit.ly/2sm1iZr)
+        chart.append("g")
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale)
+                .ticks(xTicks)
+                .tickSize(-height)
+                .tickFormat("")
+            );
+
+        // add the Y gridlines (code from http://bit.ly/2sm1iZr)
+        chart.append("g")
+            .attr("class", "grid")
+            .call(d3.axisLeft(yScale)
+                .ticks(yTicks)
+                .tickSize(-width)
+                .tickFormat("")
+            );
 
 
 
