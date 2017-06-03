@@ -530,9 +530,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 }
                 // text in bar
                 else {
-                    $(this).closest('rect').attr("fill", "green");
-                    // alternative code (http://stackoverflow.com/a/2679026):
-                    // $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                    // code from http://stackoverflow.com/a/2679026
+                    $(this).closest(':has(rect)').find('rect').attr("fill", "green");
                 }
             })
 
