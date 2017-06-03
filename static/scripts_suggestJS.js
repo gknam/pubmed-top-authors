@@ -227,7 +227,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     for (var year in years) {
                         pl2.push({
                             "y": yearPubs[year],
-                            "x": years[year]
+                            "x": years[year],
+                            "au": au
                         });
 
                         yearCount += 1;
@@ -244,11 +245,11 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     if (yearCount === 1) {
                         pl2[0].y = [pl2[0].x, pl2[0].x = pl2[0].y][0]; // swap x and y value (https://stackoverflow.com/a/16201730)
                         pl2Dim = chartDim(pl2Svg, yearCount, null, allStrLenMax);
-                        drawBarChart(pl2Svg, pl2, auId, barID = false, pl2Dim, "hidden", "barChartAxis");
+                        drawBarChart(pl2Svg, pl2, auId, barID = false, pl2Dim, "hidden", "barChartAxis", term);
                     }
                     else if (yearCount > 1) {
                         pl2Dim = chartDim(pl2Svg, yearCount, yearPubsAll.length, allStrLenMax);
-                        drawLineChart(pl2Svg, pl2, auId, pl2Dim, "hidden", "lineChartAxis");
+                        drawLineChart(pl2Svg, pl2, auId, pl2Dim, "hidden", "lineChartAxis", term);
                     }
 
                     pl2 = [];
@@ -294,36 +295,38 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 .append("svg")
                 .attr("class", svgClass)
                 .attr("shape-rendering", "auto")
-                .attr("width", 1000)
+                .attr("width", 1400)
                 .attr("height", 0); // will be adjusted in chartDim
     }
 
     function chartDim(svgElement, dataCount, dataValuesCount, dataStrLengthMax) {
 
-        // SVG heights for plots 1 and 3 (made by "drawBarChart") depends on "dataCount" (numbers of authors and journals)
-        
+        // SVG heights for plots 1 and 3 (made by "drawBarChart") depends on data (numbers of authors and journals)
         var svgHeight_temp = dataCount * 40;
 
-        var marginTop = dataCount;
-        var marginBottom = marginTop;
-        var height = svgHeight_temp - marginTop - marginBottom;
-        var barHeight = ((height / dataCount) * 0.7 <= 35) ? (height / dataCount) * 0.7 : 35;
+        var marginTop_temp = dataCount;
+        var marginBottom_temp = marginTop_temp;
+        var height_temp = svgHeight_temp - marginTop_temp - marginBottom_temp;
+        var barHeight = ((height_temp / dataCount) * 0.7 <= 35) ? (height_temp / dataCount) * 0.7 : 35;
         var fontSize = barHeight * 0.75;
         var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
         var marginLeft = dataStrLengthMax * fontSize / 3.5 + fontSize;
         var marginRight = fontSize;
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
+        // ensure top and bottom margins are big enough for text
         var marginTop = fontSize * 2;
         var marginBottom = marginTop;
         var height = svgHeight_temp - marginTop - marginBottom;
 
         // update height-related parameters
         var svgHeight_current = svgElement.attr("height");
+
         if (dataValuesCount == null) { // for plot 3
+
             // set SVG height, ensuring it accommodates biggest chart
-            if (svgHeight_current < svgHeight_temp + (fontSize * 4)) {
-                svgElement.attr("height", svgHeight_temp + (fontSize * 4));
+            if (svgHeight_current < svgHeight_temp + marginTop + marginBottom) {
+                svgElement.attr("height", svgHeight_temp + marginTop + marginBottom);
             }
 
             // if (svgElement.attr("class") == "author") {
@@ -337,17 +340,21 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         }
         else { // for plot 2's line graph
             // set SVG height for first graph
-            svgElement.attr("height", (dataValuesCount * 100) + (fontSize * 2));
+            var svgHeight_temp2 = 100 + dataValuesCount * 10 + marginTop + marginBottom;
+            svgElement.attr("height", svgHeight_temp2);
 
-            // adjust height-related parameters
-            marginTop = dataValuesCount * 5;
-            marginBottom = marginTop * 10;
-            height = svgElement.attr("height") - marginTop - marginBottom;
-            barHeight = ((height / dataValuesCount) * 0.9 <= 35) ? (height / dataValuesCount) * 0.9 : 35;
+            // update height-related parameters again
+            marginTop_temp = dataValuesCount * 5;
+            marginBottom_temp = marginTop_temp * 10;
+            height_temp = svgElement.attr("height") - marginTop_temp - marginBottom_temp;
+            barHeight = ((height_temp / dataValuesCount) * 0.7 <= 35) ? (height_temp / dataValuesCount) * 0.7 : 35;
             barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
 
+            // ensure top and bottom margins are big enough for text
+            height = svgElement.attr("height") - marginTop - marginBottom;
+
             // update SVG height so that it accommodates biggest chart
-            if (svgHeight_current > (dataValuesCount * 80) + (fontSize * 2)) {
+            if (svgHeight_current > svgHeight_temp2) {
                 svgElement.attr("height", svgHeight_current);
             }
         }
@@ -434,7 +441,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("visibility", visibility)
             .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
 
-        // Add chart title to plot 1
+        // Add chart titles to plot 1 and 2
         if (svgElement.attr("class") == "author") {
             chart.append("text")
                 .attr("x", marginLeft + (width - marginLeft) / 2)
@@ -443,6 +450,22 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 .attr("font-size", fontSize * 1.2)
                 .attr("font-weight", "bold")
                 .text("Search term: " + term);
+        }
+        else if (svgElement.attr("class") == "year") {
+            chart.selectAll("text")
+                .data(plotData)
+                .enter()
+                .append("text")
+                .attr("x", marginLeft + (width - marginLeft) / 2)
+                .attr("y", -fontSize * 0.5)
+                .attr("text-anchor", "middle")
+                .attr("font-size", fontSize * 1.2)
+                .attr("font-weight", "bold")
+                .text(function(d) {
+                    var lName = d.au.split(", ")[0];
+                    var fName = d.au.split(", ")[1];
+                    return fName + " " + lName + "'s records";
+                });
         }
 
         // Add bar groups (bars + texts)
@@ -563,7 +586,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         })
     }
 
-    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass) {
+    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass, term) {
         // this function is based on codes at http://bit.ly/2qNRPbF
 
         var width = chartDim.width;
@@ -673,6 +696,22 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         // yScale.domain([0, d3.max(plotData, function(d) {
         //     return d.y;
         // })]);
+
+        // Add chart title
+        chart.selectAll("text")
+            .data(plotData)
+            .enter()
+            .append("text")
+            .attr("x", (width - marginLeft) / 2)
+            .attr("y", -fontSize * 0.5)
+            .attr("text-anchor", "middle")
+            .attr("font-size", fontSize * 1.2)
+            .attr("font-weight", "bold")
+            .text(function(d) {
+                var lastName = d.au.split(", ")[0];
+                var firstName = d.au.split(", ")[1];
+                return firstName + " " + lastName + "'s records";
+            });
 
         // add the X gridlines (code from http://bit.ly/2sm1iZr)
         chart.append("g")
