@@ -102,7 +102,7 @@ function records(suggestion) {
     request =
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
-            drawGraphs(data);
+            drawGraphs(data, suggestion.term);
         })
 
     .fail(function(jqXHR, textStatus, errorThrown) {
@@ -122,12 +122,12 @@ function NSuggest_CreateData(q, matches, count) {
 }
 
 
-function drawGraphs(data) {
+function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // Create SVG element
-    var pl1Svg = insertSVG("author");
-    var pl2Svg = insertSVG("year");
-    var pl3Svg = insertSVG("journal");
+    var pl1Svg = insertSVG("author", "authorDiv");
+    var pl2Svg = insertSVG("year", "yearJournalDiv");
+    var pl3Svg = insertSVG("journal", "yearJournalDiv");
 
     // dimension for chart within SVG
     var pl1Dim;
@@ -287,15 +287,15 @@ function drawGraphs(data) {
 
     // plot 1
     pl1Dim = chartDim(pl1Svg, auCount, null, allStrLenMax);
-    drawBarChart(pl1Svg, pl1, "pl1Chart", barID = true, pl1Dim, "visible", "barChartAxis");
+    drawBarChart(pl1Svg, pl1, "pl1Chart", barID = true, pl1Dim, "visible", "barChartAxis", term);
 
-    function insertSVG(svgClass) {
-        return d3.select("body")
-            .append("svg")
-            .attr("class", svgClass)
-            .attr("shape-rendering", "auto")
-            .attr("width", 1400)
-            .attr("height", 0); // will be adjusted in chartDim
+    function insertSVG(svgClass, divClass, divTitle = null) {
+        return d3.select('.' + divClass)
+                .append("svg")
+                .attr("class", svgClass)
+                .attr("shape-rendering", "auto")
+                .attr("width", 1000)
+                .attr("height", 0); // will be adjusted in chartDim
     }
 
     function chartDim(svgElement, dataCount, dataValuesCount, dataStrLengthMax) {
@@ -305,21 +305,25 @@ function drawGraphs(data) {
         var svgHeight_temp = dataCount * 40;
 
         var marginTop = dataCount;
-        var marginBottom = marginTop * 10;
+        var marginBottom = marginTop;
         var height = svgHeight_temp - marginTop - marginBottom;
-        var barHeight = ((height / dataCount) * 0.9 <= 35) ? (height / dataCount) * 0.9 : 35;
+        var barHeight = ((height / dataCount) * 0.7 <= 35) ? (height / dataCount) * 0.7 : 35;
         var fontSize = barHeight * 0.75;
         var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
         var marginLeft = dataStrLengthMax * fontSize / 3.5 + fontSize;
         var marginRight = fontSize;
         var width = svgElement.attr("width") - marginLeft - marginRight;
 
+        var marginTop = fontSize * 2;
+        var marginBottom = marginTop;
+        var height = svgHeight_temp - marginTop - marginBottom;
+
         // update height-related parameters
         var svgHeight_current = svgElement.attr("height");
         if (dataValuesCount == null) { // for plot 3
             // set SVG height, ensuring it accommodates biggest chart
-            if (svgHeight_current < svgHeight_temp + (fontSize * 2)) {
-                svgElement.attr("height", svgHeight_temp + (fontSize * 2));
+            if (svgHeight_current < svgHeight_temp + (fontSize * 4)) {
+                svgElement.attr("height", svgHeight_temp + (fontSize * 4));
             }
 
             // if (svgElement.attr("class") == "author") {
@@ -377,7 +381,7 @@ function drawGraphs(data) {
         }
     }
 
-    function drawBarChart(svgElement, plotData, auId = null, barId = false, chartDim, visibility, xAxisClass) {
+    function drawBarChart(svgElement, plotData, auId = null, barId = false, chartDim, visibility, xAxisClass, term = null) {
 
         var width = chartDim.width;
         var height = chartDim.height;
@@ -429,6 +433,17 @@ function drawGraphs(data) {
             .attr("class", "chart " + auId)
             .attr("visibility", visibility)
             .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
+
+        // Add chart title to plot 1
+        if (svgElement.attr("class") == "author") {
+            chart.append("text")
+                .attr("x", marginLeft + (width - marginLeft) / 2)
+                .attr("y", -fontSize * 0.5)
+                .attr("text-anchor", "middle")
+                .attr("font-size", fontSize * 1.2)
+                .attr("font-weight", "bold")
+                .text("Search term: " + term);
+        }
 
         // Add bar groups (bars + texts)
         var bar = chart.selectAll("g")
