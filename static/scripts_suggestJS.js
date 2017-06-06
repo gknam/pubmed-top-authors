@@ -10,7 +10,7 @@ $(function() {
             minLength: 1
         }, {
             display: function(suggestion) {
-                return null; // See Note 3 at the bottom about what to display.
+                return null; // See "Note 3" at the bottom about what to display.
             },
             limit: 20,
             source: suggest,
@@ -546,44 +546,86 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         var auClass;
 
         $("rect, .pubNum")
+
             .mouseover(function() {
-                // bar
+                // change rect colour (mouse over bar)
                 if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
                     $(this).attr("fill", "green");
                 }
-                // text in bar
+                // change rect colour (mouse over text in rect)
                 else {
                     // code from http://stackoverflow.com/a/2679026
                     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
                 }
             })
 
-        .mouseleave(function() {
-            if ($(this).prop("tagName") == "rect") {
-                $(this).attr("fill", "#e600e6");
-            } else {
-                $(this).closest('rect').attr("fill", "#e600e6");
-            }
-        })
+            .mouseleave(function() {
+                // change rect colour
+                if ($(this).closest('.bar').attr("id") != auClass) {
+                    $(this).closest('.bar').find('rect').attr("fill", "#e600e6"); // See "Note 4" at the bottom. This line and the codes in mouseover does the same thing, but the approach is different.
+                }
+            })
 
-        .click(function() {
 
-            // get bar group ID (author) of clicked bar
-            auClass = $(this).closest('.bar').attr("id");
+                // if ($(this).closest('.bar').attr("id") != auClass) {
+                //     // recover rect colour (mouse over bar)
+                //     if ($(this).prop("tagName") == "rect") {
+                //             $(this).attr("fill", "#e600e6");
+                //     }
+                //     // recover rect colour (mouse over text in rect)
+                //     else {
+                //             $(this).closest('rect').attr("fill", "#e600e6");
+                //         }
+                //     }
+                // })
 
-            // do nothing if same bar was clicked before
-            if (oldAuClass == auClass) {}
+            .click(function() {
 
-            // if different bar is clicked
-            else {
-                // hide previously displayed plot
-                $('.' + oldAuClass).attr("visibility", "hidden");
-                // display plots 2 and 3 of corresponding author
-                $('.' + auClass).attr("visibility", "visible");
+                // // change rect colour (mouse over bar)
+                // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
+                //     $(this).attr("fill", "green");
+                // }
+                // // change rect colour (mouse over text in rect)
+                // else {
+                //     // code from http://stackoverflow.com/a/2679026
+                //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                // }
 
-                oldAuClass = auClass;
-            }
-        })
+                // get bar group ID (author) of clicked bar
+                auClass = $(this).closest('.bar').attr("id");
+
+                // do nothing if same bar was clicked before
+                if (oldAuClass == auClass) {}
+
+                // if different bar is clicked
+                else {
+                    
+                    /* display plots 2 and 3 */
+                    // hide previously displayed plot
+                    $('.' + oldAuClass).attr("visibility", "hidden");
+
+                    // display plots 2 and 3 of corresponding author
+                    $('.' + auClass).attr("visibility", "visible");
+
+                    /* recover rect colour of previously coloured rect */
+                    $('#' + oldAuClass).find('rect').attr("fill", "#e600e6");
+                    // //  when bar clicked
+                    // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
+                    //     $('#' + oldAuClass).attr("fill", "green");
+                    // }
+                    // // when text in rect clicked
+                    // else {
+                    //     // code from http://stackoverflow.com/a/2679026
+                    //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                    // }
+
+                    // recover rect colour of prevoiusly clicked bar
+                    // $('#' + oldAuClass).attr("fill", "#e600e6");
+
+                    oldAuClass = auClass;
+                    
+                }
+            })
     }
 
     function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass, term) {
@@ -910,7 +952,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //         if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
         //             $(this).attr("fill", "green");
         //         }
-        //         // text in bar
+        //         // text in rect
         //         else {
         //             $(this).closest('rect').attr("fill", "green");
         //             // alternative code (http://stackoverflow.com/a/2679026):
@@ -1063,6 +1105,24 @@ Code examples:
     Method 2
     display: "term"
 
+
+
+Note 4
+Both mouseover and mouseleave changes rect colour, but in different ways.
+mouseleave's codes are simpler, but it always goes to parent element and comes back down to rect.
+mouseover stays on rect if rect is clicked. Otherwise, it uses the same approach as the mouseleave's code.
+
+mouseover:
+The codes in mouseover first identifies what is clicked (i.e. rect or the text in rect).
+If rect is clicked, colour is changed directly (from "$(this)")
+If the text in rect is clicked, the closest parent element that contains the rect is found, then rect is found, and the rect's colour is changed.
+
+mouseleave:
+The closest "bar" class is found (which is the closest parent element that contains the rect), then rect is found, and the rect's colour is changed.
+
+
+
+
 */
 
 
@@ -1077,3 +1137,6 @@ Code below fetches info for 5000 articles. This took >40 seconds. The same task 
         });
 
 */
+
+
+
