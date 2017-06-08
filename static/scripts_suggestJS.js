@@ -600,13 +600,14 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 // if different bar is clicked
                 else {
                     
+                    /* display plots 2 and 3 */
                     // hide previously displayed plot
                     $('.' + oldAuClass).attr("visibility", "hidden");
 
                     // display plots 2 and 3 of corresponding author
                     $('.' + auClass).attr("visibility", "visible");
 
-                    // recover colour of previously coloured rect
+                    /* recover rect colour of previously coloured rect */
                     $('#' + oldAuClass).find('rect').attr("fill", "#e600e6");
                     // //  when bar clicked
                     // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
@@ -640,6 +641,9 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         var dataCount = chartDim.dataCount;
         var dataValuesCount = chartDim.dataValuesCount;
 
+        var dataValueMin = d3.min(plotData, function(d) { return d.y; });
+        var dataValueMax = d3.max(plotData, function(d) { return d.y; });
+
         // quit if no data
         if (dataCount == 0) {
             return;
@@ -656,7 +660,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         // determine number of ticks on x (number of years) and y-axes (number of publications)
         var xTicks = dataCount;
 
-        var yTicks = dataValuesCount;
+        var yTicks = (dataValuesCount == 2) ? dataValuesCount - 1: dataValuesCount;
 
         // scales
         var xScale = d3.scaleTime()
@@ -666,9 +670,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     .range([0, width - marginLeft]);
 
         var yScale = d3.scaleLinear()
-                    .domain(d3.extent(plotData, function(d) {
-                        return d.y;
-                    }))
+                    .domain([(dataValuesCount > 1) ? dataValueMin : dataValueMin - 1, dataValueMax])
                     .range([height, 0]);
 
         // define axes
