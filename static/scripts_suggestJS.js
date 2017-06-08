@@ -656,10 +656,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         // determine number of ticks on x (number of years) and y-axes (number of publications)
         var xTicks = dataCount;
 
-        var yAxis_max = d3.max(plotData, function(d) {
-            return d.y;
-        });
-        var yTicks = yAxis_max;
+        var yTicks = dataValuesCount;
 
         // scales
         var xScale = d3.scaleTime()
@@ -669,9 +666,9 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     .range([0, width - marginLeft]);
 
         var yScale = d3.scaleLinear()
-                    .domain([0, d3.max(plotData, function(d) {
+                    .domain(d3.extent(plotData, function(d) {
                         return d.y;
-                    })])
+                    }))
                     .range([height, 0]);
 
         // define axes
