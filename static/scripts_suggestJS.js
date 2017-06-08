@@ -600,14 +600,13 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 // if different bar is clicked
                 else {
                     
-                    /* display plots 2 and 3 */
                     // hide previously displayed plot
                     $('.' + oldAuClass).attr("visibility", "hidden");
 
                     // display plots 2 and 3 of corresponding author
                     $('.' + auClass).attr("visibility", "visible");
 
-                    /* recover rect colour of previously coloured rect */
+                    // recover colour of previously coloured rect
                     $('#' + oldAuClass).find('rect').attr("fill", "#e600e6");
                     // //  when bar clicked
                     // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
