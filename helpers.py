@@ -8,7 +8,7 @@ def getUids(term):
     """Get UIDs for term."""
 
     # get UIDs from Pubmed
-    retmax = 10000 # number of articles to fetch
+    retmax = 1 # number of articles to fetch
     reldate = 18270 # number of days from now
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(reldate)))
     feed = urllib.request.urlopen(url)
@@ -48,16 +48,26 @@ def getFullRecs(uids):
     # note key info for each article
     for PubmedArticle in root.findall("PubmedArticle"):
         # note author
-        for author in PubmedArticle.findall('.//AuthorList/Author[LastName][ForeName]'): # 
-            author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
-            record[0].append(author)
+        try:
+            for author in PubmedArticle.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
+                author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
+                record[0].append(author)
+        # skip if <AuthorList> is missing (which is true for anonymous articles)
+        except:
+            continue
     
         # note publication year
         for year in PubmedArticle.findall('.//Article/Journal/JournalIssue/PubDate'):
             try:
                 year = year.find("Year").text
             except:
-                year = year.find("MedlineDate").text[:4]
+                medlineDate = year.find("MedlineDate").text
+                try:
+                    year = str(int(medlineDate[:4]))
+                # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
+                except:
+                    year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                
             record[1].append(year)
                 
         # note journal title
