@@ -51,8 +51,8 @@ def getFullRecs(uids):
         try:
             for author in PubmedArticle.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
                 author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
+                type(author) # will crash if if <AuthorList> is missing (which is true for anonymous articles)
                 record[0].append(author)
-        # skip if <AuthorList> is missing (which is true for anonymous articles)
         except:
             continue
     
