@@ -33,6 +33,7 @@ $(function() {
             typeAhead();
             $("#q").focus(); // place cursor in textbox
             $("svg").remove();
+            diplayGif("authorDiv", "/static/loading.gif");
             records(suggestion);
 
         });
@@ -46,6 +47,7 @@ $(function() {
             typeAhead();
             $("#q").focus();
             e.preventDefault();
+            diplayGif("authorDiv", "/static/loading.gif");
             records(suggestion);
         });
     }
@@ -54,6 +56,18 @@ $(function() {
     fetch();
 
 });
+
+function diplayGif(divClass, gif) {
+    $("." + divClass).empty();
+    $("." + divClass).css("justify-content", "center");
+    $("." + divClass).css("display", "flex");
+    $("." + divClass).prepend("<img alt='loading' src='" + gif + "'/>");
+}
+
+function removeGif(divClass) {
+    $("." + divClass).empty();
+    $("." + divClass).removeAttr("style");
+}
 
 /**
  * fetches suggestions from Pubmed API
@@ -98,10 +112,13 @@ function records(suggestion) {
         request.abort();
     }
 
+
     // fetch records
     request =
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
+            // See "Note 5" at the bottom
+            removeGif("authorDiv");
             drawGraphs(data, suggestion.term);
         })
 
@@ -985,8 +1002,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //     }
         // })
     }
-
-
 }
 
 /*
@@ -1120,6 +1135,10 @@ The closest "bar" class is found (which is the closest parent element that conta
 
 
 
+
+Note 5
+Following code does the same thing. Does it do it differently?
+$.when(removeGif("authorDiv")).then(drawGraphs(data, suggestion.term));
 
 */
 
