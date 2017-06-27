@@ -657,6 +657,11 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
                 // }
 
+                // react to click in "author" plot only
+                if ($(this).closest('svg').attr("class") != "author") {
+                    return;
+                }
+
                 // get bar group ID (author) of clicked bar
                 auClass = $(this).closest('.bar').attr("id");
 
