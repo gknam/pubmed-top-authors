@@ -843,7 +843,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 .tickFormat("")
             );
 
-        // Add the valueline path.
+        // Add the valueline path (line).
         chart.append("path")
             .data([plotData])
             .attr("class", "line")
@@ -852,7 +852,14 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             // .attr("stroke-width", "2px")
             .attr("d", valueline);
 
-
+        // add scatter plot (circles) (code from http://bit.ly/2sNr0IA)
+        chart.selectAll("dot")
+            .data(plotData)
+            .enter()
+            .append("circle")
+            .attr("r", 3.5)
+            .attr("cx", function(d) { return xScale(d.x); })
+            .attr("cy", function(d) { return yScale(d.y); });
 
         // Add the X Axis
         chart.append("g")
