@@ -33,7 +33,8 @@ $(function() {
             typeAhead();
             $("#q").focus(); // place cursor in textbox
             $("svg").remove();
-            diplayGif("authorDiv", "/static/loading.gif");
+            resetDisplay("authorDiv", "yearJournalDiv");
+            displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
             records(suggestion);
 
         });
@@ -47,7 +48,8 @@ $(function() {
             typeAhead();
             $("#q").focus();
             e.preventDefault();
-            diplayGif("authorDiv", "/static/loading.gif");
+            resetDisplay("authorDiv", "yearJournalDiv");
+            displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
             records(suggestion);
         });
     }
@@ -57,16 +59,58 @@ $(function() {
 
 });
 
-function diplayGif(divClass, gif) {
-    $("." + divClass).empty();
-    $("." + divClass).css("justify-content", "center");
-    $("." + divClass).css("display", "flex");
-    $("." + divClass).prepend("<img alt='loading' src='" + gif + "'/>");
+
+
+// load GIF image to display after submitting keyword
+var loadingGif = new Image();
+loadingGif.alt = "loading";
+loadingGif.src = "/static/loading.gif";
+
+// load image to display when keyword fetched no data
+var apology = new Image();
+apology.alt = "No data found"
+topText = "no_data"
+bottomText = "please_try_again"
+apology.src = "https://memegen.link/custom/" + topText + "/" + bottomText + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
+
+
+function displayGif(divClass1, loadingGif) {
+    $("." + divClass1).css("justify-content", "center");
+    $("." + divClass1).css("display", "flex");
+    $("." + divClass1).append(loadingGif);
 }
 
-function removeGif(divClass) {
-    $("." + divClass).empty();
-    $("." + divClass).removeAttr("style");
+function resetDisplay(divClass1, divClass2=null) {
+    $("." + divClass1).empty();
+    $("." + divClass2).empty();
+    $("." + divClass1).removeAttr("style");
+    $("." + divClass2).removeAttr("style");    
+}
+
+function NoDataReceived(data) {
+    var data_keys = Object.keys(data);
+    var dc_i = data_keys.indexOf("dataCount");
+    data_keys.splice(dc_i, 1);
+    var dslm_i = data_keys.indexOf("dataStrLengthMax");
+    data_keys.splice(dslm_i, 1);
+
+    return data_keys.length == 0;
+}
+
+function apologise(divClass1, divClass2, term, apology) {
+
+    // display text
+    $("." + divClass1).css("justify-content", "center");
+    $("." + divClass1).css("display", "flex");
+    $("." + divClass1).css("text-align", "justify");
+    $("." + divClass1).css("font-size", "30px");
+    $("." + divClass1).append("Search term: " + term);
+
+    // display image
+    $("." + divClass2).css("justify-content", "center");
+    $("." + divClass2).css("display", "flex");
+    $("." + divClass2).css("text-align", "justify");
+    $("." + divClass2).append(apology);
 }
 
 /**
@@ -118,8 +162,13 @@ function records(suggestion) {
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
             // See "Note 5" at the bottom
-            removeGif("authorDiv");
-            drawGraphs(data, suggestion.term);
+            resetDisplay("authorDiv");
+            if (NoDataReceived(data)) {
+                apologise("authorDiv", "yearJournalDiv", suggestion.term, apology);
+            }
+            else {
+                drawGraphs(data, suggestion.term);
+            }
         })
 
     .fail(function(jqXHR, textStatus, errorThrown) {
@@ -1139,6 +1188,43 @@ The closest "bar" class is found (which is the closest parent element that conta
 Note 5
 Following code does the same thing. Does it do it differently?
 $.when(removeGif("authorDiv")).then(drawGraphs(data, suggestion.term));
+
+
+Note 6
+Perhaps this was an issue called "callback hell"?
+
+__________________________________
+-- Below is the current version. --
+
+// load GIF image to display after submitting keyword
+var loadingGif = new Image();
+loadingGif.alt = "loading";
+loadingGif.src = "/static/loading.gif";
+
+
+displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
+records(suggestion);
+__________________________________
+
+-- Following is the previous version
+function displayGif(divClass1, gif) {
+    $("." + divClass1).css("justify-content", "center");
+    $("." + divClass1).css("display", "flex");
+    $("." + divClass1).append("<img alt='loading' src='" + gif + "'/>");
+}
+
+displayGif("authorDiv", "/static/loading.gif"); // See Note 6 at the bottom.
+records(suggestion);
+__________________________________
+
+Such change has been made because the "getJSON" request in "records" was queued *before* GIF fetching in "displayGif".
+This resulted in failure to display the GIF until plots were displayed after getJSON completion.
+
+Although this problem diminished when the GIF was included as part of the "index.html", it still happened occasionally.
+
+To compeltely prevent this problem, the GIF has been loaded as a variable before running "displayGif".
+
+Another image variable, "apology", for "apologise" function has been prepapred for a different purpose
 
 */
 
