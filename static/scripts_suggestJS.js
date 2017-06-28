@@ -311,7 +311,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     if (yearCount === 1) {
                         pl2[0].y = [pl2[0].x, pl2[0].x = pl2[0].y][0]; // swap x and y value (https://stackoverflow.com/a/16201730)
                         pl2Dim = chartDim(pl2Svg, yearCount, null, allStrLenMax);
-                        drawBarChart(pl2Svg, pl2, auId, barID = false, pl2Dim, "hidden", "barChartAxis", term);
+                        drawBarChart(pl2Svg, pl2, auId, barId = false, pl2Dim, "hidden", "barChartAxis", term);
                     }
                     else if (yearCount > 1) {
                         pl2Dim = chartDim(pl2Svg, yearCount, yearPubsAll.length, allStrLenMax);
@@ -342,7 +342,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
                     pl3Dim = chartDim(pl3Svg, journalCount, null, allStrLenMax);
 
-                    drawBarChart(pl3Svg, pl3, auId, barID = false, pl3Dim, "hidden", "barChartAxis");
+                    drawBarChart(pl3Svg, pl3, auId, barId = false, pl3Dim, "hidden", "barChartAxis");
                     pl3 = [];
                     journalCount = 0;
                     journalStrLengthMax = 0;
@@ -354,7 +354,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // plot 1
     pl1Dim = chartDim(pl1Svg, auCount, null, allStrLenMax);
-    drawBarChart(pl1Svg, pl1, "pl1Chart", barID = true, pl1Dim, "visible", "barChartAxis", term);
+    drawBarChart(pl1Svg, pl1, "pl1Chart", barId = true, pl1Dim, "visible", "barChartAxis", term);
 
     function insertSVG(svgClass, divClass, divTitle = null) {
         return d3.select('.' + divClass)
@@ -544,14 +544,14 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
             })
             .attr("id", function(d, i) {
-                if (barID) {
+                if (barId) {
                     return auIdList[i];
                 }
             });
 
         // Add bars
         bar.append("rect")
-            // .attr("class", "rect")
+            .attr("class", "rect")
             .attr("width", function(d) {
                 return (d.x / xAxis_max) * (width - marginLeft);
             })
@@ -611,7 +611,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         var oldAuClass;
         var auClass;
 
-        $("rect, .pubNum")
+        $(".rect, .pubNum")
 
             .mouseover(function() {
                 // change rect colour (mouse over bar)
@@ -699,7 +699,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             })
     }
 
-    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility = "visible", xAxisClass, term) {
+    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility, xAxisClass, term) {
         // this function is based on codes at http://bit.ly/2qNRPbF
 
         var width = chartDim.width;
@@ -852,14 +852,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             // .attr("stroke-width", "2px")
             .attr("d", valueline);
 
-        // add scatter plot (circles) (code from http://bit.ly/2sNr0IA)
-        chart.selectAll("dot")
-            .data(plotData)
-            .enter()
-            .append("circle")
-            .attr("r", 3.5)
-            .attr("cx", function(d) { return xScale(d.x); })
-            .attr("cy", function(d) { return yScale(d.y); });
 
         // Add the X Axis
         chart.append("g")
@@ -886,8 +878,86 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .call(yAxis);
 
 
+        // add scatter plot (circles) (code from http://bit.ly/2sNr0IA)
+        var r = 4;
+        chart.selectAll("dot")
+            .data(plotData)
+            .enter()
+            .append("circle")
+            .attr("r", r)
+            .attr("fill", "steelblue")
+            .attr("cx", function(d) { return xScale(d.x); })
+            .attr("cy", function(d) { return yScale(d.y); })
+            // .on("mouseover", function(d) { return d.y; })
 
+        // display values above circles
+        values = chart.append("g")
 
+        values.selectAll("text")
+            .data(plotData)
+            .enter()
+            .append("text")
+            .attr("x", function(d) {
+                return xScale(d.x);
+            })
+            .attr("y", function(d) {
+                return yScale(d.y) - r * 1.5;
+            })
+            .attr("text-anchor", "middle")
+            .attr("font-size", fontSize * 0.8)
+            .attr("font-weight", "bold")
+            .attr("fill", "red")
+            .text(function(d) {
+                return d.y;
+            });
+            
+        
+        
+        /* The code below makes data value appear on mouse over. However, it was discarded
+        becuase the "rect" (overlay) of last author came as top layer, blocking other authors'
+        plots. Consequently, this worked for only the last author.
+        
+        // // show circle and X value on mouseover (code from http://bit.ly/2sh4J7E)
+        // var focus = chart.append("g")
+        //   .attr("class", "focus " + auId)
+        //   .attr("display", "none");
+
+        // focus.append("circle")
+        //   .attr("r", 5)
+        //   .attr("fill", "red");
+
+        // focus.append("text")
+        //   .attr("fill", "red")
+        //   .attr("font-weight", "bold")
+        //   .attr("text-anchor", "middle")
+        //   .attr("x", 0)
+        //   .attr("dy", "-0.5em");
+
+        // chart.append("rect")
+        //     .attr("class", "overlay " + auId)
+        //     .attr("width", width - marginLeft)
+        //     .attr("height", height)
+        //     .attr("fill", "none")
+        //     .attr("pointer-events", "all")
+        //     .on("mouseover", function() { focus.attr("display", null); })
+        //     .on("mouseout", function() { focus.attr("display", "none"); })
+        //     .on("mousemove", mousemove);
+
+        // function mousemove() {
+        //     var bisectYear = d3.bisector(function(d) { return d.x; }).left;
+            
+        //     var x0 = xScale.invert(d3.mouse(this)[0]),
+        //         i = bisectYear(plotData, x0, 1),
+        //         d0 = plotData[i - 1],
+        //         d1 = plotData[i],
+        //         d = x0 - d0.x > d1.x - x0 ? d1 : d0;
+        //         console.log($(this).prop("tagName"));
+        //     focus.attr("transform", "translate(" + xScale(d.x) + "," + yScale(d.y) + ")");
+        //     focus.select("text").text(d.y);
+        //     // $(this).parent().find('.focus').attr("display")
+        // }
+
+        */
 
 
 
@@ -955,7 +1025,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //         return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
         //     })
         //     .attr("id", function(d, i) {
-        //         if (barID) {
+        //         if (barId) {
         //             return auIdList[i];
         //         }
         //     });
