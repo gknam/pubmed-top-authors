@@ -743,7 +743,48 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         // determine number of ticks on x (number of years) and y-axes (number of publications)
         var xTicks = dataCount;
 
-        var yTicks = (dataValuesCount == 2) ? dataValuesCount - 1: dataValuesCount;
+        var yTickMin = Math.floor(dataValueMin / 10) * 10;        
+        var yTickMax;
+
+        if (dataValueMax <= 5) {
+            yTickMax = dataValueMax;
+        }
+        // else if (dataValueMax <= 10) {
+        //     yTickMax = Math.ceil(dataValueMax / 10) * 10;
+        // }
+        else if (dataValueMax <= 100) {
+            yTickMax = Math.ceil(dataValueMax / 10) * 10
+        }
+        else if (dataValueMax <= 500) {
+            yTickMax = Math.ceil(dataValueMax / 50) * 50
+        }
+        else if (dataValueMax <= 1000) {
+            yTickMax = Math.ceil(dataValueMax / 100) * 100
+        }
+
+        yTickRange = yTickMax - yTickMin;
+
+        var yTicks;
+        if (yTickRange <= 5) {
+            yTicks = yTickRange;
+        }
+        else if (yTickRange <= 10) {
+            yTicks = yTickRange / 5 + 1;
+        }
+        else if (yTickRange <= 50) {
+            yTicks = yTickRange / 10 + 1;
+        }
+        else if (yTickRange <= 100) {
+            yTicks = yTickRange / 50 + 1;
+        }
+        else if (yTickRange <= 500) {
+            yTicks = yTickRange / 100 + 1;
+        }
+        else if (yTickRange <= 1000) {
+            yTicks = yTickRange / 500 + 1;
+        }
+
+        // var yTicks = (dataValuesCount >= 2) ? dataValuesCount - 1: dataValuesCount;
 
         // scales
         var xScale = d3.scaleTime()
@@ -753,7 +794,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     .range([0, width - marginLeft]);
 
         var yScale = d3.scaleLinear()
-                    .domain([(dataValuesCount > 1) ? dataValueMin : dataValueMin - 1, dataValueMax])
+                    .domain([yTickMin, yTickMax])
                     .range([height, 0]);
 
         // define axes
@@ -826,7 +867,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .enter()
             .append("text")
             .attr("x", (width - marginLeft) / 2)
-            .attr("y", -fontSize * 0.5)
+            .attr("y", -fontSize)
             .attr("text-anchor", "middle")
             .attr("font-size", fontSize * 1.2)
             .attr("font-weight", "bold")
