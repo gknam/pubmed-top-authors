@@ -693,6 +693,18 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     // recover rect colour of prevoiusly clicked bar
                     // $('#' + oldAuClass).attr("fill", "#e600e6");
 
+
+                    /* mouseover for plot2's line graph */
+                    // Advice from https://stackoverflow.com/a/20837758
+                    // See note 7 at the bottom regarding mouse events on overlapping elements
+                    
+                    // disable mouse events of previously displayed plot
+                    $('#overlay_' + oldAuClass).attr("pointer-events", "none");
+
+                    // enable mouse events of previously displayed plot
+                    $('#overlay_' + auClass).attr("pointer-events", "all");
+
+
                     oldAuClass = auClass;
                     
                 }
@@ -890,6 +902,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("cy", function(d) { return yScale(d.y); })
             // .on("mouseover", function(d) { return d.y; })
 
+        /* this has been discarded due to the chart looking messy.
         // display values above circles
         values = chart.append("g")
 
@@ -910,54 +923,55 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .text(function(d) {
                 return d.y;
             });
+        */    
+        
+        
+        
+        // show circle and X value on mouseover (code from http://bit.ly/2sh4J7E)
+        var focus = chart.append("g")
+          .attr("class", "focus " + auId)
+          .attr("display", "none");
+
+        focus.append("circle")
+          .attr("r", 5)
+          .attr("fill", "red");
+
+        focus.append("text")
+          .attr("fill", "red")
+          .attr("font-weight", "bold")
+          .attr("text-anchor", "middle")
+          .attr("x", 0)
+          .attr("dy", "-0.5em");
+
+        // See note 7 at the bottom regarding mouse events on overlapping elements
+        overlay = chart.append("g")
+        
+        overlay.append("rect")
+            .attr("id", "overlay_" + auId)
+            .attr("width", width - marginLeft)
+            .attr("height", height)
+            .attr("fill", "none")
+            .attr("pointer-events", "none")
+            .on("mouseover", function() { focus.attr("display", null); })
+            .on("mouseout", function() { focus.attr("display", "none"); })
+            .on("mousemove", mousemove);
+
+        function mousemove() {
+            var bisectYear = d3.bisector(function(d) { return d.x; }).left;
             
-        
-        
-        /* The code below makes data value appear on mouse over. However, it was discarded
-        becuase the "rect" (overlay) of last author came as top layer, blocking other authors'
-        plots. Consequently, this worked for only the last author.
-        
-        // // show circle and X value on mouseover (code from http://bit.ly/2sh4J7E)
-        // var focus = chart.append("g")
-        //   .attr("class", "focus " + auId)
-        //   .attr("display", "none");
+            var x0 = xScale.invert(d3.mouse(this)[0]),
+                i = bisectYear(plotData, x0, 1),
+                d0 = plotData[i - 1],
+                d1 = plotData[i],
+                d = x0 - d0.x > d1.x - x0 ? d1 : d0;
+                // console.log($(this).prop("tagName"));
+                console.log($(this).closest(':has(.focus)').find('.focus').attr("class"));
+            focus.attr("transform", "translate(" + xScale(d.x) + "," + yScale(d.y) + ")");
+            focus.select("text").text(d.y);
+            // $(this).parent().find('.focus').attr("display")
+        }
 
-        // focus.append("circle")
-        //   .attr("r", 5)
-        //   .attr("fill", "red");
 
-        // focus.append("text")
-        //   .attr("fill", "red")
-        //   .attr("font-weight", "bold")
-        //   .attr("text-anchor", "middle")
-        //   .attr("x", 0)
-        //   .attr("dy", "-0.5em");
-
-        // chart.append("rect")
-        //     .attr("class", "overlay " + auId)
-        //     .attr("width", width - marginLeft)
-        //     .attr("height", height)
-        //     .attr("fill", "none")
-        //     .attr("pointer-events", "all")
-        //     .on("mouseover", function() { focus.attr("display", null); })
-        //     .on("mouseout", function() { focus.attr("display", "none"); })
-        //     .on("mousemove", mousemove);
-
-        // function mousemove() {
-        //     var bisectYear = d3.bisector(function(d) { return d.x; }).left;
-            
-        //     var x0 = xScale.invert(d3.mouse(this)[0]),
-        //         i = bisectYear(plotData, x0, 1),
-        //         d0 = plotData[i - 1],
-        //         d1 = plotData[i],
-        //         d = x0 - d0.x > d1.x - x0 ? d1 : d0;
-        //         console.log($(this).prop("tagName"));
-        //     focus.attr("transform", "translate(" + xScale(d.x) + "," + yScale(d.y) + ")");
-        //     focus.select("text").text(d.y);
-        //     // $(this).parent().find('.focus').attr("display")
-        // }
-
-        */
 
 
 
@@ -1307,6 +1321,38 @@ Although this problem diminished when the GIF was included as part of the "index
 To compeltely prevent this problem, the GIF has been loaded as a variable before running "displayGif".
 
 Another image variable, "apology", for "apologise" function has been prepapred for a different purpose
+
+
+
+
+
+Note 7
+
+When mouse events are set on overlapping elements, only the element on top responds to mouse events
+unless the following two are done.
+
+1. set the element's "pointer-events" property to "none". Below is code used in this script.
+
+.click(function() {
+        
+        // disable mouse events of previously displayed plot
+        $('#overlay_' + oldAuClass).attr("pointer-events", "none");
+
+        // enable mouse events of previously displayed plot
+        $('#overlay_' + auClass).attr("pointer-events", "all");
+
+2. Create the element inside a "g" element.
+
+________________________
+This works (which is the current code)
+
+overlay = chart.append("g")
+overlay.append("rect")
+________________________
+The following doesn't work.
+
+chart.append("rect")
+________________________
 
 */
 
