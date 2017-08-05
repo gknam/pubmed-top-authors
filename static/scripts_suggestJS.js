@@ -67,11 +67,19 @@ loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
 // load image to display when keyword fetched no data
-var apology = new Image();
-apology.alt = "No data found"
-topText = "no_data"
-bottomText = "please_try_again"
-apology.src = "https://memegen.link/custom/" + topText + "/" + bottomText + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
+// data fetch problem 1: receiving no data
+var apology1 = new Image();
+apology1.alt = "no data";
+var topText1 = "no data";
+var bottomText1 = "try_a_different_keyword";
+apology1.src = "https://memegen.link/custom/" + topText1 + "/" + bottomText1 + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
+
+// data fetch problem 2: range too big
+var apology2 = new Image();
+apology2.alt = "date range too big";
+var topText2 = "date range too big";
+var bottomText2 = "try_smaller";
+apology2.src = "https://memegen.link/custom/" + topText2 + "/" + bottomText2 + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
 
 
 function displayGif(divClass1, loadingGif) {
@@ -87,14 +95,26 @@ function resetDisplay(divClass1, divClass2=null) {
     $("." + divClass2).removeAttr("style");    
 }
 
-function NoDataReceived(data) {
+function dataFetchProblem(data) {
     var data_keys = Object.keys(data);
     var dc_i = data_keys.indexOf("dataCount");
     data_keys.splice(dc_i, 1);
     var dslm_i = data_keys.indexOf("dataStrLengthMax");
     data_keys.splice(dslm_i, 1);
+    console.log(data)
 
-    return data_keys.length == 0;
+    var apology;
+
+    // receiving no data
+    if (data_keys.length == 0) {
+        apology = apology1;
+    }
+    // date range or number of articles too big
+    else if (data == "range too big") {
+        apology = apology2;
+    }
+    
+    return apology;
 }
 
 function apologise(divClass1, divClass2, term, apology) {
@@ -163,9 +183,16 @@ function records(suggestion) {
         .done(function(data, textStatus, jqXHR) {
             // See "Note 5" at the bottom
             resetDisplay("authorDiv");
-            if (NoDataReceived(data)) {
+
+            // prepare apology if records fetch has failed
+            apology = dataFetchProblem(data);
+
+            // display apology message if there was a problem fetching data
+            if (apology) {
                 apologise("authorDiv", "yearJournalDiv", suggestion.term, apology);
             }
+            
+            // otherwise, draw plots
             else {
                 drawGraphs(data, suggestion.term);
             }

@@ -1,55 +1,83 @@
+import sys
 import collections
 import unicodedata
 from unidecode import unidecode
 import urllib, json
 import xml.etree.ElementTree as ET
 
-def getUids(term):
-    """Get UIDs for term."""
+def getPmids(term):
+    """Get PMIDs for term."""
 
-    # get UIDs from Pubmed
-    retmax = 1 # number of articles to fetch
-    reldate = 18270 # number of days from now
-    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(reldate)))
-    feed = urllib.request.urlopen(url)
-    data = json.loads(feed.read().decode("utf-8"))
+    # maximum number of articles to retrieve
+    retmax_limit = 100000
+    retmax = 100000
     
-    # remember UIDs
-    uids = []
-    for uid in data["esearchresult"]["idlist"]:
-        uids.append(uid)
+    # subset of articles to start from
+    # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
+    # if retstart is 10, first 10 articles in the stack are ignored.
+    retstart = 0
     
-    uids = ','.join(uids)
+    # number of articles to fetch
+    # https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
+    oneYear = 365.2422
+    # number of days from now
+    reldate = round(oneYear * 10)
+
+    pmids = []
+    while retstart < retmax:
+        
+        # retrieve PMIDs
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
+        feed = urllib.request.urlopen(url)
+        data = json.loads(feed.read().decode("utf-8"))
+    
+        # note PMIDs
+        pmids_part = []
+        for pmid_part in data["esearchresult"]["idlist"]:
+            pmids_part.append(pmid_part)
+        pmids = pmids + pmids_part
+        
+        if len(pmids_part) < retmax_limit:
+            break
+        
+        retstart += retmax_limit
 
     # return results
-    return uids
+    return pmids
 
-def getFullRecs(uids):
-    """ Get full records from UID """
+def getFullRecs(pmids):
+    """ Get full records from PMID """
     
     # get records from Pubmed
     record = [[], [], []]
     records = {}
     
+    if not pmids:
+        return {}
+    
     # get records from Pubmed
     # 1. using GET method
     try:
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(uids)
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
         feed = urllib.request.urlopen(url)
-    # 2. using POST method (if uids is too long)
+    # 2. using POST method (if pmids is too long)
     except urllib.error.HTTPError:
-        ids = urllib.parse.urlencode({"id": uids}).encode("utf-8")
+        ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
         feed = urllib.request.urlopen(url, data=ids)
     
     tree = ET.parse(feed)
     root = tree.getroot()
     
+    # delete to clear memory
+    del(feed)
+    del(tree)
+    
     # note key info for each article
-    for PubmedArticle in root.findall("PubmedArticle"):
+    for MedlineCitation in root.findall("MedlineCitation"):
         # note author
         try:
-            for author in PubmedArticle.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
+            for author in MedlineCitation.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
                 author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
                 type(author) # will crash if if <AuthorList> is missing (which is true for anonymous articles)
                 record[0].append(author)
@@ -57,7 +85,7 @@ def getFullRecs(uids):
             continue
     
         # note publication year
-        for year in PubmedArticle.findall('.//Article/Journal/JournalIssue/PubDate'):
+        for year in MedlineCitation.findall('.//Article/Journal/JournalIssue/PubDate'):
             try:
                 year = year.find("Year").text
             except:
@@ -71,7 +99,7 @@ def getFullRecs(uids):
             record[1].append(year)
                 
         # note journal title
-        for journal in PubmedArticle.findall('.//MedlineCitation/MedlineJournalInfo/MedlineTA'):
+        for journal in MedlineCitation.findall('MedlineJournalInfo/MedlineTA'):
             journal = toASCII(journal.text)
             record[2].append(journal)
     
