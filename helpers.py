@@ -10,7 +10,7 @@ def getPmids(term):
 
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 100000
+    retmax = 1
     
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
@@ -74,7 +74,7 @@ def getFullRecs(pmids):
     del(tree)
     
     # note key info for each article
-    for MedlineCitation in root.findall("MedlineCitation"):
+    for MedlineCitation in root.findall(".//MedlineCitation"):
         # note author
         try:
             for author in MedlineCitation.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
