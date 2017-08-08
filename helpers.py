@@ -57,6 +57,8 @@ def getFullRecs(pmids):
     if not pmids:
         return {}
     
+    pmids = ','.join(pmids)
+    
     # get records from Pubmed
     # 1. using GET method
     try:
