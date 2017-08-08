@@ -128,7 +128,12 @@ def getFullRecs(pmids):
                             
                     # note journal title
                     for journal in elem.findall('MedlineJournalInfo/MedlineTA'):
-                        journal = toASCII(journal.text)
+                        
+                        if journal.text:
+                            journal = toASCII(journal.text)
+                        else:
+                            journal = None
+                        
                         record[2].append(journal)
                 
                     # add key info to records
