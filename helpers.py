@@ -10,7 +10,7 @@ def getPmids(term):
 
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 1
+    retmax = 5
     
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
@@ -26,8 +26,10 @@ def getPmids(term):
     pmids = []
     while retstart < retmax:
         
+        retstart_part = retmax if retmax <=retmax_limit else retmax_limit
+        
         # retrieve PMIDs
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(retstart_part)), urllib.parse.quote(str(reldate)))
         feed = urllib.request.urlopen(url)
         data = json.loads(feed.read().decode("utf-8"))
     
