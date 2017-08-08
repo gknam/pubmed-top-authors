@@ -5,12 +5,34 @@ from unidecode import unidecode
 import urllib, json
 import xml.etree.ElementTree as ET
 
+def getXmlIterTreeAndRoot(f):
+    """
+    f is a file object for XML.
+    Creates an iterator object for XML, iterates until root element is found,
+    then returns the iterator object (xmlIterTree) and root.
+    
+    Root element is acquired for memory management purpose. While iterating
+    through xmlIterTree, root element will be cleared every time an element's
+    end is reached. Otherwises memory usage keeps increasing
+    (see http://effbot.org/zone/element-iterparse.htm).
+    """
+    xmlIterTree = ET.iterparse(f, events=('start', 'end'))
+
+    # get XML's root element (for memory management)
+    # (based on http://effbot.org/zone/element-iterparse.htm)
+    for event, elem in xmlIterTree:
+        if event == 'start':
+            root = elem
+            break
+    
+    return xmlIterTree, root
+
 def getPmids(term):
     """Get PMIDs for term."""
 
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 5
+    retmax = 500000
     
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
@@ -26,16 +48,16 @@ def getPmids(term):
     pmids = []
     while retstart < retmax:
         
-        retstart_part = retmax if retmax <=retmax_limit else retmax_limit
+        retmax_part = retmax if retmax <=retmax_limit else retmax_limit
         
         # retrieve PMIDs
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax)), urllib.parse.quote(str(retstart_part)), urllib.parse.quote(str(reldate)))
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
         feed = urllib.request.urlopen(url)
-        data = json.loads(feed.read().decode("utf-8"))
+        obj = json.loads(feed.read().decode("utf-8"))
     
         # note PMIDs
         pmids_part = []
-        for pmid_part in data["esearchresult"]["idlist"]:
+        for pmid_part in obj["esearchresult"]["idlist"]:
             pmids_part.append(pmid_part)
         pmids = pmids + pmids_part
         
@@ -59,80 +81,84 @@ def getFullRecs(pmids):
     
     pmids = ','.join(pmids)
     
+    xml = "/home/gknam/Desktop/pubmed.xml"
+    open(xml, "w").close()
+    
     # get records from Pubmed
     # 1. using GET method
     try:
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
-        feed = urllib.request.urlopen(url)
+        urllib.request.urlretrieve(url, filename=xml)
     # 2. using POST method (if pmids is too long)
     except urllib.error.HTTPError:
         ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
-        feed = urllib.request.urlopen(url, data=ids)
+        urllib.request.urlretrieve(url, filename=xml, data=ids)
     
-    tree = ET.parse(feed)
-    root = tree.getroot()
+    with open(xml, "r") as f:
+        # read in XMl and get root
+        xmlIterTree, root = getXmlIterTreeAndRoot(f)
     
-    # delete to clear memory
-    del(feed)
-    del(tree)
-    
-    # note key info for each article
-    for MedlineCitation in root.findall(".//MedlineCitation"):
-        # note author
-        try:
-            for author in MedlineCitation.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
-                author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
-                type(author) # will crash if if <AuthorList> is missing (which is true for anonymous articles)
-                record[0].append(author)
-        except:
-            continue
-    
-        # note publication year
-        for year in MedlineCitation.findall('.//Article/Journal/JournalIssue/PubDate'):
-            try:
-                year = year.find("Year").text
-            except:
-                medlineDate = year.find("MedlineDate").text
-                try:
-                    year = str(int(medlineDate[:4]))
-                # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
-                except:
-                    year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+        # note key info for each article
+        for event, elem in xmlIterTree:
+            if event == 'end':
+                if elem.tag == "MedlineCitation":
+                    # note author
+                    try:
+                        for author in elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
+                            author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
+                            type(author) # will crash if if <AuthorList> is missing (which is true for anonymous articles)
+                            record[0].append(author)
+                    except:
+                        continue
                 
-            record[1].append(year)
+                    # note publication year
+                    for year in elem.findall('.//Article/Journal/JournalIssue/PubDate'):
+                        try:
+                            year = year.find("Year").text
+                        except:
+                            medlineDate = year.find("MedlineDate").text
+                            try:
+                                year = str(int(medlineDate[:4]))
+                            # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
+                            except:
+                                year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                            
+                        record[1].append(year)
+                            
+                    # note journal title
+                    for journal in elem.findall('MedlineJournalInfo/MedlineTA'):
+                        journal = toASCII(journal.text)
+                        record[2].append(journal)
                 
-        # note journal title
-        for journal in MedlineCitation.findall('MedlineJournalInfo/MedlineTA'):
-            journal = toASCII(journal.text)
-            record[2].append(journal)
-    
-        # add key info to records
-        # make sure there is no empty field
-        if [] not in record:
-            # add record to records
-            for author in record[0]:
+                    # add key info to records
+                    # make sure there is no empty field
+                    if [] not in record:
+                        # add record to records
+                        for author in record[0]:
+                            
+                            # author
+                            if author not in records:
+                                records[author] = [{"total": 1}, {"journals": {}}, {"years": {}}]
+                            else:
+                                records[author][0]["total"] += 1
+                            
+                            # journal title (code from http://stackoverflow.com/a/14790997)
+                            if not any(journal == d for d in records[author][1]["journals"]):
+                                records[author][1]["journals"][journal] = 1
+                            else:
+                                records[author][1]["journals"][journal] += 1
                 
-                # author
-                if author not in records:
-                    records[author] = [{"total": 1}, {"journals": {}}, {"years": {}}]
-                else:
-                    records[author][0]["total"] += 1
-                
-                # journal title (code from http://stackoverflow.com/a/14790997)
-                if not any(journal == d for d in records[author][1]["journals"]):
-                    records[author][1]["journals"][journal] = 1
-                else:
-                    records[author][1]["journals"][journal] += 1
-    
-                # publication year (code from http://stackoverflow.com/a/14790997)
-                if not any(year in d for d in records[author][2]["years"]):
-                    records[author][2]["years"][year] = 1
-                else:
-                    records[author][2]["years"][year] += 1
-            
-            # reset record
-            record = [[], [], []]
+                            # publication year (code from http://stackoverflow.com/a/14790997)
+                            if not any(year in d for d in records[author][2]["years"]):
+                                records[author][2]["years"][year] = 1
+                            else:
+                                records[author][2]["years"][year] += 1
+                        
+                        # reset record
+                        record = [[], [], []]
+                    elem.clear()
+                root.clear()
     
     records = collections.OrderedDict(sorted(records.items()))
     
