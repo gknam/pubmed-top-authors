@@ -1,6 +1,31 @@
 // Execute when the DOM is fully loaded
 $(function() {
 
+    // set dimensions of dialog box for "About" link (code from https://stackoverflow.com/a/12537610/7194743)
+    var winW = $(window).width() - 180;
+    var winH = $(window).height() - 180;
+
+    // set up dialog box for "About" link (code based on http://jsfiddle.net/kwalser/ymssceqv/)
+    $("#dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        title: "About",
+        height: winH,
+        width: winW
+    });
+    /* This block has been replaced by <style> tag in index.html. Note that this didn't work when inserted in style.css.
+    // set colour for dialog box's title bar (code from https://stackoverflow.com/a/21337337/7194743)
+    // .prev(".ui-dialog-titlebar")
+    // .css("background","#ccacef")
+    // .find(".ui-dialog-titlebar-close")
+    // .css("background", "blue");
+    */
+
+    // enable dialogue for "About" link (code based on https://stackoverflow.com/a/964507/7194743)
+    $('#about').click(function() {
+        $("#dialog").dialog("open");
+    });
+
     // configure typeahead
     function typeAhead() {
         $("#q").focus();
@@ -58,7 +83,6 @@ $(function() {
     fetch();
 
 });
-
 
 
 // load GIF image to display after submitting keyword
