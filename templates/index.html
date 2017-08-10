@@ -2,23 +2,35 @@
 <html>
 
 <head>
+    <!-- Note for myself: Sources should be ordered carefully, considering two issues 
+        
+        Issue 1: Dependency
+            When source A depends on B, B should be specified before A.
+            (e.g. "jquery-latest.min.js" has been specified before "jquery-ui.js" because the latter depends on the former)
+        
+        Issue 2: Overriding
+            When source A and B is of the same type (e.g. CSS), later-specified one will override the one specified first.
+            (e.g. "styles.css" has been specified after "jquery-ui.js". If ordered in an opposite way, the ".ui-dialog-titlebar"
+            in "style.css" does not take effect) -->
+
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta -->
     <meta charset="utf-8" />
     <meta content="initial-scale=1, width=device-width" name="viewport" />
+    
+    <!-- http://jquery.com/ -->
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <!-- http://getbootstrap.com/ -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
     <!-- http://getbootstrap.com/ -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <!-- app's own CSS -->
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
-
+    <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <!-- D3 -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <!-- http://jquery.com/ -->
-    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <!-- jQuery UI js; jQuery UI has been specified after bootstrap to avoid being overrun. Otherwise, dialog title bar's close button ("X") becomes invisible -->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- app's own CSS -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
     <!-- https://github.com/corejavascript/typeahead.js/blob/master/doc/jquery_typeahead.md -->
     <script src="https://cdn.rawgit.com/corejavascript/typeahead.js/master/dist/typeahead.jquery.js"></script>
     <!-- http://handlebarsjs.com/ -->
@@ -28,13 +40,6 @@
     <!-- app's own JavaScript -->
     <script src="{{ url_for('static', filename='scripts_suggestJS.js') }}"></script>
     <title>Pubmed records visualiser</title>
-    <style>
-    /* code from https://stackoverflow.com/a/12894006/7194743 */
-        .ui-dialog-titlebar {
-            background-color: #F9A7AE;
-            color: #000;
-        }
-    </style>
 </head>
 
 <body>
@@ -43,7 +48,7 @@
         Find Pubmed's authors with most publications
         <div class="extra">
             <a href="#" onclick="return false;" id="about">About</a>&nbsp&nbsp
-            <a href="https://github.com/gknam" target="_blank">See code</a>&nbsp&nbsp
+            <a href="https://github.com/gknam" target="_blank">See code</a>&nbsp&nbsp&nbsp&nbsp
         </div>
     </div>
     <!-- http://getbootstrap.com/css/#forms -->

@@ -11,15 +11,14 @@ $(function() {
         modal: true,
         title: "About",
         height: winH,
-        width: winW
-    });
-    /* This block has been replaced by <style> tag in index.html. Note that this didn't work when inserted in style.css.
-    // set colour for dialog box's title bar (code from https://stackoverflow.com/a/21337337/7194743)
-    // .prev(".ui-dialog-titlebar")
-    // .css("background","#ccacef")
-    // .find(".ui-dialog-titlebar-close")
-    // .css("background", "blue");
-    */
+        width: winW,
+
+    })
+    // change title bar close button icon
+    // (code based on https://stackoverflow.com/a/21337337/7194743 and https://stackoverflow.com/a/7910817/7194743)
+    .prev(".ui-dialog-titlebar")
+    .find(".ui-button-icon")
+    .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
 
     // enable dialogue for "About" link (code based on https://stackoverflow.com/a/964507/7194743)
     $('#about').click(function() {

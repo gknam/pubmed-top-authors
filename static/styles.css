@@ -31,6 +31,7 @@ body {
 }
 
 
+
 /* stylize text box */
 
 #q {
@@ -50,11 +51,12 @@ body {
 }
 
 .extra {
-    position:absolute;
-    top:0px;
-    right:0px;
+    position: absolute;
+    top: 0px;
+    right: 0px;
     font-size: 20px;
 }
+
 
 /* stylize typeahead.js a la http://twitter.github.io/typeahead.js/css/examples.css */
 
@@ -87,7 +89,9 @@ body {
     fill: black;
 }
 
+
 /* Make bar chart axis invisible */
+
 .barChartAxis .domain,
 .barChartAxis .tick {
     opacity: 0;
@@ -99,11 +103,15 @@ svg {
 }
 
 .grid line {
-  stroke: lightgrey;
-  stroke-opacity: 0.7;
-  shape-rendering: crispEdges;
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
 }
 
 .grid path {
-  stroke-width: 0;
+    stroke-width: 0;
+}
+
+.ui-dialog-titlebar {
+    background-color: #F9A7AE;
 }
