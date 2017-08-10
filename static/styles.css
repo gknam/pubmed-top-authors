@@ -115,3 +115,9 @@ svg {
 .ui-dialog-titlebar {
     background-color: #F9A7AE;
 }
+
+/*Use this in a rare case of a word length exceeding dialog width.*/
+/*code from https://stackoverflow.com/a/1638824/7194743 */
+#dialog { 
+   word-wrap: break-word;
+}

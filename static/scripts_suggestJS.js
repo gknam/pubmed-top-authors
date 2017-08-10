@@ -2,17 +2,19 @@
 $(function() {
 
     // set dimensions of dialog box for "About" link (code from https://stackoverflow.com/a/12537610/7194743)
-    var winW = $(window).width() - 180;
-    var winH = $(window).height() - 180;
+    var winW = $(window).width();
+    var winH = $(window).height();
+
+    var dialogMargin = 180;
 
     // set up dialog box for "About" link (code based on http://jsfiddle.net/kwalser/ymssceqv/)
     $("#dialog").dialog({
         autoOpen: false,
+        autoResize: true,
         modal: true,
         title: "About",
-        height: winH,
-        width: winW,
-
+        height: winH - dialogMargin,
+        width: winW - dialogMargin
     })
     // change title bar close button icon
     // (code based on https://stackoverflow.com/a/21337337/7194743 and https://stackoverflow.com/a/7910817/7194743)
