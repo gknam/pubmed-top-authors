@@ -43,7 +43,7 @@ def getPmids(term):
     # https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
     oneYear = 365.2422
     # number of days from now
-    reldate = round(oneYear * 50)
+    reldate = round(oneYear * 5)
 
     pmids = []
     while retstart < retmax:
@@ -108,6 +108,9 @@ def getFullRecs(pmids):
             if event == 'end':
                 if elem.tag == "MedlineCitation":
                     
+                    # reset record
+                    record = [[], [], []]                    
+                    
                     # note author
                     try:
                         for author in elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
@@ -168,8 +171,6 @@ def getFullRecs(pmids):
                             else:
                                 records[author][2]["years"][year] += 1
                         
-                        # reset record
-                        record = [[], [], []]
                     elem.clear()
                 root.clear()
 
