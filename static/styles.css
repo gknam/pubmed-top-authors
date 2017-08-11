@@ -16,7 +16,7 @@ body {
 #form {
     position: relative;
     /* distance from top edge of viewport */
-    top: 28px;
+    top: 10px;
     /* form's width */
     width: 100%;
 
@@ -41,13 +41,19 @@ body {
     width: 300px;
 }
 
-.title {
+#title, #sub_title {
     /* block-level flex container */
     display: flex;
     /* center container's content */
     justify-content: center;
+}
 
+#title {
     font-size: 30px;
+}
+
+#sub_title {
+    font-size: 20px;
 }
 
 .extra {
@@ -120,4 +126,8 @@ svg {
 /*code from https://stackoverflow.com/a/1638824/7194743 */
 #dialog { 
    word-wrap: break-word;
+}
+
+a {
+   color: #2A5DB0 !important;
 }

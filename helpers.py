@@ -43,7 +43,7 @@ def getPmids(term):
     # https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
     oneYear = 365.2422
     # number of days from now
-    reldate = round(oneYear * 10)
+    reldate = round(oneYear * 50)
 
     pmids = []
     while retstart < retmax:
@@ -85,6 +85,10 @@ def getFullRecs(pmids):
     open(xml, "w").close()
     
     # get records from Pubmed
+    # note: To minimise use of memory, the requested XML will be saved as file
+    # and each element will be accessed iteratively (instead of directly
+    # loading the whole XML into memory)
+    
     # 1. using GET method
     try:
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
@@ -103,6 +107,7 @@ def getFullRecs(pmids):
         for event, elem in xmlIterTree:
             if event == 'end':
                 if elem.tag == "MedlineCitation":
+                    
                     # note author
                     try:
                         for author in elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
@@ -122,17 +127,20 @@ def getFullRecs(pmids):
                                 year = str(int(medlineDate[:4]))
                             # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
                             except:
-                                year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                                try:
+                                    year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                                except:
+                                    continue
                             
                         record[1].append(year)
                             
                     # note journal title
                     for journal in elem.findall('MedlineJournalInfo/MedlineTA'):
                         
-                        if journal.text:
+                        try:
                             journal = toASCII(journal.text)
-                        else:
-                            journal = None
+                        except:
+                            continue
                         
                         record[2].append(journal)
                 
@@ -164,9 +172,9 @@ def getFullRecs(pmids):
                         record = [[], [], []]
                     elem.clear()
                 root.clear()
-    
+
     records = collections.OrderedDict(sorted(records.items()))
-    
+
     return records
 
 def topAuthorsRecs(records):
