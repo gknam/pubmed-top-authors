@@ -107,9 +107,44 @@ def getFullRecs(pmids):
         for event, elem in xmlIterTree:
             if event == 'end':
                 if elem.tag == "MedlineCitation":
-                    
                     # reset record
                     record = [[], [], []]                    
+
+                    # ↓↓↓ check if article should be excluded: begin ↓↓↓ #
+
+                    rt_discardCurrent = {"ErratumIn", "PartialRetractionIn", "ReprintIn", \
+                                    "RepublishedIn", "OriginalReportIn", "RetractionIn", \
+                                    "RetractionOf"}
+                    
+                    pt_discardCurrent = {"Retracted Publication",  "Retraction of Publication"}
+                    
+                    cc_list = elem.findall('.//CommentsCorrectionsList/CommentsCorrections')
+                    pt_list = elem.findall('.//PublicationTypeList/PublicationType')
+                    
+                    skipArticle = False
+                    
+                    # check "CommentsCorrections" element
+                    for cc in cc_list:
+                        rt = cc.get("RefType")
+
+                        # article has been retracted or replaced by
+                        # later-published version, is a retraction notification
+                        # or a patient summary article
+                        if rt in rt_discardCurrent:
+                            skipArticle = True
+
+                    # check "PublicationType" element
+                    for ptElement in pt_list:
+                        pt = ptElement.text
+                        
+                        # article has been retracted or is a retraction notification
+                        if pt in pt_discardCurrent:
+                            skipArticle = True
+                    
+                    if skipArticle:
+                        continue
+
+                    # ↑↑↑ check if article should be excluded: end ↑↑↑ #
                     
                     # note author
                     try:
@@ -119,7 +154,7 @@ def getFullRecs(pmids):
                             record[0].append(author)
                     except:
                         continue
-                
+
                     # note publication year
                     for year in elem.findall('.//Article/Journal/JournalIssue/PubDate'):
                         try:
