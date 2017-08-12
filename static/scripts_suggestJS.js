@@ -1,31 +1,9 @@
 // Execute when the DOM is fully loaded
 $(function() {
 
-    // set dimensions of dialog box for "About" link (code from https://stackoverflow.com/a/12537610/7194743)
-    var winW = $(window).width();
-    var winH = $(window).height();
-
-    var dialogMargin = 180;
-
-    // set up dialog box for "About" link (code based on http://jsfiddle.net/kwalser/ymssceqv/)
-    $("#dialog").dialog({
-        autoOpen: false,
-        autoResize: true,
-        modal: true,
-        title: "About",
-        height: winH - dialogMargin,
-        width: winW - dialogMargin
-    })
-    // change title bar close button icon
-    // (code based on https://stackoverflow.com/a/21337337/7194743 and https://stackoverflow.com/a/7910817/7194743)
-    .prev(".ui-dialog-titlebar")
-    .find(".ui-button-icon")
-    .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
-
-    // enable dialogue for "About" link (code based on https://stackoverflow.com/a/964507/7194743)
-    $('#about').click(function() {
-        $("#dialog").dialog("open");
-    });
+    // set up dialog boxes for "About" and "Contact" links
+    setUpDialog("#about", "#dialog_about")
+    setUpDialog("#contact", "#dialog_contact")
 
     // configure typeahead
     function typeAhead() {
@@ -118,6 +96,29 @@ function resetDisplay(divClass1, divClass2=null) {
     $("." + divClass2).empty();
     $("." + divClass1).removeAttr("style");
     $("." + divClass2).removeAttr("style");    
+}
+
+function setUpDialog(linkId, dialogId) {
+    // set up dialog box for link (code based on http://jsfiddle.net/kwalser/ymssceqv/)
+    $(dialogId).dialog({
+        autoOpen: false,
+        autoResize: true,
+        modal: true,
+        title: "About",
+        height: "auto", // code from https://stackoverflow.com/a/764857/7194743
+        width: "auto"
+        // If width and height are to be specified, see https://stackoverflow.com/a/12537610/7194743
+    })
+    // change title bar close button icon
+    // (code based on https://stackoverflow.com/a/21337337/7194743 and https://stackoverflow.com/a/7910817/7194743)
+    .prev(".ui-dialog-titlebar")
+    .find(".ui-button-icon")
+    .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
+
+    // enable dialogue for link (code based on https://stackoverflow.com/a/964507/7194743)
+    $(linkId).click(function() {
+        $(dialogId).dialog("open");
+    });    
 }
 
 function dataFetchProblem(data) {

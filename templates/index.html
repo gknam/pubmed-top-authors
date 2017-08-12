@@ -41,11 +41,11 @@
 </head>
 
 <body>
-    <div id="dialog" style="display: none">
+    <div id="dialog_about" style="display: none">
         <h2>Overview</h2>
         <h4>
             <p>
-                When a user types in a key word (or key words), this website finds relevant articles in Pubmed. Records of maximum 100,000 articles published within the last 5 years are fetched.
+                When a user types in a key word (or key words), this website finds relevant publications in Pubmed. Records of maximum 100,000 publications published within the last 5 years are fetched.
             </p>
             <p>
                 Then, 5 <b>authors</b> with most publications are displayed. Clicking each author will display 
@@ -57,23 +57,38 @@
             Data
         </h2>
         <h4>
-            <!-- jQuery UI put autofocus on first link in the dialog. This <p> element prevents it. -->
-            <p autofocus></p>
-            This website accesses Pubmed database at the National Center for Biotechnology Information (NCBI) using its "E-utilities</a>" (particularly "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_" target="_blank">ESearch</a>" and "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_" target="_blank">EFetch</a>"). NCBI's Disclaimer and Copyright notice can be found <a href="https://www.ncbi.nlm.nih.gov/home/about/policies/" target="_blank">here</a>.
+            <p autofocus> <!-- jQuery UI put autofocus on first link in the dialog. So, the autofocus has been moved to this <p> element to prevent it. -->
+                This website accesses Pubmed database at the National Center for Biotechnology Information (NCBI) using its "E-utilities</a>" (particularly "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_" target="_blank">ESearch</a>" and "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_" target="_blank">EFetch</a>"). NCBI's Disclaimer and Copyright notice can be found <a href="https://www.ncbi.nlm.nih.gov/home/about/policies/" target="_blank">here</a>.
+            </p>
+            Publications are excluded if they ...
+            <br>
+            <ul>
+                <li>have been retracted,</li>
+                <li>are retraction notifications for other publications,</li>
+                <li>are correction notifications,</li>
+                <li>are supplementary materials for other publications, or</li>
+                <li>have been replaced by later versions.</li>
+            </ul>
         </h4>
         <br>
         <h2>Limitations</h2>
         <h4>
-            <li>Different authors with same names are considered the same author because Pubmed does not provide author ID.</li>
-            <li>Dash-like characters in author names will be replaced with space. This is to enforce consistency in cases of the same author name inconsistently having the dash-like characters.</li>
+            <ul>
+                <li>Different authors with same names are considered the same author because Pubmed does not provide author ID.</li>
+                <li>Dash-like characters in author names will be replaced with space. This is to enforce consistency in case the same author inconsistently has the dash-like characters in his/her name.</li>
+            </ul>
         </h4>
+    </div>
+    <div id="dialog_contact" style="display: none">
+        <a href="mailto:simon_nam@hotmail.com">simon_nam@hotmail.com</a>
     </div>
     <div>
         <p id="title">Find Pubmed's 5 authors with most publications</p>
         <p id="sub_title">from up to 100,000 articles published in the last 5 years</p>
         <div class="extra">
             <a href="#" onclick="return false;" id="about">About</a>&nbsp&nbsp
-            <a href="https://github.com/gknam" target="_blank">See code</a>&nbsp&nbsp&nbsp&nbsp
+            <a href="https://github.com/gknam" target="_blank">Code</a>&nbsp&nbsp
+            <a href="#" onclick="return false;" id="contact">Contact</a>&nbsp&nbsp&nbsp&nbsp
         </div>
     </div>
     <!-- http://getbootstrap.com/css/#forms -->

@@ -126,8 +126,18 @@ svg {
 /*code from https://stackoverflow.com/a/1638824/7194743 */
 #dialog { 
    word-wrap: break-word;
+   line-height: 150%;
 }
 
 a {
    color: #2A5DB0 !important;
+}
+
+li {
+    margin-top: 3px;
+    margin-bottom: : 3px;
+}
+
+ul {
+    list-style-position: outside;    
 }
