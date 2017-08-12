@@ -111,12 +111,12 @@ def getFullRecs(pmids):
                     record = [[], [], []]                    
 
                     # ↓↓↓ check if article should be excluded: begin ↓↓↓ #
-
-                    rt_discardCurrent = {"ErratumIn", "PartialRetractionIn", "ReprintIn", \
+                    rt_discardCurrent = {"ErratumFor", "PartialRetractionOf", "ReprintIn", \
                                     "RepublishedIn", "OriginalReportIn", "RetractionIn", \
                                     "RetractionOf"}
-                    
-                    pt_discardCurrent = {"Retracted Publication",  "Retraction of Publication"}
+
+                    pt_discardCurrent = {"Retracted Publication",  "Retraction of Publication", \
+                                         "Published Erratum"}
                     
                     cc_list = elem.findall('.//CommentsCorrectionsList/CommentsCorrections')
                     pt_list = elem.findall('.//PublicationTypeList/PublicationType')
