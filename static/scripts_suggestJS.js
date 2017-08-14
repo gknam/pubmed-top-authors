@@ -2,8 +2,8 @@
 $(function() {
 
     // set up dialog boxes for "About" and "Contact" links
-    setUpDialog("#about", "#dialog_about")
-    setUpDialog("#contact", "#dialog_contact")
+    setUpDialog("#about", "#dialog_about", "About")
+    setUpDialog("#contact", "#dialog_contact", "Contact")
 
     // configure typeahead
     function typeAhead() {
@@ -98,17 +98,13 @@ function resetDisplay(divClass1, divClass2=null) {
     $("." + divClass2).removeAttr("style");    
 }
 
-function setUpDialog(linkId, dialogId) {
+function setUpDialog(linkId, dialogId, dialogTitle) {
     // set up dialog box for link (code based on http://jsfiddle.net/kwalser/ymssceqv/)
     $(dialogId).dialog({
         autoOpen: false,
         autoResize: true,
         modal: true,
-        title: function () {
-            // code from https://stackoverflow.com/a/3923031/7194743 and https://stackoverflow.com/a/1026087/7194743
-            linkId_ommitHash = linkId.substring(1)
-            return linkId_ommitHash.charAt(0).toUpperCase() + linkId_ommitHash.slice(1);
-        },
+        title: dialogTitle,
         height: "auto", // code from https://stackoverflow.com/a/764857/7194743
         width: "auto"
         // If width and height are to be specified, see https://stackoverflow.com/a/12537610/7194743
