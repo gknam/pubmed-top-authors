@@ -104,7 +104,11 @@ function setUpDialog(linkId, dialogId) {
         autoOpen: false,
         autoResize: true,
         modal: true,
-        title: "About",
+        title: function () {
+            // code from https://stackoverflow.com/a/3923031/7194743 and https://stackoverflow.com/a/1026087/7194743
+            linkId_ommitHash = linkId.substring(1)
+            return linkId_ommitHash.charAt(0).toUpperCase() + linkId_ommitHash.slice(1);
+        },
         height: "auto", // code from https://stackoverflow.com/a/764857/7194743
         width: "auto"
         // If width and height are to be specified, see https://stackoverflow.com/a/12537610/7194743
