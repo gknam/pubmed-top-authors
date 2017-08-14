@@ -52,17 +52,9 @@ body {
     font-size: 30px;
 }
 
-#sub_title {
+#sub_title, .extra {
     font-size: 20px;
 }
-
-.extra {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    font-size: 20px;
-}
-
 
 /* stylize typeahead.js a la http://twitter.github.io/typeahead.js/css/examples.css */
 
