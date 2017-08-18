@@ -63,6 +63,9 @@ $(function() {
 
 });
 
+// to be set in "chartDim" function
+var wToSratio;
+var svgMaxWidth;
 
 // load GIF image to display after submitting keyword
 var loadingGif = new Image();
@@ -84,6 +87,54 @@ var topText2 = "date range too big";
 var bottomText2 = "try_smaller";
 apology2.src = "https://memegen.link/custom/" + topText2 + "/" + bottomText2 + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
 
+
+function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
+    // change all SVGs unless one is specified
+    var svgToAdjust = 'svg';
+
+    if (svgClass != null) {
+        var svgToAdjust = svgClass;
+    }
+
+    // note new viewBox values
+    var vbArray_new = [];
+
+    for (var i = 0; i < 4; i++) {
+        vbArray_new.push(arguments[i]);
+    }
+
+    // console.log("arguments[0] = " + arguments[0]);
+    // console.log("arguments[1] = " + arguments[1]);
+    // console.log("arguments[2] = " + arguments[2]);
+    // console.log("arguments[3] = " + arguments[3]);
+    // console.log("arguments[4] = " + arguments[4]);
+    // console.log("vb_xMin: " + vb_xMin);
+    // console.log("vb_YMin: " + vb_YMin);
+    // console.log("vb_width: " + vb_width);
+    // console.log("vb_height: " + vb_height);
+    // console.log("svgClass: " + svgClass);
+
+    // code from https://stackoverflow.com/a/24913841/7194743
+    $(svgToAdjust).each(function () {
+        // code from https://stackoverflow.com/a/7682976/7194743
+        // get viewBox values
+        var vb = $(this)[0].getAttribute('viewBox');
+        var vbArray_current = vb.split(/\s+|,/);
+
+        // change viewBox values if new values have been given as input
+        for (var i in vbArray_current) {
+            if (vbArray_new[i] != null) {
+                // console.log("arguments[" + i + "]: " + arguments[i]);
+                // console.log("arguments[" + i + "] = " + arguments[i]);
+                vbArray_current[i] = vbArray_new[i].toString();
+            }
+        }
+        new_vb = vbArray_current.join(' ');
+
+        $(this).removeAttr('viewBox');
+        $(this)[0].setAttribute('viewBox', new_vb);
+    });
+}
 
 function displayGif(divClass1, loadingGif) {
     $("." + divClass1).css("justify-content", "center");
@@ -409,44 +460,74 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     pl1Dim = chartDim(pl1Svg, auCount, null, allStrLenMax);
     drawBarChart(pl1Svg, pl1, "pl1Chart", barId = true, pl1Dim, "visible", "barChartAxis", term);
 
+    // change SVG viewBox width (which is currently 0)
+    changeSvgViewboxDim(null, null, vb_width = svgMaxWidth, null, null);
+    console.log(svgMaxWidth);
+
     function insertSVG(svgClass, divClass, divTitle = null) {
         return d3.select('.' + divClass)
                 .append("svg")
                 .attr("class", svgClass)
                 .attr("shape-rendering", "auto")
-                .attr("width", 1400)
-                .attr("height", 0); // will be adjusted in chartDim
+                .attr("width", "100%")
+                .attr("height", "100%") // will be adjusted in chartDim
+                .attr("viewBox", "0 0 0 0")
+                .attr("preserveAspectRatio", "xMinYMin");
     }
 
     function chartDim(svgElement, dataCount, dataValuesCount, dataStrLengthMax) {
+
+        // get SVG's dimensions.
+        // When SVG's width is set at "100%", the '.attr("width")' method returns "100%" whereas '.width()' returns the actual value.
+        // Unfortunately, "svgElement.width()" does not work because it is a "DOM element not a jquery object" according to https://stackoverflow.com/a/34594058/7194743
+        // The solution from the same web page is to use "each", as shown below.
+        var svgElementWidth;
+        var svgElementHeight;
+
+        svgElement.each(function () {
+            svgElementWidth = $(this).width();
+        });
+
+
+        svgElement.each(function () {
+            svgElementHeight = $(this).height();
+        });
+
+
+        // windowWidth: screenWidth ratio for scaling down
+        wToSratio = $(window).width() / screen.width;
 
         // SVG heights for plots 1 and 3 (made by "drawBarChart") depends on data (numbers of authors and journals)
         var svgHeight_temp = dataCount * 40;
 
         var marginTop_temp = dataCount;
         var marginBottom_temp = marginTop_temp;
-        var height_temp = svgHeight_temp - marginTop_temp - marginBottom_temp;
+        var height_temp = (svgHeight_temp - marginTop_temp - marginBottom_temp) * wToSratio;
         var barHeight = ((height_temp / dataCount) * 0.7 <= 35) ? (height_temp / dataCount) * 0.7 : 35;
         var fontSize = barHeight * 0.75;
         var barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
         var marginLeft = dataStrLengthMax * fontSize / 3.5 + fontSize;
         var marginRight = fontSize;
-        var width = svgElement.attr("width") - marginLeft - marginRight;
+        var width = svgElementWidth - marginLeft - marginRight;
 
         // ensure top and bottom margins are big enough for text
         var marginTop = fontSize * 2;
         var marginBottom = marginTop;
-        var height = svgHeight_temp - marginTop - marginBottom;
+        
+        // plot height
+        var height = (barHeight + barPadding) * dataCount;
 
         // update height-related parameters
-        var svgHeight_current = svgElement.attr("height");
+        var svgHeight_current = (svgElementHeight) * wToSratio;
+        var svgHeight_new;
 
         if (dataValuesCount == null) { // for plot 3
 
             // set SVG height, ensuring it accommodates biggest chart
-            if (svgHeight_current < svgHeight_temp + marginTop + marginBottom) {
-                svgElement.attr("height", svgHeight_temp + marginTop + marginBottom);
-            }
+            svgHeight_new = height + marginTop + marginBottom;
+            // console.log(svgElement.attr("class") + ": " + svgHeight_current + ", " + svgHeight_new);
+            var svgHeight_chosen = svgHeight_current > svgHeight_new ? svgHeight_current : svgHeight_new;
+            console.log("svgHeight_current: " + (svgHeight_current * wToSratio) + "; svgHeight_new: " + (svgHeight_new * wToSratio));
 
             // if (svgElement.attr("class") == "author") {
             //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
@@ -458,25 +539,26 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             // }            
         }
         else { // for plot 2's line graph
+            // console.log(svgElement.attr("class") + ": " + "testNotNull");
             // set SVG height for first graph
-            var svgHeight_temp2 = 100 + dataValuesCount * 10 + marginTop + marginBottom;
-            svgElement.attr("height", svgHeight_temp2);
+            var svgHeight_temp2 = dataValuesCount * 50 + marginTop + marginBottom;
 
             // update height-related parameters again
             marginTop_temp = dataValuesCount * 5;
-            marginBottom_temp = marginTop_temp * 10;
-            height_temp = svgElement.attr("height") - marginTop_temp - marginBottom_temp;
+            marginBottom_temp = marginTop_temp;
+            height_temp = (svgHeight_temp2 - marginTop - marginBottom) * wToSratio;
             barHeight = ((height_temp / dataValuesCount) * 0.7 <= 35) ? (height_temp / dataValuesCount) * 0.7 : 35;
             barPadding = barHeight * 0.1; // this corresponds to 0.9 specified in barHeight.
 
-            // ensure top and bottom margins are big enough for text
-            height = svgElement.attr("height") - marginTop - marginBottom;
+            // plot height
+            height = (barHeight + barPadding) * dataValuesCount;
 
             // update SVG height so that it accommodates biggest chart
-            if (svgHeight_current > svgHeight_temp2) {
-                svgElement.attr("height", svgHeight_current);
-            }
+            svgHeight_new = height + marginTop + marginBottom * 3;
+            var svgHeight_chosen = svgHeight_current > svgHeight_new ? svgHeight_current : svgHeight_new;
         }
+        svgMaxWidth = $("body").prop("clientWidth"); // code from https://stackoverflow.com/a/8340177
+        svgElement.attr("viewBox", "0 0 0 " + (svgHeight_chosen));
 
         // svgElement.attr("height", function() {
         //     if (dataValuesCount == null) {
