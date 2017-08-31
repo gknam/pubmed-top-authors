@@ -114,11 +114,13 @@ svg {
     background-color: #F9A7AE;
 }
 
-/*Use this in a rare case of a word length exceeding dialog width.*/
-/*code from https://stackoverflow.com/a/1638824/7194743 */
-#dialog { 
-   word-wrap: break-word;
+#dialog_about { 
    line-height: 150%;
+
+    /*this is for a rare case of a word length exceeding dialog width.*/
+    /*code from https://stackoverflow.com/a/10743974/7194743*/
+   display: inline-block;
+   word-break: break-word;
 }
 
 a {

@@ -1,3 +1,4 @@
+import re
 import sys
 import collections
 import unicodedata
@@ -10,7 +11,7 @@ def getXmlIterTreeAndRoot(f):
     f is a file object for XML.
     Creates an iterator object for XML, iterates until root element is found,
     then returns the iterator object (xmlIterTree) and root.
-    
+
     Root element is acquired for memory management purpose. While iterating
     through xmlIterTree, root element will be cleared every time an element's
     end is reached. Otherwises memory usage keeps increasing
@@ -24,7 +25,7 @@ def getXmlIterTreeAndRoot(f):
         if event == 'start':
             root = elem
             break
-    
+
     return xmlIterTree, root
 
 def getPmids(term):
@@ -32,13 +33,13 @@ def getPmids(term):
 
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 500000
-    
+    retmax = 5000
+
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
     # if retstart is 10, first 10 articles in the stack are ignored.
     retstart = 0
-    
+
     # number of articles to fetch
     # https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
     oneYear = 365.2422
@@ -47,23 +48,23 @@ def getPmids(term):
 
     pmids = []
     while retstart < retmax:
-        
+
         retmax_part = retmax if retmax <=retmax_limit else retmax_limit
-        
+
         # retrieve PMIDs
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
         feed = urllib.request.urlopen(url)
         obj = json.loads(feed.read().decode("utf-8"))
-    
+
         # note PMIDs
         pmids_part = []
         for pmid_part in obj["esearchresult"]["idlist"]:
             pmids_part.append(pmid_part)
         pmids = pmids + pmids_part
-        
+
         if len(pmids_part) < retmax_limit:
             break
-        
+
         retstart += retmax_limit
 
     # return results
@@ -71,24 +72,36 @@ def getPmids(term):
 
 def getFullRecs(pmids):
     """ Get full records from PMID """
-    
+
     # get records from Pubmed
-    record = [[], [], []]
+    # record[0]: author (essential info)
+    # record[1]: allAuthors
+    # record[2]: year (essential info)
+    # record[3]: aTitle
+    # record[4]: journal (essential info)
+    # record[5]: journalNonAbbr
+    # record[6]: journalVol
+    # record[7]: journalIss
+    # record[8]: pageNum
+    # record[9]: pmidLink
+    # record[10]: doiLink
+
+    record = [[], [], [], [], [], [], [], [], [], [], []]
     records = {}
-    
+
     if not pmids:
         return {}
-    
+
     pmids = ','.join(pmids)
-    
+
     xml = "/home/gknam/Desktop/pubmed.xml"
     open(xml, "w").close()
-    
+
     # get records from Pubmed
     # note: To minimise use of memory, the requested XML will be saved as file
     # and each element will be accessed iteratively (instead of directly
     # loading the whole XML into memory)
-    
+
     # 1. using GET method
     try:
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
@@ -98,31 +111,33 @@ def getFullRecs(pmids):
         ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
         urllib.request.urlretrieve(url, filename=xml, data=ids)
-    
+
+    # for checking articles to exclude
+    rt_discardCurrent = {"ErratumFor", "PartialRetractionOf", "ReprintIn", \
+                    "RepublishedIn", "OriginalReportIn", "RetractionIn", \
+                    "RetractionOf"}
+
+    pt_discardCurrent = {"Retracted Publication",  "Retraction of Publication", \
+                         "Published Erratum"}
+
     with open(xml, "r") as f:
         # read in XMl and get root
         xmlIterTree, root = getXmlIterTreeAndRoot(f)
-    
+
         # note key info for each article
         for event, elem in xmlIterTree:
             if event == 'end':
                 if elem.tag == "MedlineCitation":
                     # reset record
-                    record = [[], [], []]                    
+                    record = [[], [], [], [], [], [], [], [], [], [], []]
 
-                    # ↓↓↓ check if article should be excluded: begin ↓↓↓ #
-                    rt_discardCurrent = {"ErratumFor", "PartialRetractionOf", "ReprintIn", \
-                                    "RepublishedIn", "OriginalReportIn", "RetractionIn", \
-                                    "RetractionOf"}
+                    # ↓↓↓ skip article if it should be excluded: begin ↓↓↓ #
 
-                    pt_discardCurrent = {"Retracted Publication",  "Retraction of Publication", \
-                                         "Published Erratum"}
-                    
                     cc_list = elem.findall('.//CommentsCorrectionsList/CommentsCorrections')
                     pt_list = elem.findall('.//PublicationTypeList/PublicationType')
-                    
+
                     skipArticle = False
-                    
+
                     # check "CommentsCorrections" element
                     for cc in cc_list:
                         rt = cc.get("RefType")
@@ -136,78 +151,251 @@ def getFullRecs(pmids):
                     # check "PublicationType" element
                     for ptElement in pt_list:
                         pt = ptElement.text
-                        
+
                         # article has been retracted or is a retraction notification
                         if pt in pt_discardCurrent:
                             skipArticle = True
-                    
+
                     if skipArticle:
                         continue
 
-                    # ↑↑↑ check if article should be excluded: end ↑↑↑ #
-                    
-                    # note author
+                    # ↑↑↑ skip article if it should be excluded: end ↑↑↑ #
+
+                    # 1. get essential info
+                    # note authors
+                    fname = ''
+                    lname = ''
+                    initials = ''
+                    author = ''
+                    allAuthors = ''
                     try:
-                        for author in elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]'): # 
-                            author = toASCII(author.find("LastName").text + ', ' + author.find("ForeName").text)
-                            type(author) # will crash if if <AuthorList> is missing (which is true for anonymous articles)
+                        authorsInfo = elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]')
+                        for i in range(len(authorsInfo)):
+                            au = authorsInfo[i]
+                            
+                            lname = toASCII(au.find("LastName").text)
+                            fname = toASCII(au.find("ForeName").text)
+                            author = lname + ', ' + fname
                             record[0].append(author)
+
+                            # this is extra info (i.e. not essential)
+                            try:
+                                initials = toASCII(' '.join([i + '.' for i in au.find("Initials").text]))
+                            except:
+                                initials = toASCII(' '.join([i[0] + '.' for i in fname.split()]))
+                            
+                            try:
+                                authorsInfo_len = len(authorsInfo)
+                                # when there are multiple authors
+                                if authorsInfo_len > 1:
+                                    allAuthors += '& ' + lname + ', ' + initials + ' ' \
+                                        if i == authorsInfo_len - 1 \
+                                        else lname + ', ' + initials + ', '
+                                # when there is one author
+                                else:
+                                    allAuthors = lname + ', ' + initials + ' '
+                            except:
+                                pass
+                    except:
+                        pass
+                    
+                    if not author:
+                        continue
+                    
+                    try:
+                        record[1].append(allAuthors)
+                    except:
+                        pass
+
+                    # note publication year
+                    year = ''
+                    for pd in elem.findall('.//Article/Journal/JournalIssue/PubDate'):
+                        try:
+                            year = pd.find("Year").text
+                        except:
+                            try:
+                                medlineDate = pd.find("MedlineDate").text
+                                try:
+                                    year = str(int(medlineDate[:4]))
+                                # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
+                                except:
+                                    try:
+                                        year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                                    except:
+                                        continue
+                            except:
+                                continue
+
+                        record[2].append(year)
+
+                    if not year:
+                        continue
+
+                    # note journal title
+                    journal = ''
+                    try:
+                        for jAbbr in elem.findall('MedlineJournalInfo/MedlineTA'):
+    
+                            try:
+                                journal = toASCII(jAbbr.text)
+                            except:
+                                continue
+    
+                            record[4].append(journal)
                     except:
                         continue
 
-                    # note publication year
-                    for year in elem.findall('.//Article/Journal/JournalIssue/PubDate'):
+                    if not journal:
+                        continue
+
+                    # 2. get extra info
+
+                    # 2.1 get pubmed link
+                    pmid = ''
+                    pmidLink = ''
+                    try:
+                        pmid = elem.find('PMID').text
+                    except:
+                        pass
+
+                    if pmid:
+                        pmidLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + pmid
+                        record[9].append(pmidLink)
+
+                    # 2.2 get article title, journal's non-abbreviated title,
+                    # volume, issue, page numbers and DOI link
+                    aTitle = ''
+                    journalNonAbbr = ''
+                    journalVol = ''
+                    journalIss = ''
+                    doiLink = ''
+
+                    for a in elem.findall('.//Article'):
+
+                        # doi link
+                        doi = ''
+                        doiLink = ''
                         try:
-                            year = year.find("Year").text
+                            doi = a.find('ELocationID[@EIdType="doi"][@ValidYN="Y"]').text
                         except:
-                            medlineDate = year.find("MedlineDate").text
+                            pass
+
+                        if doi:
+                            doiLink = "http://dx.doi.org/" + doi
+                            record[10].append(doiLink)
+                        
+                        # article title
+                        try:
+                            aTitle = toASCII(a.find('ArticleTitle').text)
+                        except:
+                            pass
+
+                        # If aTitle is None, revert it back to ''
+                        if aTitle == None:
+                            aTitle = ''
+
+                        record[3].append(aTitle)
+                        
+                        # journal info , volume and issue
+                        for j in a.findall('Journal'):
+
+                            # non-abbreviated title
                             try:
-                                year = str(int(medlineDate[:4]))
-                            # extract 4-digit number (code from https://stackoverflow.com/a/4289557)
+                                journalNonAbbr = toASCII(j.find('Title').text)
                             except:
+                                journalNonAbbr = journal
+                            if journalNonAbbr == None:
+                                journalNonAbbr = ''
+                                
+                            record[5].append(journalNonAbbr)
+
+                            for ji in j.findall('JournalIssue'):
+                                # volume
                                 try:
-                                    year = str([int(s) for s in medlineDate.split() if s.isdigit() and len(s) == 4][0])
+                                    journalVol = ji.find('Volume').text
                                 except:
-                                    continue
-                            
-                        record[1].append(year)
-                            
-                    # note journal title
-                    for journal in elem.findall('MedlineJournalInfo/MedlineTA'):
-                        
+                                    pass
+
+                                if journalVol == None:
+                                    journalVol = ''
+                                
+                                record[6].append(journalVol)
+
+                                # issue
+                                try:
+                                    journalIss = ji.find('Issue').text
+                                except:
+                                    pass
+
+                                if journalIss == None:
+                                    journalIss = ''
+                                
+                                record[7].append(journalIss)
+                                
+                        # page numbers
+                        pageNum = ''
                         try:
-                            journal = toASCII(journal.text)
+                            pageNum = a.find('Pagination/MedlinePgn').text
                         except:
-                            continue
+                            pass
                         
-                        record[2].append(journal)
-                
+                        if pageNum == None:
+                            pageNum = ''
+                        
+                        record[8].append(pageNum)
+                    
                     # add key info to records
                     # make sure there is no empty field
                     if [] not in record:
                         # add record to records
                         for author in record[0]:
+
+                            # put together full reference info
+                            ref = []
                             
+                            for i in range(len(record)):
+                                if i in {0, 4}:
+                                    continue
+                                ref.append(record[i][0])
+
                             # author
                             if author not in records:
                                 records[author] = [{"total": 1}, {"journals": {}}, {"years": {}}]
                             else:
                                 records[author][0]["total"] += 1
-                            
+
                             # journal title (code from http://stackoverflow.com/a/14790997)
                             if not any(journal == d for d in records[author][1]["journals"]):
-                                records[author][1]["journals"][journal] = 1
+                                records[author][1]["journals"][journal] = [1, [ref]]
                             else:
-                                records[author][1]["journals"][journal] += 1
-                
+                                journalRec = records[author][1]["journals"][journal]
+                                journalRec[0] += 1
+                                journalRec[1].append(ref)
+
                             # publication year (code from http://stackoverflow.com/a/14790997)
                             if not any(year in d for d in records[author][2]["years"]):
-                                records[author][2]["years"][year] = 1
+                                records[author][2]["years"][year] = [1, [ref]]
                             else:
-                                records[author][2]["years"][year] += 1
-                        
+                                yearRec = records[author][2]["years"][year]
+                                yearRec[0] += 1
+                                yearRec[1].append(ref)
+
                     elem.clear()
                 root.clear()
+    
+    # sort reference info
+    for author in records:
+        # sort ref for journals by year, then authors
+        # (code from https://stackoverflow.com/a/4233482/7194743)
+        for j in records[author][1]["journals"]:
+            jRec = records[author][1]["journals"][j]
+            refSorted = sorted(jRec[1], key = lambda x: (x[1], x[0]))
+            jRec[1] = refSorted
+        # sort ref for years by year, then authors
+        for y in records[author][2]["years"]:
+            yRec = records[author][2]["years"][y]
+            refSorted = sorted(yRec[1], key = lambda x: (x[1], x[0]))
+            yRec[1] = refSorted
 
     records = collections.OrderedDict(sorted(records.items()))
 
@@ -215,13 +403,13 @@ def getFullRecs(pmids):
 
 def topAuthorsRecs(records):
     """ get records of authors with most publication """
-    
+
     # max plot dimensions (for equalising plot dimensions in the browser)
     # "scripts_suggestJS.js" file --> "chartDim" function --> "dataCount" variable
     authorCountMax = 5 # number of top authors to find
     journalCountMax = 0
     yearCountMax = 0
-    # "scripts_suggestJS.js" file --> "chartDim" function --> "dataStrLengthMax" variable    
+    # "scripts_suggestJS.js" file --> "chartDim" function --> "dataStrLengthMax" variable
     authorStrLenMax = 0
     journalStrLenMax = 0
     yearStrLenMax = 0
@@ -251,7 +439,7 @@ def topAuthorsRecs(records):
                 break
 
     topAuthorsRecs = collections.OrderedDict(sorted(topAuthorsRecs.items()))
-    
+
     # sort the top authors' records
     for total, recs in topAuthorsRecs.items():
         for rec in range(len(recs)):
@@ -264,9 +452,9 @@ def topAuthorsRecs(records):
                 # then by values (code from https://goo.gl/1ikwL0)
                 # another way is to convert dict to sorted list of tuples
                 # (http://stackoverflow.com/a/613218)
-                journals = collections.OrderedDict(sorted(journals.items(), key=lambda t: t[1]))
+                journals = collections.OrderedDict(sorted(journals.items(), key=lambda t: t[1][0]))
                 topAuthorsRecs[total][rec][author][1]["journals"] = journals
-                
+
                 # sort publication year records
                 years = topAuthorsRecs[total][rec][author][2]["years"]
                 # by keys
@@ -289,13 +477,13 @@ def topAuthorsRecs(records):
                                 yearS = dict(yearsFillGap)
                                 topAuthorsRecs[total][rec][author][2]["years"] = yearS
                         startYr = endYr
-                
+
                 # max records of journals and years
                 if len(journals) > journalCountMax:
                     journalCountMax = len(journals)
                 if len(years) > yearCountMax:
                     yearCountMax = len(years)
-                    
+
                 # max string lengths of author names, journal names and years
                 if len(author) > authorStrLenMax:
                     authorStrLenMax = len(author)
@@ -303,11 +491,11 @@ def topAuthorsRecs(records):
                     journalStrLenMax = max(map(len, journals))
                 if max(map(len, years)) > yearStrLenMax:
                     yearStrLenMax = max(map(len, years))
-    
+
     # add info for max plot dimensions
     topAuthorsRecs.update({"dataCount": {"authorCountMax": authorCountMax, "journalCountMax": journalCountMax, "yearCountMax": yearCountMax}})
     topAuthorsRecs.update({"dataStrLengthMax": {"authorStrLenMax": authorStrLenMax, "journalStrLenMax": journalStrLenMax, "yearStrLenMax": yearStrLenMax}})
-    
+
     return topAuthorsRecs
 
 
@@ -315,19 +503,19 @@ def toASCII(s):
     """
     Converts extended-ASCII character to regular ASCIIi character
     (e.g. ä --> a)
-    
+
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
-    https://stackoverflow.com/a/518232    
+    https://stackoverflow.com/a/518232
     """
-    
+
     # if all chracters are regular ASCII, return original string
     if all(ord(c) < 128 for c in s):
         return s
-    
+
     # otherwise, decode with unidecode
     d = unidecode(s)
-    
+
     return d
 
 
@@ -341,20 +529,20 @@ def toASCII(s):
     """
     Converts extended-ASCII character to regular ASCIIi character
     (e.g. ä --> a)
-    
+
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
-    https://stackoverflow.com/a/518232    
+    https://stackoverflow.com/a/518232
     """
-    
+
     # if all chracters are regular ASCII, return original string
     if all(ord(c) < 128 for c in s):
         return s
-    
+
     # otherwise, decode with unidecode
     sList = list(s)
     dList = []
-    
+
     for i in range(len(sList)):
         unidec = unidecode(sList[i])
         if unidec != '':
@@ -364,8 +552,8 @@ def toASCII(s):
         else:
             for dec in unicodedata.normalize('NFD', sList[i]):
                 if unicodedata.category(dec) != 'Mn':
-                    dList.append(dec)            
-            
+                    dList.append(dec)
+
     d = ''.join(dList)
 
     return d

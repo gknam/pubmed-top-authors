@@ -37,8 +37,9 @@ $(function() {
             typeAhead();
             $("#q").focus(); // place cursor in textbox
             $("svg").remove();
-            resetDisplay("authorDiv", "yearJournalDiv");
-            displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
+            $("." + barDialog_div).remove();
+            resetDisplay(pl1Svg_div, pl23Svg_div);
+            displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
             records(suggestion);
 
         });
@@ -49,11 +50,12 @@ $(function() {
             suggestion = { "term": this.q.value };
             $("form").trigger("reset");
             $("svg").remove();
+            $("." + barDialog_div).remove();
             typeAhead();
             $("#q").focus();
             e.preventDefault();
-            resetDisplay("authorDiv", "yearJournalDiv");
-            displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
+            resetDisplay(pl1Svg_div, pl23Svg_div);
+            displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
             records(suggestion);
         });
     }
@@ -62,6 +64,15 @@ $(function() {
     fetch();
 
 });
+
+// classes for SVGs and DIVs
+var pl1Svg_class = "author";
+var pl2Svg_class = "year";
+var pl3Svg_class = "journal";
+
+var pl1Svg_div = "authorDiv";
+var pl23Svg_div = "yearJournalDiv";
+var barDialog_div = "dialog_bar"
 
 // to be set in "chartDim" function
 var wToSratio;
@@ -143,10 +154,10 @@ function displayGif(divClass1, loadingGif) {
 }
 
 function resetDisplay(divClass1, divClass2=null) {
-    $("." + divClass1).empty();
-    $("." + divClass2).empty();
-    $("." + divClass1).removeAttr("style");
-    $("." + divClass2).removeAttr("style");    
+    for (i of arguments) {
+        $("." + i).empty();
+        $("." + i).removeAttr("style");
+    }
 }
 
 function setUpDialog(linkId, dialogId, dialogTitle) {
@@ -167,9 +178,11 @@ function setUpDialog(linkId, dialogId, dialogTitle) {
     .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
 
     // enable dialogue for link (code based on https://stackoverflow.com/a/964507/7194743)
-    $(linkId).click(function() {
-        $(dialogId).dialog("open");
-    });    
+    if (linkId) {
+        $(linkId).click(function() {
+            $(dialogId).dialog("open");
+        });
+    }
 }
 
 function dataFetchProblem(data) {
@@ -178,7 +191,7 @@ function dataFetchProblem(data) {
     data_keys.splice(dc_i, 1);
     var dslm_i = data_keys.indexOf("dataStrLengthMax");
     data_keys.splice(dslm_i, 1);
-    console.log(data)
+    // console.log(data);
 
     var apology;
 
@@ -259,14 +272,14 @@ function records(suggestion) {
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
             // See "Note 5" at the bottom
-            resetDisplay("authorDiv");
+            resetDisplay(pl1Svg_div);
 
             // prepare apology if records fetch has failed
             apology = dataFetchProblem(data);
 
             // display apology message if there was a problem fetching data
             if (apology) {
-                apologise("authorDiv", "yearJournalDiv", suggestion.term, apology);
+                apologise(pl1Svg_div, pl23Svg_div, suggestion.term, apology);
             }
             
             // otherwise, draw plots
@@ -291,13 +304,19 @@ function NSuggest_CreateData(q, matches, count) {
     return matches_dic;
 }
 
+function swapNamePositions (plotData) {
+    var lName = plotData.au.split(", ")[0];
+    var fName = plotData.au.split(", ")[1];
+    return fName + " " + lName;
+}
+
 
 function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // Create SVG element
-    var pl1Svg = insertSVG("author", "authorDiv");
-    var pl2Svg = insertSVG("year", "yearJournalDiv");
-    var pl3Svg = insertSVG("journal", "yearJournalDiv");
+    var pl1Svg = insertSVG(pl1Svg_class, pl1Svg_div);
+    var pl2Svg = insertSVG(pl2Svg_class, pl23Svg_div);
+    var pl3Svg = insertSVG(pl3Svg_class, pl23Svg_div);
 
     // dimension for chart within SVG
     var pl1Dim;
@@ -338,9 +357,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     var yearStrLengthMax = 0;
     var journalStrLengthMax = 0;
 
-    var auIdList = [];
-
-
     // get max string length among author names, journal names and years
     // this will be the left margin of all plots
     var authorStrLenMax = data.dataStrLengthMax.authorStrLenMax;
@@ -356,7 +372,9 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
 
     // process data and draw plots 2 and 3
-    // each publication
+    // each author
+    var auIdList = [];
+
     for (var i in data) {
 
         // skip max plot dimensions info
@@ -364,11 +382,12 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
         // process publication records
         else {
-            // authors
+            
             for (var j of data[i]) {
 
                 // each author
                 for (var au in j) {
+
                     // plot 1
                     var auPubs = parseInt(j[au][0]["total"]);
                     pl1.push({
@@ -382,23 +401,33 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                         auStrLengthMax = au.length;
                     }
 
-                    // for displaying plots 2 and 3 (author's records)
+                    // for displaying plots 2 and 3 (author's publications)
                     // on bar-click in plot 1 (one bar per author)
                     var auId = "au" + auCount.toString();
                     auIdList.push(auId);
 
 
                     // plot 2 (one plot per author)
-                    var years = Object.keys(j[au][2]["years"]);
-                    var yearPubs = Object.values(j[au][2]["years"]);
+                    var yRec = j[au][2]["years"];
+                    var years = Object.keys(yRec);
+                    var yearPubs = [];
+                    var yearRefs = [];
+                    for (i of Object.values(yRec)) {
+                        yearPubs.push(i[0]);
+                        yearRefs.push(i[1]);
+                    };
+                    // console.log(yearPubs[0]);
+                    // console.log(yearRefs[0]);
 
+                    var yearIdList = [];
                     var yearPubsAll = [];
 
                     for (var year in years) {
                         pl2.push({
-                            "y": yearPubs[year],
                             "x": years[year],
-                            "au": au
+                            "y": yearPubs[year],
+                            "au": au,
+                            "ref": yearRefs[year]
                         });
 
                         yearCount += 1;
@@ -410,31 +439,48 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                         if (!(yearPubsAll.includes(yearPubs[year]))) {
                             yearPubsAll.push(yearPubs[year]);
                         }
+
+                        // for displaying dialog box of references
+                        // on bar- or circle-click (one bar or circle per year)
+                        var yearId = auId + "_year" + yearCount.toString();
+                        yearIdList.push(yearId);
+
                     }
 
                     if (yearCount === 1) {
                         pl2[0].y = [pl2[0].x, pl2[0].x = pl2[0].y][0]; // swap x and y value (https://stackoverflow.com/a/16201730)
                         pl2Dim = chartDim(pl2Svg, yearCount, null, allStrLenMax);
-                        drawBarChart(pl2Svg, pl2, auId, barId = false, pl2Dim, "hidden", "barChartAxis", term);
+                        drawBarChart(pl2Svg_class, pl2Svg, pl2, auId, yearIdList, pl2Dim, "hidden", "barChartAxis", term);
                     }
                     else if (yearCount > 1) {
                         pl2Dim = chartDim(pl2Svg, yearCount, yearPubsAll.length, allStrLenMax);
-                        drawLineChart(pl2Svg, pl2, auId, pl2Dim, "hidden", "lineChartAxis", term);
+                        drawLineChart(pl2Svg_class, pl2Svg, pl2, auId, pl2Dim, "hidden", "lineChartAxis", term);
                     }
 
                     pl2 = [];
                     yearCount = 0;
                     yearStrLengthMax = 0;
-                    yearPubsAll = [];
+                    yearPubsAll = []; // this may be a repetition?
 
                     // plot 3 (one plot per author)
-                    var journals = Object.keys(j[au][1]["journals"]);
-                    var journalPubs = Object.values(j[au][1]["journals"]);
+                    var jRec = j[au][1]["journals"];
+                    var journals = Object.keys(jRec);
+                    var journalPubs = [];
+                    var journalRefs = [];
+                    for (i of Object.values(jRec)) {
+                        journalPubs.push(i[0]);
+                        journalRefs.push(i[1]);
+                    };
+
+
+                    var journalIdList = [];
 
                     for (var journal in journals) {
                         pl3.push({
                             "x": journalPubs[journal], // publication count per year
-                            "y": journals[journal]
+                            "y": journals[journal],
+                            "au": au,
+                            "ref": journalRefs[journal]
                         });
 
                         journalCount += 1;
@@ -442,11 +488,17 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                         if (journals[journal].length >= journalStrLengthMax) {
                             journalStrLengthMax = journals[journal].length;
                         }
+
+                        // for displaying dialog box of references
+                        // on bar- or circle-click (one bar or circle per year)
+                        var journalId = auId + "_journal" + journalCount.toString();
+                        journalIdList.push(journalId);
+
                     }
 
                     pl3Dim = chartDim(pl3Svg, journalCount, null, allStrLenMax);
 
-                    drawBarChart(pl3Svg, pl3, auId, barId = false, pl3Dim, "hidden", "barChartAxis");
+                    drawBarChart(pl3Svg_class, pl3Svg, pl3, auId, journalIdList, pl3Dim, "hidden", "barChartAxis");
                     pl3 = [];
                     journalCount = 0;
                     journalStrLengthMax = 0;
@@ -458,7 +510,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // plot 1
     pl1Dim = chartDim(pl1Svg, auCount, null, allStrLenMax);
-    drawBarChart(pl1Svg, pl1, "pl1Chart", barId = true, pl1Dim, "visible", "barChartAxis", term);
+    drawBarChart(pl1Svg_class, pl1Svg, pl1, "pl1Chart", auIdList, pl1Dim, "visible", "barChartAxis", term);
 
     // change SVG viewBox width (which is currently 0)
     changeSvgViewboxDim(null, null, vb_width = svgMaxWidth, null, null);
@@ -527,14 +579,14 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             svgHeight_new = height + marginTop + marginBottom;
             // console.log(svgElement.attr("class") + ": " + svgHeight_current + ", " + svgHeight_new);
             var svgHeight_chosen = svgHeight_current > svgHeight_new ? svgHeight_current : svgHeight_new;
-            console.log("svgHeight_current: " + (svgHeight_current * wToSratio) + "; svgHeight_new: " + (svgHeight_new * wToSratio));
+            // console.log("svgHeight_current: " + (svgHeight_current * wToSratio) + "; svgHeight_new: " + (svgHeight_new * wToSratio));
 
-            // if (svgElement.attr("class") == "author") {
+            // if (svgElement.attr("class") == pl1Svg_class) {
             //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
             // }
 
 
-            // if (svgElement.attr("class") == "journal") {
+            // if (svgElement.attr("class") == pl3Svg_class) {
             //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
             // }            
         }
@@ -589,7 +641,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         }
     }
 
-    function drawBarChart(svgElement, plotData, auId = null, barId = false, chartDim, visibility, xAxisClass, term = null) {
+    function drawBarChart(svgClass, svgElement, plotData, auId = null, barIdList, chartDim, visibility, xAxisClass, term = null) {
 
         var width = chartDim.width;
         var height = chartDim.height;
@@ -607,6 +659,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
         // determine number of ticks on X-axis (number of publications)
         var xAxis_max = d3.max(plotData, function(d) {
+            // console.log(svgClass);
+            // console.log(d);
             return d.x;
         });
 
@@ -643,7 +697,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
 
         // Add chart titles to plot 1 and 2
-        if (svgElement.attr("class") == "author") {
+        if (svgElement.attr("class") == pl1Svg_class) {
             chart.append("text")
                 .attr("x", marginLeft + (width - marginLeft) / 2)
                 .attr("y", -fontSize * 0.5)
@@ -652,7 +706,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 .attr("font-weight", "bold")
                 .text("Search term: " + term);
         }
-        else if (svgElement.attr("class") == "year") {
+        else if (svgElement.attr("class") == pl2Svg_class) {
             chart.selectAll("text")
                 .data(plotData)
                 .enter()
@@ -663,9 +717,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 .attr("font-size", fontSize * 1.2)
                 .attr("font-weight", "bold")
                 .text(function(d) {
-                    var lName = d.au.split(", ")[0];
-                    var fName = d.au.split(", ")[1];
-                    return fName + " " + lName + "'s records";
+                    return swapNamePositions(d) + "'s publications";
                 });
         }
 
@@ -679,9 +731,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
             })
             .attr("id", function(d, i) {
-                if (barId) {
-                    return auIdList[i];
-                }
+                return barIdList[i];
             });
 
         // Add bars
@@ -740,15 +790,55 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("font-weight", "bold")
             .text("Number of publications per " + svgElement.attr("class"));
 
+        // add refs (code from http://bl.ocks.org/jfreels/6735318)
+        if (svgClass != pl1Svg_class) {
+            // console.log("main: " + auId);
+            var body = d3.select('body')
+                .selectAll('div')
+                .data(barIdList, function (d) { return d; })
+                .enter()
+                .append('div')
+                    .attr('class', barDialog_div)
+                    .attr('id', function (d) {
+                            return d + "_dialog";
+                    })
+                    .style("display", "none")
+                    .html(function (d, i) {
+                        var list = "<ul>";
+                        for (k of plotData[i].ref) {
+                            list += "<li>" + k[0] + "(" + k[1] + ") " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>(" + k[5] + "), " + k[6] + " <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a>";
+                        }
+                        list += "</ul>"
+
+
+                        var category = (function () {
+                            if (svgClass == pl2Svg_class) {
+                                return k[1];
+                            }
+                            else if (svgClass == pl3Svg_class) {
+                                return k[3];
+                            }
+                        })();
+
+                        var dialogTitle = swapNamePositions(plotData[i]) + '\'s publications in ' + category;
+                        var dialogId = "#" + d + "_dialog";
+                        setUpDialog(null, dialogId, dialogTitle);
+
+                        return list;
+                    });
+        }
 
 
         // interact with bars and text within them
-        var oldAuClass;
-        var auClass;
+        var oldBarId;
+        var barId;
 
         $(".rect, .pubNum")
+            // ".event(function()" results in jQuery firing multiple times
+            // To avoid this, ".off('mouseover').on('mouseover', function ()" is used.
+            // (code from https://stackoverflow.com/a/20881348/7194743)
 
-            .mouseover(function() {
+            .off('mouseover').on('mouseover', function() {
                 // change rect colour (mouse over bar)
                 if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
                     $(this).attr("fill", "green");
@@ -760,15 +850,15 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 }
             })
 
-            .mouseleave(function() {
+            .off('mouseleave').on('mouseleave', function() {
                 // change rect colour
-                if ($(this).closest('.bar').attr("id") != auClass) {
+                if ($(this).closest('.bar').attr("id") != barId) {
                     $(this).closest('.bar').find('rect').attr("fill", "#e600e6"); // See "Note 4" at the bottom. This line and the codes in mouseover does the same thing, but the approach is different.
                 }
             })
 
 
-                // if ($(this).closest('.bar').attr("id") != auClass) {
+                // if ($(this).closest('.bar').attr("id") != barId) {
                 //     // recover rect colour (mouse over bar)
                 //     if ($(this).prop("tagName") == "rect") {
                 //             $(this).attr("fill", "#e600e6");
@@ -780,7 +870,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 //     }
                 // })
 
-            .click(function() {
+            .off('click').on('click', function() {
 
                 // // change rect colour (mouse over bar)
                 // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
@@ -792,32 +882,37 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
                 // }
 
-                // react to click in "author" plot only
-                if ($(this).closest('svg').attr("class") != "author") {
-                    return;
+                // get bar group ID (author) of clicked bar
+                var barId = $(this).closest('.bar').attr("id");
+                // var chartClass_part = ($(this).closest('.chart').attr("class").split(" ")[1]);
+
+                // react to click in pl1Svg_class plot only
+                if ($(this).closest('svg').attr("class") != pl1Svg_class) {
+                    console.log('.' + barId + "_dialog");
+                    $('#' + barId + "_dialog").dialog("open");
+                    return false;
                 }
 
-                // get bar group ID (author) of clicked bar
-                auClass = $(this).closest('.bar').attr("id");
+                console.log(barId);
 
                 // do nothing if same bar was clicked before
-                if (oldAuClass == auClass) {}
+                if (oldBarId == barId) {}
 
                 // if different bar is clicked
                 else {
                     
                     /* display plots 2 and 3 */
                     // hide previously displayed plot
-                    $('.' + oldAuClass).attr("visibility", "hidden");
+                    $('.' + oldBarId).attr("visibility", "hidden");
 
                     // display plots 2 and 3 of corresponding author
-                    $('.' + auClass).attr("visibility", "visible");
+                    $('.' + barId).attr("visibility", "visible");
 
                     /* recover rect colour of previously coloured rect */
-                    $('#' + oldAuClass).find('rect').attr("fill", "#e600e6");
+                    $('#' + oldBarId).find('rect').attr("fill", "#e600e6");
                     // //  when bar clicked
                     // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                    //     $('#' + oldAuClass).attr("fill", "green");
+                    //     $('#' + oldBarId).attr("fill", "green");
                     // }
                     // // when text in rect clicked
                     // else {
@@ -826,7 +921,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     // }
 
                     // recover rect colour of prevoiusly clicked bar
-                    // $('#' + oldAuClass).attr("fill", "#e600e6");
+                    // $('#' + oldBarId).attr("fill",.off('click').on('click', 600e6");
 
 
                     /* mouseover for plot2's line graph */
@@ -834,19 +929,19 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     // See note 7 at the bottom regarding mouse events on overlapping elements
                     
                     // disable mouse events of previously displayed plot
-                    $('#overlay_' + oldAuClass).attr("pointer-events", "none");
+                    $('#overlay_' + oldBarId).attr("pointer-events", "none");
 
-                    // enable mouse events of previously displayed plot
-                    $('#overlay_' + auClass).attr("pointer-events", "all");
+                    // enable mouse events of currently displayed plot
+                    $('#overlay_' + barId).attr("pointer-events", "all");
 
 
-                    oldAuClass = auClass;
+                    oldBarId = barId;
                     
                 }
             })
     }
 
-    function drawLineChart(svgElement, plotData, auId = null, chartDim, visibility, xAxisClass, term) {
+    function drawLineChart(svgClass, svgElement, plotData, auId = null, chartDim, visibility, xAxisClass, term) {
         // this function is based on codes at http://bit.ly/2qNRPbF
 
         var width = chartDim.width;
@@ -1009,7 +1104,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .text(function(d) {
                 var lastName = d.au.split(", ")[0];
                 var firstName = d.au.split(", ")[1];
-                return firstName + " " + lastName + "'s records";
+                // console.log(d.ref);
+                return firstName + " " + lastName + "'s publications";
             });
 
         // add the X gridlines (code from http://bit.ly/2sm1iZr)
@@ -1279,8 +1375,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
 
         // // interact with bars and text within them
-        // var oldAuClass;
-        // var auClass;
+        // var oldBarId;
+        // var barId;
 
         // $("rect, .pubNum")
         //     .mouseover(function() {
@@ -1307,19 +1403,19 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         // .click(function() {
 
         //     // get bar group ID (author) of clicked bar
-        //     auClass = $(this).closest('.bar').attr("id");
+        //     barId = $(this).closest('.bar').attr("id");
 
         //     // do nothing if same bar was clicked before
-        //     if (oldAuClass == auClass) {}
+        //     if (oldBarId == barId) {}
 
         //     // if different bar is clicked
         //     else {
         //         // hide previously displayed plot
-        //         $('.' + oldAuClass).attr("visibility", "hidden");
+        //         $('.' + oldBarId).attr("visibility", "hidden");
         //         // display plots 2 and 3 of corresponding author
-        //         $('.' + auClass).attr("visibility", "visible");
+        //         $('.' + barId).attr("visibility", "visible");
 
-        //         oldAuClass = auClass;
+        //         oldBarId = barId;
         //     }
         // })
     }
@@ -1459,7 +1555,7 @@ The closest "bar" class is found (which is the closest parent element that conta
 
 Note 5
 Following code does the same thing. Does it do it differently?
-$.when(removeGif("authorDiv")).then(drawGraphs(data, suggestion.term));
+$.when(removeGif(pl1Svg_div)).then(drawGraphs(data, suggestion.term));
 
 
 Note 6
@@ -1474,7 +1570,7 @@ loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
 
-displayGif("authorDiv", loadingGif); // See Note 6 at the bottom.
+displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
 records(suggestion);
 __________________________________
 
@@ -1485,7 +1581,7 @@ function displayGif(divClass1, gif) {
     $("." + divClass1).append("<img alt='loading' src='" + gif + "'/>");
 }
 
-displayGif("authorDiv", "/static/loading.gif"); // See Note 6 at the bottom.
+displayGif(pl1Svg_div, "/static/loading.gif"); // See Note 6 at the bottom.
 records(suggestion);
 __________________________________
 
@@ -1512,10 +1608,10 @@ unless the following two are done.
 .click(function() {
         
         // disable mouse events of previously displayed plot
-        $('#overlay_' + oldAuClass).attr("pointer-events", "none");
+        $('#overlay_' + oldBarId).attr("pointer-events", "none");
 
         // enable mouse events of previously displayed plot
-        $('#overlay_' + auClass).attr("pointer-events", "all");
+        $('#overlay_' + barId).attr("pointer-events", "all");
 
 2. Create the element inside a "g" element.
 
