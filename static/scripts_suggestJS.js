@@ -806,7 +806,16 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     .html(function (d, i) {
                         var list = "<ul>";
                         for (k of plotData[i].ref) {
-                            list += "<li>" + k[0] + "(" + k[1] + ") " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>(" + k[5] + "), " + k[6] + " <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a>";
+                            list += "<li>" + k[0] + "(" + k[1] + ") " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>"
+                            
+                            if (k[5] != "") {
+                                list += "(" + k[5] + "), ";
+                            }
+                            else {
+                                list += ", ";
+                            }
+
+                            list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a>";
                         }
                         list += "</ul>"
 
