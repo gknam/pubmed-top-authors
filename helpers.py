@@ -33,7 +33,7 @@ def getPmids(term):
 
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 5000
+    retmax = 50
 
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
@@ -473,7 +473,7 @@ def topAuthorsRecs(records):
                             missingYrs = set(range(startYr + 1, endYr))
                             startYrIndex = list(yearS).index(str(startYr))
                             for yr in missingYrs:
-                                yearsFillGap.insert(startYrIndex + 1, (str(yr), 0))
+                                yearsFillGap.insert(startYrIndex + 1, (str(yr), [0, [[]]]))
                                 yearS = dict(yearsFillGap)
                                 topAuthorsRecs[total][rec][author][2]["years"] = yearS
                         startYr = endYr

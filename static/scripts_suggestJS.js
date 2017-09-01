@@ -514,7 +514,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // change SVG viewBox width (which is currently 0)
     changeSvgViewboxDim(null, null, vb_width = svgMaxWidth, null, null);
-    console.log(svgMaxWidth);
 
     function insertSVG(svgClass, divClass, divTitle = null) {
         return d3.select('.' + divClass)
@@ -806,8 +805,10 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     .html(function (d, i) {
                         var list = "<ul>";
                         for (k of plotData[i].ref) {
+                            // author names, year, article title, jounral title, journal volume
                             list += "<li>" + k[0] + "(" + k[1] + ") " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>"
                             
+                            // journal issue
                             if (k[5] != "") {
                                 list += "(" + k[5] + "), ";
                             }
@@ -815,6 +816,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                                 list += ", ";
                             }
 
+                            // Pubmed and DOI links
                             list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a>";
                         }
                         list += "</ul>"
