@@ -337,8 +337,17 @@ function dialogsForPlots(svgClass, plotData) {
                 .html(function (d, i) {
                     var list = "<ul>";
                     for (k of d.ref) {
+                        // no publication record
+                        if (k[0] == null) {
+                            list += "<li>No publications to display</li>"
+                            refYear = (parseInt(refYear) + 1).toString();
+                            break;
+                        }
+
+                        refYear = k[1];
+
                         // author names, year, article title, jounral title, journal volume
-                        list += "<li>" + k[0] + "(" + k[1] + ") " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>"
+                        list += "<li>" + k[0] + "(" + refYear + "). " + k[2] + " <i>" + k[3] + ", " + k[4] + "</i>"
                         
                         // journal issue
                         if (k[5] != "") {
@@ -349,14 +358,14 @@ function dialogsForPlots(svgClass, plotData) {
                         }
 
                         // Pubmed and DOI links
-                        list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a>";
+                        list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a></li>";
                     }
                     list += "</ul>"
 
 
                     var category = (function () {
                         if (svgClass == pl2Svg_class) {
-                            return k[1];
+                            return refYear;
                         }
                         else if (svgClass == pl3Svg_class) {
                             return k[3];
