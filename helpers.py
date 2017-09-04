@@ -373,7 +373,7 @@ def getFullRecs(pmids):
                                 journalRec[1].append(ref)
 
                             # publication year (code from http://stackoverflow.com/a/14790997)
-                            if not any(year in d for d in records[author][2]["years"]):
+                            if not any(year == d for d in records[author][2]["years"]):
                                 records[author][2]["years"][year] = [1, [ref]]
                             else:
                                 yearRec = records[author][2]["years"][year]
