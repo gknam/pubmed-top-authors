@@ -357,8 +357,14 @@ function dialogsForPlots(svgClass, plotData) {
                             list += ", ";
                         }
 
-                        // Pubmed and DOI links
-                        list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>" + " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a></li>";
+                        // Pubmed link
+                        list += k[6] + ". <a href=\"" + k[7] + "\" target=\"_blank\">Pubmed</a>"
+
+                        // DOI link
+                        if (k[8] != "") {
+                            list += " <a href=\"" + k[8] + "\" target=\"_blank\">DOI</a></li>";
+                        }
+                        else {}
                     }
                     list += "</ul>"
 
