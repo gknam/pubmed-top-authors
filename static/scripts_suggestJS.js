@@ -84,20 +84,24 @@ loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
 // load image to display when keyword fetched no data
-// data fetch problem 1: receiving no data
-var apology1 = new Image();
-apology1.alt = "no data";
-var topText1 = "no data";
-var bottomText1 = "try_a_different_keyword";
-apology1.src = "https://memegen.link/custom/" + topText1 + "/" + bottomText1 + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
+var imageUrl = "http://i.imgur.com/A3ZR65I.png";
+// data fetch problem 1: empty data received
+var apology1 = apologyImage("no records found", "no records found", "try_a_different_keyword", imageUrl)
 
-// data fetch problem 2: range too big
-var apology2 = new Image();
-apology2.alt = "date range too big";
-var topText2 = "date range too big";
-var bottomText2 = "try_smaller";
-apology2.src = "https://memegen.link/custom/" + topText2 + "/" + bottomText2 + ".jpg?alt=http://i.imgur.com/A3ZR65I.png";
+// data fetch problem 2: error message received
+var apology2 = apologyImage("error", "error", "try_again", imageUrl)
 
+// data fetch problem 3: no data received (server may be offline)
+var apology3 = apologyImage("record fetching failed", "record_fetching_failed. server may be offline", "try_again", imageUrl)
+
+function apologyImage(altText, topText, bottomText, imageUrl) {
+    var apology = new Image();
+    apology.alt = altText;
+    var topText = topText;
+    var bottomText = bottomText;
+    apology.src = "https://memegen.link/custom/" + topText + "/" + bottomText + ".jpg?alt=" + imageUrl;
+    return apology;
+}
 
 function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     // change all SVGs unless one is specified
@@ -186,22 +190,28 @@ function setUpDialog(linkId, dialogId, dialogTitle) {
 }
 
 function dataFetchProblem(data) {
-    var data_keys = Object.keys(data);
-    var dc_i = data_keys.indexOf("dataCount");
-    data_keys.splice(dc_i, 1);
-    var dslm_i = data_keys.indexOf("dataStrLengthMax");
-    data_keys.splice(dslm_i, 1);
-    // console.log(data);
-
     var apology;
 
-    // receiving no data
-    if (data_keys.length == 0) {
-        apology = apology1;
+    // no data received (server may be offline)
+    if (data == null) {
+        apology = apology3;
     }
-    // date range or number of articles too big
-    else if (data == "range too big") {
-        apology = apology2;
+
+    else {
+        var data_keys = Object.keys(data);
+        var dc_i = data_keys.indexOf("dataCount");
+        data_keys.splice(dc_i, 1);
+        var dslm_i = data_keys.indexOf("dataStrLengthMax");
+        data_keys.splice(dslm_i, 1);
+
+        // empty data received
+        if (data_keys.length == 0) {
+            apology = apology1;
+        }
+        // error message received
+        else if (data == "error") {
+            apology = apology2;
+        }
     }
     
     return apology;
@@ -271,10 +281,10 @@ function records(suggestion) {
     request =
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
-            // See "Note 5" at the bottom
+            // remove GIF (See "Note 5" at the bottom)
             resetDisplay(pl1Svg_div);
 
-            // prepare apology if records fetch has failed
+            // prepare apology if data is empty has failed
             apology = dataFetchProblem(data);
 
             // display apology message if there was a problem fetching data
@@ -288,11 +298,19 @@ function records(suggestion) {
             }
         })
 
-    .fail(function(jqXHR, textStatus, errorThrown) {
+        .fail(function(jqXHR, textStatus, errorThrown) {
 
-        // log error to browser's console
-        console.log(errorThrown.toString());
-    });
+            // log error to browser's console
+            console.log(errorThrown.toString());
+
+            // remove GIF
+            resetDisplay(pl1Svg_div);
+
+            // display apology message
+            apology = dataFetchProblem(null);
+            apologise(pl1Svg_div, pl23Svg_div, suggestion.term, apology);
+
+        });
 }
 
 function NSuggest_CreateData(q, matches, count) {

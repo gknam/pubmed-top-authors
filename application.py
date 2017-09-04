@@ -44,7 +44,7 @@ def records():
     try:
         pmids = getPmids(term)
     except:
-        return jsonify("range too big")
+        return jsonify("error")
     
     # get full records from pmids
     records = getFullRecs(pmids)
