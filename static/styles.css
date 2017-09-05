@@ -129,7 +129,12 @@ a {
 
 li {
     margin-top: 3px;
-    margin-bottom: : 3px;
+    margin-bottom: 3px;
+}
+
+p {
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
 ul {
