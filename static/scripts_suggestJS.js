@@ -750,6 +750,9 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         var fontSize = chartDim.fontSize;
         var dataCount = chartDim.dataCount;
 
+        var barColour_unclicked = "#e600e6"
+        var barColour_clicked = "green"
+
         // quit if no data
         if (dataCount == 0) {
             return;
@@ -839,7 +842,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 return (d.x / xAxis_max) * (width - marginLeft);
             })
             .attr("height", barHeight)
-            .attr("fill", "#e600e6");
+            .attr("fill", barColour_unclicked);
 
         // Add text (number of publications)
         bar.append("text")
@@ -903,19 +906,29 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .off('mouseover').on('mouseover', function() {
                 // change rect colour (mouse over bar)
                 if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                    $(this).attr("fill", "green");
+                    $(this).attr("fill", barColour_clicked);
                 }
                 // change rect colour (mouse over text in rect)
                 else {
                     // code from http://stackoverflow.com/a/2679026
-                    $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                    $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
                 }
             })
 
             .off('mouseleave').on('mouseleave', function() {
-                // change rect colour
-                if ($(this).closest('.bar').attr("id") != barId) {
-                    $(this).closest('.bar').find('rect').attr("fill", "#e600e6"); // See "Note 4" at the bottom. This line and the codes in mouseover does the same thing, but the approach is different.
+                
+                var changeColour = true;
+                
+                // For plot 1, do not change rect colour on mouseleave if bar has been clicked ("barId" is set on click).
+                if ($(this).closest('svg').attr("class") == pl1Svg_class) {
+                    if ($(this).closest('.bar').attr("id") == barId) {
+                        changeColour = false; // See "Note 4" at the bottom. This line and the codes in mouseover does the same thing, but the approach is different.
+                    }
+                }
+
+                // Change colour on mouse leave always for plots 2 and 3, and in all other cases for plot 1.
+                if (changeColour) {
+                    $(this).closest('.bar').find('rect').attr("fill", barColour_unclicked);
                 }
             })
 
@@ -923,11 +936,11 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 // if ($(this).closest('.bar').attr("id") != barId) {
                 //     // recover rect colour (mouse over bar)
                 //     if ($(this).prop("tagName") == "rect") {
-                //             $(this).attr("fill", "#e600e6");
+                //             $(this).attr("fill", barColour_unclicked);
                 //     }
                 //     // recover rect colour (mouse over text in rect)
                 //     else {
-                //             $(this).closest('rect').attr("fill", "#e600e6");
+                //             $(this).closest('rect').attr("fill", barColour_unclicked);
                 //         }
                 //     }
                 // })
@@ -936,16 +949,16 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
                 // // change rect colour (mouse over bar)
                 // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                //     $(this).attr("fill", "green");
+                //     $(this).attr("fill", barColour_clicked);
                 // }
                 // // change rect colour (mouse over text in rect)
                 // else {
                 //     // code from http://stackoverflow.com/a/2679026
-                //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
                 // }
 
-                // get bar group ID (author) of clicked bar
-                var barId = $(this).closest('.bar').attr("id");
+                // get bar group ID (author) of clicked bar (See Note 8 at the bottom regarding why "var" should not be used here)
+                barId = $(this).closest('.bar').attr("id");
                 // var chartClass_part = ($(this).closest('.chart').attr("class").split(" ")[1]);
 
                 // react to click in pl1Svg_class plot only
@@ -968,15 +981,15 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                     $('.' + barId).attr("visibility", "visible");
 
                     /* recover rect colour of previously coloured rect */
-                    $('#' + oldBarId).find('rect').attr("fill", "#e600e6");
+                    $('#' + oldBarId).find('rect').attr("fill", barColour_unclicked);
                     // //  when bar clicked
                     // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                    //     $('#' + oldBarId).attr("fill", "green");
+                    //     $('#' + oldBarId).attr("fill", barColour_clicked);
                     // }
                     // // when text in rect clicked
                     // else {
                     //     // code from http://stackoverflow.com/a/2679026
-                    //     $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+                    //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
                     // }
 
                     // recover rect colour of prevoiusly clicked bar
@@ -1399,7 +1412,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //         return (d.x / xAxis_max) * (width - marginLeft);
         //     })
         //     .attr("height", barHeight)
-        //     .attr("fill", "#e600e6");
+        //     .attr("fill", barColour_unclicked);
 
         // // Add text (number of publications)
         // bar.append("text")
@@ -1458,21 +1471,21 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //     .mouseover(function() {
         //         // bar
         //         if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-        //             $(this).attr("fill", "green");
+        //             $(this).attr("fill", barColour_clicked);
         //         }
         //         // text in rect
         //         else {
-        //             $(this).closest('rect').attr("fill", "green");
+        //             $(this).closest('rect').attr("fill", barColour_clicked);
         //             // alternative code (http://stackoverflow.com/a/2679026):
-        //             // $(this).closest(':has(rect)').find('rect').attr("fill", "green");
+        //             // $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
         //         }
         //     })
 
         // .mouseleave(function() {
         //     if ($(this).prop("tagName") == "rect") {
-        //         $(this).attr("fill", "#e600e6");
+        //         $(this).attr("fill", barColour_unclicked);
         //     } else {
-        //         $(this).closest('rect').attr("fill", "#e600e6");
+        //         $(this).closest('rect').attr("fill", barColour_unclicked);
         //     }
         // })
 
@@ -1702,6 +1715,23 @@ The following doesn't work.
 chart.append("rect")
 ________________________
 
+
+
+
+Note 8
+
+Using "var barId" here prevents plot 1's clicked bar from retaining its colour at mouseleave event.
+
+This seems to be because using "var" limits the scope of barId within where it was created.
+
+barId was initially created with "var" within "drawBarChart" function. This way, barId seems to make barId alive anywhere inside "drawBarChart" function,
+making barId usable in all mouse events blocks (mouseover, mouseleave, click).
+
+However, using "var barId" again in one mouse event block, barId seems to survive only within the block. So, if "var barId" is used again in the mouse "click" block,
+any value saved in barId seems unable to be used in other mouse events. Mouseleave event depends on the value of barId, so this can cause problems, such as that
+described at the beginning of this note.
+
+Relevant info is at https://stackoverflow.com/a/1470494
 */
 
 
