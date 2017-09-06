@@ -46,8 +46,19 @@ $(function() {
 
         // fetch records for the term typed in the form
         $("form").submit(function(e) {
+            var keyword = this.q.value;
+
+            // do nothing if
+            // (1) keyword is empty (enter was pressed without typing a keyword) or
+            // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
+            if (keyword == '' || !keyword.replace(/\s/g, '').length) {
+                e.preventDefault();
+                return;
+            }
+
+            // otherwise, fetch records
             $("#q").typeahead('destroy'); // remove drop-down
-            suggestion = { "term": this.q.value };
+            suggestion = { "term": keyword };
             $("form").trigger("reset");
             $("svg").remove();
             $("." + barDialog_div).remove();
