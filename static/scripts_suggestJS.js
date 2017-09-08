@@ -984,58 +984,62 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
                 // }
 
-                // get bar group ID (author) of clicked bar (See Note 8 at the bottom regarding why "var" should not be used here)
-                barId = $(this).closest('.bar').attr("id");
+                // get bar group ID (author) of clicked bar
+                barId_temp = $(this).closest('.bar').attr("id");
                 // var chartClass_part = ($(this).closest('.chart').attr("class").split(" ")[1]);
 
-                // react to click in pl1Svg_class plot only
+                // react to click in plots 2 and 3
                 if ($(this).closest('svg').attr("class") != pl1Svg_class) {
-                    $('#' + barId + "_dialog").dialog("open");
+                    $('#' + barId_temp + "_dialog").dialog("open");
                     return false;
                 }
-
-                // do nothing if same bar was clicked before
-                if (oldBarId == barId) {}
-
-                // if different bar is clicked
+                // react to click in plot 1
                 else {
-                    
-                    /* display plots 2 and 3 */
-                    // hide previously displayed plot
-                    $('.' + oldBarId).attr("visibility", "hidden");
+                    barId = barId_temp; // See Note 8 at the bottom regarding why "var" should not be used here
 
-                    // display plots 2 and 3 of corresponding author
-                    $('.' + barId).attr("visibility", "visible");
+                    // do nothing if same bar was clicked before
+                    if (oldBarId == barId) {}
 
-                    /* recover rect colour of previously coloured rect */
-                    $('#' + oldBarId).find('rect').attr("fill", barColour_unclicked);
-                    // //  when bar clicked
-                    // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                    //     $('#' + oldBarId).attr("fill", barColour_clicked);
-                    // }
-                    // // when text in rect clicked
-                    // else {
-                    //     // code from http://stackoverflow.com/a/2679026
-                    //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
-                    // }
+                    // if different bar is clicked
+                    else {
+                        
+                        /* display plots 2 and 3 */
+                        // hide previously displayed plot
+                        $('.' + oldBarId).attr("visibility", "hidden");
 
-                    // recover rect colour of prevoiusly clicked bar
-                    // $('#' + oldBarId).attr("fill",.off('click').on('click', 600e6");
+                        // display plots 2 and 3 of corresponding author
+                        $('.' + barId).attr("visibility", "visible");
 
+                        /* recover rect colour of previously coloured rect */
+                        $('#' + oldBarId).find('rect').attr("fill", barColour_unclicked);
+                        // //  when bar clicked
+                        // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
+                        //     $('#' + oldBarId).attr("fill", barColour_clicked);
+                        // }
+                        // // when text in rect clicked
+                        // else {
+                        //     // code from http://stackoverflow.com/a/2679026
+                        //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
+                        // }
 
-                    /* mouseover for plot2's line graph */
-                    // Advice from https://stackoverflow.com/a/20837758
-                    // See note 7 at the bottom regarding mouse events on overlapping elements
-                    
-                    // disable mouse events of previously displayed plot
-                    $('#overlay_' + oldBarId).attr("pointer-events", "none");
-
-                    // enable mouse events of currently displayed plot
-                    $('#overlay_' + barId).attr("pointer-events", "all");
+                        // recover rect colour of prevoiusly clicked bar
+                        // $('#' + oldBarId).attr("fill",.off('click').on('click', 600e6");
 
 
-                    oldBarId = barId;
-                    
+                        /* mouseover for plot2's line graph */
+                        // Advice from https://stackoverflow.com/a/20837758
+                        // See note 7 at the bottom regarding mouse events on overlapping elements
+                        
+                        // disable mouse events of previously displayed plot
+                        $('#overlay_' + oldBarId).attr("pointer-events", "none");
+
+                        // enable mouse events of currently displayed plot
+                        $('#overlay_' + barId).attr("pointer-events", "all");
+
+
+                        oldBarId = barId;
+                        
+                    }
                 }
             })
     }
