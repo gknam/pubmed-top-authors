@@ -1094,6 +1094,16 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         else if (dataValueMax <= 1000) {
             yTickMax = Math.ceil(dataValueMax / 100) * 100
         }
+        else if (dataValueMax <= 5000) {
+            yTickMax = Math.ceil(dataValueMax / 500) * 500
+        }
+        else if (dataValueMax <= 10000) {
+            yTickMax = Math.ceil(dataValueMax / 1000) * 1000
+        }
+        else if (dataValueMax <= 50000) {
+            yTickMax = Math.ceil(dataValueMax / 5000) * 5000
+        }
+
 
         yTickRange = yTickMax - yTickMin;
 
@@ -1115,6 +1125,15 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         }
         else if (yTickRange <= 1000) {
             yTicks = yTickRange / 500 + 1;
+        }
+        else if (yTickRange <= 5000) {
+            yTicks = yTickRange / 1000 + 1;
+        }
+        else if (yTickRange <= 10000) {
+            yTicks = yTickRange / 5000 + 1;
+        }
+        else if (yTickRange <= 50000) {
+            yTicks = yTickRange / 10000 + 1;
         }
 
         // var yTicks = (dataValuesCount >= 2) ? dataValuesCount - 1: dataValuesCount;
