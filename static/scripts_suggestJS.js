@@ -26,67 +26,134 @@ $(function() {
                 )
             }
         });
-
-
     }
 
-    function fetch() {
+/* This block handles tab key press in input "#q" better, but there are caveats. Therefore this has been discarded for now.
+The working part is that when tab is pressed, focus moves to 'fetch' button while leaving typed value as it is.
+The problems are that "shift + tab" does nothing, and when pressed many times, the focus moves to previous input boxes
+(as intended), but when users "tab" forward into input "#q" and "tab" again, the typed value gets lost.
+
+function handleTabPress(inputId) {
+    var inputVal;
+    var keys = {9: false, 16: false};
+
+    // handle tab press
+    $(".form-group").on('keydown', inputId, function(e) { 
+        if (e.keyCode in keys) {
+            keys[e.keyCode] = true;            
+        }
+        console.log(keys);
+
+        // var keyCode = e.keyCode || e.which;
+        if (keys[9] && !keys[16]) { 
+            console.log("fire")
+            // console.log(inputVal);
+            // $(inputId).val(inputVal);
+            // var e = jQuery.Event("keydown");
+            // e.which = 9;
+            // $(inputId).trigger(e);
+            $(inputId).typeahead('destroy'); // remove drop-down
+            typeAhead();
+            $(inputId).typeahead('val', inputVal);
+            $('#fetch').focus();
+        }
+    });
+
+    // remember input values
+    $(".form-group").on('keyup', inputId, function(e) { 
+        if (e.keyCode in keys) {
+            keys[e.keyCode] = false;
+        }
+
+        if (!keys[9]) {
+            inputVal = $(this).val();
+            // console.log(inputVal);
+            console.log(keys);
+        }
+    });
+
+};
+
+handleTabPress("#q");
+*/
+
+    function handleInput() {
+
         // fetch records for the term selected from drop-down
         $("#q").on("typeahead:selected", function(eventObject, suggestion, name) {
-            $("#q").typeahead('destroy'); // remove drop-down
-            typeAhead();
-            $("#q").focus(); // place cursor in textbox
-            $("svg").remove();
-            $("." + barDialog_div).remove();
-            resetDisplay(pl1Svg_div, pl23Svg_div);
-            displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
-            records(suggestion);
-
+            fetch(suggestion, null);
         });
 
+        // fetch records for the term typed in the form if enter key is pressed
+        $("form").submit(function(e) {
+            fetch(this, e);
+        });
+
+        // do not fetch, but only autocomplete search term if tab key is pressed
         $("#q").on("typeahead:autocomplete", function(eventObject, suggestion, name) {
             $("#q").val(suggestion.term);
         });
 
-        // fetch records for the term typed in the form
-        $("form").submit(function(e) {
-            var keyword = this.q.value;
-            var days = this.d.value;
-            var articles = this.a.value;
 
-            // do nothing if
-            // (1) keyword is empty (enter was pressed without typing a keyword) or
-            // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
-            if (keyword == '' || !keyword.replace(/\s/g, '').length) {
-                e.preventDefault();
-                return;
+        function fetch(termContainer, e) {
+
+            /* get search parameters */
+
+            var term;
+            var articles;
+            var days;
+
+            // typeahead selection
+            if (!e) {
+                term = termContainer.term;
+                articles = $("#a").val();
+                days = $("#d").val();
+            }
+            // submission by pressing enter
+            else {
+                term = termContainer.q.value;
+                articles = termContainer.a.value;
+                days = termContainer.d.value;
+
+                // do nothing if
+                // (1) term is empty (enter was pressed without typing a term) or
+                // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
+                if (term == '' || !term.replace(/\s/g, '').length) {
+                    e.preventDefault();
+                    return;
+                }
             }
 
-            // otherwise, fetch records
-            $("#q").typeahead('destroy'); // remove drop-down
-            
             suggestion = {
-                "term": keyword,
+                "term": term,
                 "retmax": articles,
                 "reldate": days
             };
 
-            $("form").trigger("reset");
-            $("#d").val(days);
+            // remove drop-down
+            $("#q").typeahead('destroy');
+
+            $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
             $("#a").val(articles);
-            $("svg").remove();
-            $("." + barDialog_div).remove();
+            $("#d").val(days);
             typeAhead();
             $("#q").focus();
-            e.preventDefault();
-            resetDisplay(pl1Svg_div, pl23Svg_div);
-            displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
+            $("svg").remove();
+            $("." + barDialog_div).remove();
+
+            if (e) {
+                e.preventDefault();
+            }
+
+            resetDisplay(searchTerm_div, images_div, pl1Svg_div, pl23Svg_div);
+            displaySearchTerm(searchTerm_div, suggestion.term.toLowerCase());
+            displayGif(images_div, loadingGif); // See Note 6 at the bottom.
             records(suggestion);
-        });
+        }
     }
 
     typeAhead();
-    fetch();
+    handleInput();
 
 });
 
@@ -95,6 +162,8 @@ var pl1Svg_class = "author";
 var pl2Svg_class = "year";
 var pl3Svg_class = "journal";
 
+var searchTerm_div = "searchTerm";
+var images_div = "images"; // for "loadingGif" or apologies images
 var pl1Svg_div = "authorDiv";
 var pl23Svg_div = "yearJournalDiv";
 var barDialog_div = "dialog_bar"
@@ -176,13 +245,21 @@ function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     });
 }
 
-function displayGif(divClass1, loadingGif) {
-    $("." + divClass1).css("justify-content", "center");
-    $("." + divClass1).css("display", "flex");
-    $("." + divClass1).append(loadingGif);
+function displaySearchTerm(divClass, searchTerm) {
+    $("." + divClass).css("justify-content", "center");
+    $("." + divClass).css("display", "flex");
+    $("." + divClass).css("text-align", "justify");
+    $("." + divClass).css("font-size", "30px");
+    $("." + divClass).append("Search term: " + searchTerm);
 }
 
-function resetDisplay(divClass1, divClass2=null) {
+function displayGif(divClass, loadingGif) {
+    $("." + divClass).css("justify-content", "center");
+    $("." + divClass).css("display", "flex");
+    $("." + divClass).append(loadingGif);
+}
+
+function resetDisplay(divClass1, divClass2, divClass3, divClass4) {
     for (i of arguments) {
         $("." + i).empty();
         $("." + i).removeAttr("style");
@@ -242,20 +319,13 @@ function dataFetchProblem(data) {
     return apology;
 }
 
-function apologise(divClass1, divClass2, term, apology) {
-
-    // display text
-    $("." + divClass1).css("justify-content", "center");
-    $("." + divClass1).css("display", "flex");
-    $("." + divClass1).css("text-align", "justify");
-    $("." + divClass1).css("font-size", "30px");
-    $("." + divClass1).append("Search term: " + term);
+function apologise(divClass, apology) {
 
     // display image
-    $("." + divClass2).css("justify-content", "center");
-    $("." + divClass2).css("display", "flex");
-    $("." + divClass2).css("text-align", "justify");
-    $("." + divClass2).append(apology);
+    $("." + divClass).css("justify-content", "center");
+    $("." + divClass).css("display", "flex");
+    $("." + divClass).css("text-align", "justify");
+    $("." + divClass).append(apology);
 }
 
 /**
@@ -309,14 +379,14 @@ function records(suggestion) {
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
             // remove GIF (See "Note 5" at the bottom)
-            resetDisplay(pl1Svg_div);
+            resetDisplay(images_div);
 
             // prepare apology if data is empty has failed
             apology = dataFetchProblem(data);
 
             // display apology message if there was a problem fetching data
             if (apology) {
-                apologise(pl1Svg_div, pl23Svg_div, suggestion.term, apology);
+                apologise(images_div, apology);
             }
             
             // otherwise, draw plots
@@ -331,11 +401,11 @@ function records(suggestion) {
             console.log(errorThrown.toString());
 
             // remove GIF
-            resetDisplay(pl1Svg_div);
+            resetDisplay(images_div);
 
             // display apology message
             apology = dataFetchProblem(null);
-            apologise(pl1Svg_div, pl23Svg_div, suggestion.term, apology);
+            apologise(images_div, apology);
 
         });
 }
@@ -825,16 +895,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
 
         // Add chart titles to plot 1 and 2
-        if (svgElement.attr("class") == pl1Svg_class) {
-            chart.append("text")
-                .attr("x", marginLeft + (width - marginLeft) / 2)
-                .attr("y", -fontSize * 0.5)
-                .attr("text-anchor", "middle")
-                .attr("font-size", fontSize * 1.2)
-                .attr("font-weight", "bold")
-                .text("Search term: " + term);
-        }
-        else if (svgElement.attr("class") == pl2Svg_class) {
+        if (svgElement.attr("class") == pl2Svg_class) {
             chart.selectAll("text")
                 .data(plotData)
                 .enter()
@@ -1709,18 +1770,18 @@ loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
 
-displayGif(pl1Svg_div, loadingGif); // See Note 6 at the bottom.
+displayGif(images_div, loadingGif); // See Note 6 at the bottom.
 records(suggestion);
 __________________________________
 
 -- Following is the previous version
-function displayGif(divClass1, gif) {
+function displayGif(images_div, gif) {
     $("." + divClass1).css("justify-content", "center");
     $("." + divClass1).css("display", "flex");
     $("." + divClass1).append("<img alt='loading' src='" + gif + "'/>");
 }
 
-displayGif(pl1Svg_div, "/static/loading.gif"); // See Note 6 at the bottom.
+displayGif(images_div, "/static/loading.gif"); // See Note 6 at the bottom.
 records(suggestion);
 __________________________________
 

@@ -100,14 +100,16 @@
     <form id="form">
         <div class="form-group">
             Max number of days from today
-            <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" autocomplete="off"/>
+            <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off"/>
             Max number of articles to check
-            <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="1000" autocomplete="off"/>
+            <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="2" autocomplete="off"/>
             Keyword<br>
-            <input class="form-control" id="q" placeholder="e.g. psychology" type="text" autocomplete="off" autofocus/>
-            <button type="submit" class="btn">Fetch!</button>
+            <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="3" autocomplete="off" autofocus/>
+            <button type="submit" class="btn" id = "fetch" tabindex="4" >Fetch!</button>
         </div>
     </form>
+    <div class="searchTerm"></div>
+    <div class="images"></div>
     <div class="authorDiv"></div>
     <div class="yearJournalDiv"></div>
 </body>
