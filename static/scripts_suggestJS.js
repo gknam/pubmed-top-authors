@@ -33,7 +33,7 @@ $(function() {
     function fetch() {
         // fetch records for the term selected from drop-down
         $("#q").on("typeahead:selected", function(eventObject, suggestion, name) {
-            $('#q').typeahead('destroy'); // remove drop-down
+            $("#q").typeahead('destroy'); // remove drop-down
             typeAhead();
             $("#q").focus(); // place cursor in textbox
             $("svg").remove();
@@ -44,9 +44,15 @@ $(function() {
 
         });
 
+        $("#q").on("typeahead:autocomplete", function(eventObject, suggestion, name) {
+            $("#q").val(suggestion.term);
+        });
+
         // fetch records for the term typed in the form
         $("form").submit(function(e) {
             var keyword = this.q.value;
+            var days = this.d.value;
+            var articles = this.a.value;
 
             // do nothing if
             // (1) keyword is empty (enter was pressed without typing a keyword) or
@@ -58,8 +64,16 @@ $(function() {
 
             // otherwise, fetch records
             $("#q").typeahead('destroy'); // remove drop-down
-            suggestion = { "term": keyword };
+            
+            suggestion = {
+                "term": keyword,
+                "retmax": articles,
+                "reldate": days
+            };
+
             $("form").trigger("reset");
+            $("#d").val(days);
+            $("#a").val(articles);
             $("svg").remove();
             $("." + barDialog_div).remove();
             typeAhead();
@@ -279,7 +293,9 @@ function suggest(query, syncResults, asyncResults) {
 function records(suggestion) {
 
     var parameters = {
-        term: suggestion.term
+        term: suggestion.term,
+        retmax: suggestion.retmax,
+        reldate: suggestion.reldate
     };
 
     // Cancel previous request after new request is made (http://stackoverflow.com/a/12713532)

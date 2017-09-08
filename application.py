@@ -41,8 +41,10 @@ def records():
 
     # get pmids for term
     term = request.args.get('term')
+    retmax = request.args.get('retmax')
+    reldate = request.args.get('reldate')
     try:
-        pmids = getPmids(term)
+        pmids = getPmids(term, retmax, reldate)
     except:
         return jsonify("error")
     

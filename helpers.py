@@ -28,23 +28,19 @@ def getXmlIterTreeAndRoot(f):
 
     return xmlIterTree, root
 
-def getPmids(term):
+def getPmids(term, retmax, reldate):
     """Get PMIDs for term."""
-
+    
+    retmax = round(int(retmax))
+    reldate = round(int(reldate))
+    
     # maximum number of articles to retrieve
     retmax_limit = 100000
-    retmax = 50
 
     # subset of articles to start from
     # (e.g. if retstart is 0, articles are fetched from the beginning of the stack.
     # if retstart is 10, first 10 articles in the stack are ignored.
     retstart = 0
-
-    # number of articles to fetch
-    # https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
-    oneYear = 365.2422
-    # number of days from now
-    reldate = round(oneYear * 5)
 
     pmids = []
     while retstart < retmax:
