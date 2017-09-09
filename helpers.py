@@ -1,3 +1,4 @@
+import datetime
 import re
 import sys
 import collections
@@ -69,6 +70,13 @@ def getPmids(term, retmax, reldate):
 def getFullRecs(pmids):
     """ Get full records from PMID """
 
+    # info for a summary report to be given in the front-end.
+    # pmids_included: number of articles checked (after excluding inappropriate ones)
+    # pubYear_oldest: publication year for oldest article fetched.
+    
+    pmids_included = len(pmids)
+    pubYear_oldest = 0 # today's date
+    
     # get records from Pubmed
     # record[0]: author (essential info)
     # record[1]: allAuthors
@@ -90,7 +98,7 @@ def getFullRecs(pmids):
 
     pmids = ','.join(pmids)
 
-    xml = "xml/pubmed.xml"
+    xml = "/home/gknam/Desktop/pubmed.xml"
     open(xml, "w").close()
 
     # get records from Pubmed
@@ -153,6 +161,7 @@ def getFullRecs(pmids):
                             skipArticle = True
 
                     if skipArticle:
+                        pmids_included -= 1
                         continue
 
                     # ↑↑↑ skip article if it should be excluded: end ↑↑↑ #
@@ -223,6 +232,13 @@ def getFullRecs(pmids):
                                 continue
 
                         record[2].append(year)
+                        
+                        # note publication year of oldest article in record (i.e. in current XML)
+                        if pubYear_oldest:
+                            if int(year) <= pubYear_oldest:
+                                pubYear_oldest = int(year)
+                        else:
+                            pubYear_oldest = int(year)
 
                     if not year:
                         continue
@@ -395,9 +411,9 @@ def getFullRecs(pmids):
 
     records = collections.OrderedDict(sorted(records.items()))
 
-    return records
+    return records, pmids_included, pubYear_oldest
 
-def topAuthorsRecs(records):
+def topAuthorsRecs(records, pmids_included, pubYear_oldest):
     """ get records of authors with most publication """
 
     # max plot dimensions (for equalising plot dimensions in the browser)
@@ -491,6 +507,9 @@ def topAuthorsRecs(records):
     # add info for max plot dimensions
     topAuthorsRecs.update({"dataCount": {"authorCountMax": authorCountMax, "journalCountMax": journalCountMax, "yearCountMax": yearCountMax}})
     topAuthorsRecs.update({"dataStrLengthMax": {"authorStrLenMax": authorStrLenMax, "journalStrLenMax": journalStrLenMax, "yearStrLenMax": yearStrLenMax}})
+    # add info for summary reports
+    topAuthorsRecs.update({"numberOfArticlesChecked": pmids_included})
+    topAuthorsRecs.update({"oldestPubyearChecked": pubYear_oldest})
 
     return topAuthorsRecs
 

@@ -145,8 +145,8 @@ handleTabPress("#q");
                 e.preventDefault();
             }
 
-            resetDisplay(searchTerm_div, images_div, pl1Svg_div, pl23Svg_div);
-            displaySearchTerm(searchTerm_div, suggestion.term.toLowerCase());
+            resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, images_div, pl1Svg_div, pl23Svg_div);
+            displaySearchDetail(searchDetail1_div, "Search term", suggestion.term.toLowerCase());
             displayGif(images_div, loadingGif); // See Note 6 at the bottom.
             records(suggestion);
         }
@@ -162,7 +162,9 @@ var pl1Svg_class = "author";
 var pl2Svg_class = "year";
 var pl3Svg_class = "journal";
 
-var searchTerm_div = "searchTerm";
+var searchDetail1_div = "searchDetail1";
+var searchDetail2_div = "searchDetail2";
+var searchDetail3_div = "searchDetail3";
 var images_div = "images"; // for "loadingGif" or apologies images
 var pl1Svg_div = "authorDiv";
 var pl23Svg_div = "yearJournalDiv";
@@ -245,12 +247,15 @@ function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     });
 }
 
-function displaySearchTerm(divClass, searchTerm) {
+function displaySearchDetail(divClass, label, searchDetail) {
     $("." + divClass).css("justify-content", "center");
     $("." + divClass).css("display", "flex");
     $("." + divClass).css("text-align", "justify");
-    $("." + divClass).css("font-size", "30px");
-    $("." + divClass).append("Search term: " + searchTerm);
+    $("." + divClass).css("font-size", "20px");
+    if (divClass == searchDetail1_div) {
+        $("." + divClass).css("margin-top", "30px");        
+    }
+    $("." + divClass).append(label + ":&nbsp<b>" + searchDetail + "</b>");
 }
 
 function displayGif(divClass, loadingGif) {
@@ -259,7 +264,7 @@ function displayGif(divClass, loadingGif) {
     $("." + divClass).append(loadingGif);
 }
 
-function resetDisplay(divClass1, divClass2, divClass3, divClass4) {
+function resetDisplay(divClass1, divClass2, divClass3, divClass4, divClass5, divClass6) {
     for (i of arguments) {
         $("." + i).empty();
         $("." + i).removeAttr("style");
@@ -381,7 +386,7 @@ function records(suggestion) {
             // remove GIF (See "Note 5" at the bottom)
             resetDisplay(images_div);
 
-            // prepare apology if data is empty has failed
+            // prepare apology if data is empty
             apology = dataFetchProblem(data);
 
             // display apology message if there was a problem fetching data
@@ -389,8 +394,13 @@ function records(suggestion) {
                 apologise(images_div, apology);
             }
             
-            // otherwise, draw plots
+            // otherwise...
             else {
+                // display number of articles checked and publication date of oldest article fetched
+                displaySearchDetail(searchDetail2_div, "Number of articles checked", data["numberOfArticlesChecked"]);
+                displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", data["oldestPubyearChecked"].toString());
+
+                // draw plots
                 drawGraphs(data, suggestion.term);
             }
         })
@@ -569,7 +579,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     for (var i in data) {
 
         // skip max plot dimensions info
-        if (i == "dataCount" || i == "dataStrLengthMax") {}
+        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesChecked" || i == "oldestPubyearChecked") {}
 
         // process publication records
         else {
