@@ -90,7 +90,7 @@ def getFullRecs(pmids):
 
     pmids = ','.join(pmids)
 
-    xml = "/home/gknam/Desktop/pubmed.xml"
+    xml = "xml/pubmed.xml"
     open(xml, "w").close()
 
     # get records from Pubmed
