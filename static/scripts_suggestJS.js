@@ -6,7 +6,7 @@ $(function() {
     setUpDialog("#contact", "#dialog_contact", "Contact")
 
     // configure typeahead
-    function typeAhead() {
+    function executeTypeahead() {
         $("#q").focus();
 
         $("#q").typeahead({
@@ -53,7 +53,7 @@ function handleTabPress(inputId) {
             // e.which = 9;
             // $(inputId).trigger(e);
             $(inputId).typeahead('destroy'); // remove drop-down
-            typeAhead();
+            executeTypeahead();
             $(inputId).typeahead('val', inputVal);
             $('#fetch').focus();
         }
@@ -111,6 +111,10 @@ handleTabPress("#q");
             }
             // submission by pressing enter
             else {
+                // do not refresh page
+                e.preventDefault();
+
+                // note input values
                 term = termContainer.q.value;
                 articles = termContainer.a.value;
                 days = termContainer.d.value;
@@ -119,11 +123,11 @@ handleTabPress("#q");
                 // (1) term is empty (enter was pressed without typing a term) or
                 // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
                 if (articles == '' || days == '' || term == '' || !term.replace(/\s/g, '').length) {
-                    e.preventDefault();
                     return;
                 }
             }
 
+            // pack input values
             suggestion = {
                 "term": term,
                 "retmax": articles,
@@ -136,14 +140,10 @@ handleTabPress("#q");
             $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
             $("#a").val(articles);
             $("#d").val(days);
-            typeAhead();
+            executeTypeahead();
             $("#q").focus();
             $("svg").remove();
             $("." + barDialog_div).remove();
-
-            if (e) {
-                e.preventDefault();
-            }
 
             resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, images_div, pl1Svg_div, pl23Svg_div);
             displaySearchDetail(searchDetail1_div, "Search term", suggestion.term.toLowerCase());
@@ -152,7 +152,7 @@ handleTabPress("#q");
         }
     }
 
-    typeAhead();
+    executeTypeahead();
     handleInput();
 
 });
