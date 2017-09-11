@@ -49,7 +49,10 @@ def records():
         return jsonify("error")
     
     # get full records from pmids
-    records, pmids_included, pubdate_oldest = getFullRecs(pmids)
+    if pmids:
+        records, pmids_included, pubdate_oldest = getFullRecs(pmids)
+    else:
+        return jsonify({})
     
     # get summary from full records
     topRecs = topAuthorsRecs(records, pmids_included, pubdate_oldest)
