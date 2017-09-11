@@ -98,7 +98,6 @@ handleTabPress("#q");
         function fetch(termContainer, e) {
 
             /* get search parameters */
-
             var term;
             var articles;
             var days;
@@ -118,14 +117,38 @@ handleTabPress("#q");
                 term = termContainer.q.value;
                 articles = termContainer.a.value;
                 days = termContainer.d.value;
+            }
 
-                // do nothing if
-                // (1) term is empty (enter was pressed without typing a term) or
-                // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
-                if (articles == '' || days == '' || term == '' || !term.replace(/\s/g, '').length) {
-                    return;
+            // do nothing if one or more of search parameters are ...
+            function isEmpty(value) {
+                if (value == '' || !value.replace(/\s/g, '').length) {
+                    return true;
                 }
             }
+
+            var noFetch = false;
+            var apology;
+            // (1) empty (enter was pressed without typing a term) or
+            // (2) contain only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
+            if (isEmpty(articles) || isEmpty(days) || isEmpty(term)) {
+                noFetch = true;
+                apology = apology4;
+
+            }
+            // input values for number of articles and/or days are not numbers.
+            else if (isNaN(articles) || isNaN(days)) {
+                noFetch = true;
+                apology = apology5;
+            }
+
+            if (noFetch) {
+                resetDisplay(images_div);
+                apologise(images_div, apology);
+                return;
+            }
+
+
+            // otherwise, continue fetching.
 
             // pack input values
             suggestion = {
@@ -179,16 +202,23 @@ var loadingGif = new Image();
 loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
-// load image to display when keyword fetched no data
+// load image to display when there is a problem
 var imageUrl = "http://i.imgur.com/A3ZR65I.png";
 // data fetch problem 1: empty data received
-var apology1 = apologyImage("no records found", "no records found", "try_a_different_keyword", imageUrl)
+var apology1 = apologyImage("no records found", "no_records_found", "try_a_different_keyword", imageUrl)
 
 // data fetch problem 2: error message received
 var apology2 = apologyImage("error", "error", "try_again", imageUrl)
 
-// data fetch problem 3: no data received (server may be offline)
-var apology3 = apologyImage("record fetching failed", "record_fetching_failed. server may be offline", "try_again", imageUrl)
+// data fetch problem 3: no data received (server may be offline or keyword found no articles)
+var apology3 = apologyImage("record fetching failed", "record_fetching_failed", "either_keyword_found_no_aritcles_server_may_be_offline", imageUrl)
+
+// keyword submission problem 1: one or more input values are empty or contains only white spaces
+var apology4 = apologyImage("empty input", "empty_input", "fill_all_input_boxes", imageUrl)
+// keyword submission problem 2: number of articles and/or days to check is not a number
+var apology5 = apologyImage("invalid input type", "invalid_input_type", "number_is_required_for_'number_of_days'_and_'number_of_articles'", imageUrl)
+
+
 
 function apologyImage(altText, topText, bottomText, imageUrl) {
     var apology = new Image();
@@ -299,7 +329,7 @@ function setUpDialog(linkId, dialogId, dialogTitle) {
 function dataFetchProblem(data) {
     var apology;
 
-    // no data received (server may be offline)
+    // no data received (server may be offline or keyword found no articles)
     if (data == null) {
         apology = apology3;
     }
