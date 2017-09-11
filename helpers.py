@@ -508,7 +508,7 @@ def topAuthorsRecs(records, pmids_included, pubYear_oldest):
     topAuthorsRecs.update({"dataCount": {"authorCountMax": authorCountMax, "journalCountMax": journalCountMax, "yearCountMax": yearCountMax}})
     topAuthorsRecs.update({"dataStrLengthMax": {"authorStrLenMax": authorStrLenMax, "journalStrLenMax": journalStrLenMax, "yearStrLenMax": yearStrLenMax}})
     # add info for summary reports
-    topAuthorsRecs.update({"numberOfArticlesChecked": pmids_included})
+    topAuthorsRecs.update({"numberOfArticlesFetched": pmids_included})
     topAuthorsRecs.update({"oldestPubyearChecked": pubYear_oldest})
 
     return topAuthorsRecs

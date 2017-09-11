@@ -118,7 +118,7 @@ handleTabPress("#q");
                 // do nothing if
                 // (1) term is empty (enter was pressed without typing a term) or
                 // (2) contains only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
-                if (term == '' || !term.replace(/\s/g, '').length) {
+                if (articles == '' || days == '' || term == '' || !term.replace(/\s/g, '').length) {
                     e.preventDefault();
                     return;
                 }
@@ -397,7 +397,7 @@ function records(suggestion) {
             // otherwise...
             else {
                 // display number of articles checked and publication date of oldest article fetched
-                displaySearchDetail(searchDetail2_div, "Number of articles checked", data["numberOfArticlesChecked"]);
+                displaySearchDetail(searchDetail2_div, "Number of articles fetched", data["numberOfArticlesFetched"]);
                 displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", data["oldestPubyearChecked"].toString());
 
                 // draw plots
@@ -579,7 +579,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     for (var i in data) {
 
         // skip max plot dimensions info
-        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesChecked" || i == "oldestPubyearChecked") {}
+        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesFetched" || i == "oldestPubyearChecked") {}
 
         // process publication records
         else {
