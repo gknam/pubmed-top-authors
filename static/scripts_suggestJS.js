@@ -7,9 +7,9 @@ $(function() {
 
     // configure typeahead
     function executeTypeahead() {
-        $("#q").focus();
+        $("#" + searchTerm_id).focus();
 
-        $("#q").typeahead({
+        $("#" + searchTerm_id).typeahead({
             highlight: false,
             minLength: 1
         }, {
@@ -74,13 +74,13 @@ function handleTabPress(inputId) {
 
 };
 
-handleTabPress("#q");
+handleTabPress("#" + searchTerm_id);
 */
 
     function handleInput() {
 
         // fetch records for the term selected from drop-down
-        $("#q").on("typeahead:selected", function(eventObject, suggestion, name) {
+        $("#" + searchTerm_id).on("typeahead:selected", function(eventObject, suggestion, name) {
             fetch(suggestion, null);
         });
 
@@ -90,23 +90,25 @@ handleTabPress("#q");
         });
 
         // do not fetch, but only autocomplete search term if tab key is pressed
-        $("#q").on("typeahead:autocomplete", function(eventObject, suggestion, name) {
-            $("#q").val(suggestion.term);
+        $("#" + searchTerm_id).on("typeahead:autocomplete", function(eventObject, suggestion, name) {
+            $("#" + searchTerm_id).val(suggestion.term);
         });
 
 
         function fetch(termContainer, e) {
 
             /* get search parameters */
-            var term;
-            var articles;
-            var days;
+            var searchTerm;
+            var numArticles;
+            var numDays;
+            var numTopAuthors;
 
             // typeahead selection
             if (!e) {
-                term = termContainer.term;
-                articles = $("#a").val();
-                days = $("#d").val();
+                searchTerm = termContainer.term;
+                numArticles = $("#" + numArticles_id).val();
+                numDays = $("#" + numDays_id).val();
+                numTopAuthors = $("#" + numTopAuthors_id).val();
             }
             // submission by pressing enter
             else {
@@ -114,12 +116,13 @@ handleTabPress("#q");
                 e.preventDefault();
 
                 // note input values
-                term = termContainer.q.value;
-                articles = termContainer.a.value;
-                days = termContainer.d.value;
+                searchTerm = termContainer.q.value;
+                numArticles = termContainer.a.value;
+                numDays = termContainer.d.value;
+                numTopAuthors = termContainer.n.value;
             }
 
-            // do nothing if one or more of search parameters are ...
+            // 1. do nothing if one or more of search parameters are (1) or (2)
             function isEmpty(value) {
                 if (value == '' || !value.replace(/\s/g, '').length) {
                     return true;
@@ -128,43 +131,60 @@ handleTabPress("#q");
 
             var noFetch = false;
             var apology;
-            // (1) empty (enter was pressed without typing a term) or
+            var toFocus = searchTerm_id;
+
+            // (1) empty (enter was pressed without typing a searchTerm) or
             // (2) contain only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
-            if (isEmpty(articles) || isEmpty(days) || isEmpty(term)) {
+            if (isEmpty(numTopAuthors) || isEmpty(numDays) || isEmpty(numArticles) || isEmpty(searchTerm)) {
                 noFetch = true;
                 apology = apology4;
-
+                if (isEmpty(numTopAuthors)) {
+                    toFocus = numTopAuthors_id;
+                }
+                else if (isEmpty(numDays)) {
+                    toFocus = numDays_id;
+                }
+                else if (isEmpty(numArticles)) {
+                    toFocus = numArticles_id;
+                }
+                // "searchTerm" already has the focus, so it's skipped
             }
             // input values for number of articles and/or days are not numbers.
-            else if (isNaN(articles) || isNaN(days)) {
+            else if (isNaN(numTopAuthors) || isNaN(numDays) || isNaN(numArticles)) {
                 noFetch = true;
                 apology = apology5;
+                if (isNaN(numTopAuthors)) {
+                    toFocus = numTopAuthors_id;
+                }
+                else if (isNaN(numDays)) {
+                    toFocus = numDays_id;
+                }
+                else if (isNaN(numArticles)) {
+                    toFocus = numArticles_id;
+                }
             }
 
             if (noFetch) {
+
+                resetFormOnSubmit(toFocus);
                 resetDisplay(images_div);
                 apologise(images_div, apology);
                 return;
             }
 
 
-            // otherwise, continue fetching.
+            // 2. otherwise, continue fetching.
 
             // pack input values
             suggestion = {
-                "term": term,
-                "retmax": articles,
-                "reldate": days
+                "term": searchTerm,
+                "retmax": numArticles,
+                "reldate": numDays
             };
 
             // remove drop-down
-            $("#q").typeahead('destroy');
+            resetFormOnSubmit(toFocus);
 
-            $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
-            $("#a").val(articles);
-            $("#d").val(days);
-            executeTypeahead();
-            $("#q").focus();
             $("svg").remove();
             $("." + barDialog_div).remove();
 
@@ -172,6 +192,24 @@ handleTabPress("#q");
             displaySearchDetail(searchDetail1_div, "Search term", suggestion.term.toLowerCase());
             displayGif(images_div, loadingGif); // See Note 6 at the bottom.
             records(suggestion);
+
+            function resetFormOnSubmit(toFocus) {
+                if (toFocus == searchTerm_id) {
+                    $("#" + searchTerm_id).typeahead('destroy');
+                    $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
+                    $("#" + numTopAuthors_id).val(numTopAuthors);
+                    $("#" + numArticles_id).val(numArticles);
+                    $("#" + numDays_id).val(numDays);
+                    executeTypeahead();
+                }
+                else {
+                    // leave searchTerm in input box
+                    $("#" + searchTerm_id).typeahead('val', searchTerm);
+                }
+
+                $("#" + toFocus).focus();
+                $("#" + toFocus).select();
+            }
         }
     }
 
@@ -188,10 +226,17 @@ var pl3Svg_class = "journal";
 var searchDetail1_div = "searchDetail1";
 var searchDetail2_div = "searchDetail2";
 var searchDetail3_div = "searchDetail3";
+
 var images_div = "images"; // for "loadingGif" or apologies images
 var pl1Svg_div = "authorDiv";
 var pl23Svg_div = "yearJournalDiv";
 var barDialog_div = "dialog_bar"
+
+// ids for input boxes in the form
+var numTopAuthors_id = "n";
+var numArticles_id = "a";
+var numDays_id = "d";
+var searchTerm_id = "q";
 
 // to be set in "chartDim" function
 var wToSratio;
@@ -216,7 +261,7 @@ var apology3 = apologyImage("record fetching failed", "record_fetching_failed", 
 // keyword submission problem 1: one or more input values are empty or contains only white spaces
 var apology4 = apologyImage("empty input", "empty_input", "fill_all_input_boxes", imageUrl)
 // keyword submission problem 2: number of articles and/or days to check is not a number
-var apology5 = apologyImage("invalid input type", "invalid_input_type", "number_is_required_for_'number_of_days'_and_'number_of_articles'", imageUrl)
+var apology5 = apologyImage("invalid input type", "invalid_input_type", "numbers_are_required_for_all_input_except_keyword", imageUrl)
 
 
 

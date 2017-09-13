@@ -92,13 +92,14 @@
         </div>
         <br>
         <div class="titles">
-            <p id="title">Find Pubmed's 5 authors with most publications</p>
-            <p id="sub_title">Check up to 100,000 articles published in the last 5 years</p>
+            <p id="title">Find Pubmed's authors with most publications</p>
         </div>
     </center>
     <!-- http://getbootstrap.com/css/#forms -->
     <form id="form">
         <div class="form-group">
+            Number of most-published authors to identify
+            <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="1" autocomplete="off"/>
             Max number of days from today
             <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off"/>
             Max number of articles to check
