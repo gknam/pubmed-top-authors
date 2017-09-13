@@ -413,12 +413,12 @@ def getFullRecs(pmids):
 
     return records, pmids_included, pubYear_oldest
 
-def topAuthorsRecs(records, pmids_included, pubYear_oldest):
+def topAuthorsRecs(records, pmids_included, pubYear_oldest, numTopAuthors):
     """ get records of authors with most publication """
 
     # max plot dimensions (for equalising plot dimensions in the browser)
     # "scripts_suggestJS.js" file --> "chartDim" function --> "dataCount" variable
-    authorCountMax = 5 # number of top authors to find
+    authorCountMax = numTopAuthors # number of top authors to find
     journalCountMax = 0
     yearCountMax = 0
     # "scripts_suggestJS.js" file --> "chartDim" function --> "dataStrLengthMax" variable

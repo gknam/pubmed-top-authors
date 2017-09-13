@@ -176,10 +176,11 @@ handleTabPress("#" + searchTerm_id);
             // 2. otherwise, continue fetching.
 
             // pack input values
-            suggestion = {
+            parameters = {
                 "term": searchTerm,
                 "retmax": numArticles,
-                "reldate": numDays
+                "reldate": numDays,
+                "numTopAuthors": numTopAuthors
             };
 
             // remove drop-down
@@ -189,9 +190,9 @@ handleTabPress("#" + searchTerm_id);
             $("." + barDialog_div).remove();
 
             resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, images_div, pl1Svg_div, pl23Svg_div);
-            displaySearchDetail(searchDetail1_div, "Search term", suggestion.term.toLowerCase());
+            displaySearchDetail(searchDetail1_div, "Search term", searchTerm.toLowerCase());
             displayGif(images_div, loadingGif); // See Note 6 at the bottom.
-            records(suggestion);
+            records(parameters);
 
             function resetFormOnSubmit(toFocus) {
                 if (toFocus == searchTerm_id) {
@@ -456,13 +457,7 @@ function suggest(query, syncResults, asyncResults) {
  * Updates UI's markers.
  */
 
-function records(suggestion) {
-
-    var parameters = {
-        term: suggestion.term,
-        retmax: suggestion.retmax,
-        reldate: suggestion.reldate
-    };
+function records(parameters) {
 
     // Cancel previous request after new request is made (http://stackoverflow.com/a/12713532)
     if (typeof request !== "undefined") {
@@ -492,7 +487,7 @@ function records(suggestion) {
                 displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", data["oldestPubyearChecked"].toString());
 
                 // draw plots
-                drawGraphs(data, suggestion.term);
+                drawGraphs(data, parameters.term);
             }
         })
 
@@ -1856,7 +1851,7 @@ The closest "bar" class is found (which is the closest parent element that conta
 
 Note 5
 Following code does the same thing. Does it do it differently?
-$.when(removeGif(pl1Svg_div)).then(drawGraphs(data, suggestion.term));
+$.when(removeGif(pl1Svg_div)).then(drawGraphs(data, parameters.term));
 
 
 Note 6
@@ -1872,7 +1867,7 @@ loadingGif.src = "/static/loading.gif";
 
 
 displayGif(images_div, loadingGif); // See Note 6 at the bottom.
-records(suggestion);
+records(parameters);
 __________________________________
 
 -- Following is the previous version
@@ -1883,7 +1878,7 @@ function displayGif(images_div, gif) {
 }
 
 displayGif(images_div, "/static/loading.gif"); // See Note 6 at the bottom.
-records(suggestion);
+records(parameters);
 __________________________________
 
 Such change has been made because the "getJSON" request in "records" was queued *before* GIF fetching in "displayGif".

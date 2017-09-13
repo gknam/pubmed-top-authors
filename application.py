@@ -43,6 +43,8 @@ def records():
     term = request.args.get('term')
     retmax = request.args.get('retmax')
     reldate = request.args.get('reldate')
+    numTopAuthors = int(request.args.get('numTopAuthors'))
+    
     try:
         pmids = getPmids(term, retmax, reldate)
     except:
@@ -55,5 +57,5 @@ def records():
         return jsonify({})
     
     # get summary from full records
-    topRecs = topAuthorsRecs(records, pmids_included, pubdate_oldest)
+    topRecs = topAuthorsRecs(records, pmids_included, pubdate_oldest, numTopAuthors)
     return jsonify(topRecs)
