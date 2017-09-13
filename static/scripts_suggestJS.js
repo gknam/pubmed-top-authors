@@ -322,15 +322,31 @@ function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     });
 }
 
-function displaySearchDetail(divClass, label, searchDetail) {
+function displaySearchDetail(divClass, label, searchDetail, label_tooltip, searchDetail_tooltip) {
     $("." + divClass).css("justify-content", "center");
     $("." + divClass).css("display", "flex");
     $("." + divClass).css("text-align", "justify");
     $("." + divClass).css("font-size", "20px");
+    
     if (divClass == searchDetail1_div) {
         $("." + divClass).css("margin-top", "30px");        
     }
-    $("." + divClass).append(label + ":&nbsp<b>" + searchDetail + "</b>");
+    
+    // add label (and its tooltip if available)
+    if (label_tooltip) {
+        $("." + divClass).html("<a title='" + label_tooltip + "'>" + label + "</a>");
+    }
+    else {
+        $("." + divClass).html(label + "");
+    }
+
+    // add searchDetail (and its tooltip if available)
+    if (searchDetail_tooltip) {
+        $("." + divClass).append(":&nbsp<a title='" + searchDetail_tooltip + "'<b>" + searchDetail + "</b></a>");
+    }
+    else {
+        $("." + divClass).append(":&nbsp<b>" + searchDetail + "</b>");
+    }
 }
 
 function displayGif(divClass, loadingGif) {
@@ -472,7 +488,7 @@ function records(suggestion) {
             // otherwise...
             else {
                 // display number of articles checked and publication date of oldest article fetched
-                displaySearchDetail(searchDetail2_div, "Number of articles fetched", data["numberOfArticlesFetched"]);
+                displaySearchDetail(searchDetail2_div, "Number of articles fetched", data["numberOfArticlesFetched"], null, "Inappropriate types of articles have been excluded (see \"About\" page)");
                 displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", data["oldestPubyearChecked"].toString());
 
                 // draw plots
