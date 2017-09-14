@@ -189,7 +189,7 @@ handleTabPress("#" + searchTerm_id);
             $("svg").remove();
             $("." + barDialog_div).remove();
 
-            resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, images_div, pl1Svg_div, pl23Svg_div);
+            resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, searchDetail4_div, images_div, pl1Svg_div, pl23Svg_div);
             displaySearchDetail(searchDetail1_div, "Search term", searchTerm.toLowerCase());
             displayGif(images_div, loadingGif); // See Note 6 at the bottom.
             records(parameters);
@@ -227,6 +227,7 @@ var pl3Svg_class = "journal";
 var searchDetail1_div = "searchDetail1";
 var searchDetail2_div = "searchDetail2";
 var searchDetail3_div = "searchDetail3";
+var searchDetail4_div = "searchDetail4";
 
 var images_div = "images"; // for "loadingGif" or apologies images
 var pl1Svg_div = "authorDiv";
@@ -334,19 +335,23 @@ function displaySearchDetail(divClass, label, searchDetail, label_tooltip, searc
     }
     
     // add label (and its tooltip if available)
-    if (label_tooltip) {
-        $("." + divClass).html("<a title='" + label_tooltip + "'>" + label + "</a>");
-    }
-    else {
-        $("." + divClass).html(label + "");
+    if (label) {
+        if (label_tooltip) {
+            $("." + divClass).html("<a title='" + label_tooltip + "'>" + label + "</a>");
+        }
+        else {
+            $("." + divClass).html(label + "");
+        }
     }
 
     // add searchDetail (and its tooltip if available)
-    if (searchDetail_tooltip) {
-        $("." + divClass).append(":&nbsp<a title='" + searchDetail_tooltip + "'<b>" + searchDetail + "</b></a>");
-    }
-    else {
-        $("." + divClass).append(":&nbsp<b>" + searchDetail + "</b>");
+    if (searchDetail) {
+        if (searchDetail_tooltip) {
+            $("." + divClass).append(":&nbsp<a title='" + searchDetail_tooltip + "'><b>" + searchDetail + "</b></a>");
+        }
+        else {
+            $("." + divClass).append(":&nbsp<b>" + searchDetail + "</b>");
+        }
     }
 }
 
@@ -356,7 +361,7 @@ function displayGif(divClass, loadingGif) {
     $("." + divClass).append(loadingGif);
 }
 
-function resetDisplay(divClass1, divClass2, divClass3, divClass4, divClass5, divClass6) {
+function resetDisplay(divClass1, divClass2, divClass3, divClass4, divClass5, divClass6, divClass7) {
     for (i of arguments) {
         $("." + i).empty();
         $("." + i).removeAttr("style");
@@ -483,8 +488,22 @@ function records(parameters) {
             // otherwise...
             else {
                 // display number of articles checked and publication date of oldest article fetched
-                displaySearchDetail(searchDetail2_div, "Number of articles fetched", data["numberOfArticlesFetched"], null, "Inappropriate types of articles have been excluded (see \"About\" page)");
-                displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", data["oldestPubyearChecked"].toString());
+                var searchDetail2 = data["numberOfArticlesFetched"].toString();
+                var searchDetail3 = data["oldestPubyearChecked"].toString();
+
+                var searchDetail2_tooltip = null
+                if (parameters.retmax > parseInt(searchDetail2)) { // when fewer articles than the requested number has been fetched
+                    searchDetail2_tooltip = "Some types of articles have been excluded (e.g. retraction notifications) - see \"About\" page."
+                }
+
+                displaySearchDetail(searchDetail2_div, "Number of articles fetched", searchDetail2, null, searchDetail2_tooltip);
+                displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", searchDetail3);
+
+                // notify user if server database is outdated (i.e. being updated right now)
+                var dbUpdating = data["dbUpdating"];
+                if ((typeof(dbUpdating) !== "undefined") && (dbUpdating)) {
+                    displaySearchDetail(searchDetail4_div, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
+                }
 
                 // draw plots
                 drawGraphs(data, parameters.term);
@@ -665,7 +684,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     for (var i in data) {
 
         // skip max plot dimensions info
-        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesFetched" || i == "oldestPubyearChecked") {}
+        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesFetched" || i == "oldestPubyearChecked" || i == "dbUpdating") {}
 
         // process publication records
         else {
