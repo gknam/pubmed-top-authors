@@ -487,25 +487,31 @@ function records(parameters) {
             
             // otherwise...
             else {
-                // display number of articles checked and publication date of oldest article fetched
+                /*
+                display search details
+                */
+
+                // number of articles checked and publication date of oldest article fetched
                 var searchDetail2 = data["numberOfArticlesFetched"].toString();
                 var searchDetail3 = data["oldestPubyearChecked"].toString();
 
-                var searchDetail2_tooltip = null
-                if (parameters.retmax > parseInt(searchDetail2)) { // when fewer articles than the requested number has been fetched
-                    searchDetail2_tooltip = "Some types of articles have been excluded (e.g. retraction notifications) - see \"About\" page."
+                // notify user if server database is outdated (i.e. being updated right now)
+                var searchDetail2_tooltip = null;
+                var dbUpdating = data["dbUpdating"];
+                if ((typeof(dbUpdating) !== "undefined") && (dbUpdating)) {
+                    displaySearchDetail(searchDetail4_div, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
+                }
+                // prepare notifification message if server is up-to-date, but fewer articles than the requested number has been fetched
+                else if (parameters.retmax > parseInt(searchDetail2)) {
+                    searchDetail2_tooltip = "Some types of articles have been excluded (e.g. retraction notifications) - see \"About\" page.";
                 }
 
                 displaySearchDetail(searchDetail2_div, "Number of articles fetched", searchDetail2, null, searchDetail2_tooltip);
                 displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", searchDetail3);
 
-                // notify user if server database is outdated (i.e. being updated right now)
-                var dbUpdating = data["dbUpdating"];
-                if ((typeof(dbUpdating) !== "undefined") && (dbUpdating)) {
-                    displaySearchDetail(searchDetail4_div, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
-                }
-
-                // draw plots
+                /*
+                draw plots
+                */
                 drawGraphs(data, parameters.term);
             }
         })
