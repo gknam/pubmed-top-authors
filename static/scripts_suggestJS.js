@@ -5,28 +5,145 @@ $(function() {
     setUpDialog("#about", "#dialog_about", "About")
     setUpDialog("#contact", "#dialog_contact", "Contact")
 
-    // configure typeahead
-    function executeTypeahead() {
-        $("#" + searchTerm_id).focus();
+    executeTypeahead();
 
-        $("#" + searchTerm_id).typeahead({
-            highlight: false,
-            minLength: 1
-        }, {
-            display: function(suggestion) {
-                return null; // See "Note 3" at the bottom about what to display.
-            },
-            limit: 20,
-            source: suggest,
-            templates: {
-                suggestion: Handlebars.compile(
-                    "<div>" +
-                    "{{term}}" +
-                    "</div>"
-                )
-            }
-        });
+    // get search option ("Keyword" or "Author")
+    searchOption = $('#' + searchOption_id).find(":selected").text(); // code from https://stackoverflow.com/a/10659117/7194743;
+    // reload typeahead when search option changes
+    onSearchOptionChange();
+
+    // deal with 
+    handleInput();
+
+});
+
+// classes for SVGs and DIVs
+var pl1Svg_class = "author";
+var pl2Svg_class = "year";
+var pl3Svg_class = "journal";
+
+var searchDetail1_class = "searchDetail1";
+var searchDetail2_class = "searchDetail2";
+var searchDetail3_class = "searchDetail3";
+var searchDetail4_class = "searchDetail4";
+
+var images_class = "images"; // for "loadingGif" or apologies images
+var pl1Div_class = "authorDiv";
+var pl23Div_class = "yearJournalDiv";
+var barDialog_class = "dialog_bar"
+
+// ids for input boxes in the form
+var numTopAuthors_id = "n";
+var numArticles_id = "a";
+var numDays_id = "d";
+var searchTerm_id = "q";
+var searchOption_id = "soption"
+
+// to be set in "chartDim" function
+var wToSratio;
+var svgMaxWidth;
+
+// load GIF image to display after submitting keyword
+var loadingGif = new Image();
+loadingGif.alt = "loading";
+loadingGif.src = "/static/loading.gif";
+
+// load image to display when there is a problem
+var imageUrl = "http://i.imgur.com/A3ZR65I.png";
+// apology mode ("txt" or "img")
+var apologyMode = "img";
+
+// data fetch problem 1: empty data received
+var apology_noRec = apologyMessage(apologyMode, "no records found", "no_records_found", "try_a_different_keyword", imageUrl);
+
+// data fetch problem 2: error message received
+var apology_error = apologyMessage(apologyMode, "error", "error", "try_again", imageUrl);
+
+// data fetch problem 3: no data received (server may be offline or keyword found no articles)
+var apology_fetchFail = apologyMessage(apologyMode, "record fetching failed", "record_fetching_failed", "either_keyword_found_no_aritcles_server_may_be_offline", imageUrl);
+
+// keyword submission problem 1: one or more input values are empty or contains only white spaces
+var apology_inputNull = apologyMessage(apologyMode, "empty input", "empty_input", "fill_all_input_boxes", imageUrl);
+
+// keyword submission problem 2: number of articles and/or days to check is not a number
+var apology_inputInvalid = apologyMessage(apologyMode, "invalid input type", "invalid_input_type", "numbers_are_required_for_all_input_except_keyword", imageUrl);
+
+function apologyMessage(mode, altText, topText, bottomText, imageUrl) {
+    // produce either apology image or text
+
+    var apology;
+    if (mode == "img") {
+        apology = apologyInImage(altText, topText, bottomText, imageUrl);
     }
+    else if (mode == "txt") {
+        apology = apologyInText(topText, bottomText);
+    }
+
+    var apologyPack = {
+        "topText": topText,
+        "bottomText": bottomText,
+        "apology": apology
+    }
+
+    return apologyPack;
+}
+
+function apologyInImage(altText, topText, bottomText, imageUrl) {
+    var apology_img = new Image();
+    apology_img.alt = altText;
+    apology_img.src = "https://memegen.link/custom/" + topText + "/" + bottomText + ".jpg?alt=" + imageUrl;
+    return apology_img;
+}
+
+
+function apologyInText(topText, bottomText) {
+    var apology_txt;
+
+    // put text in uppercase
+    topText = topText.toUpperCase();
+    bottomText = bottomText.toUpperCase();
+
+    // remove '_'
+    topText = topText.replace(/_/g, ' ');
+    bottomText = bottomText.replace(/_/g, ' ');
+
+    apology_txt = "<center><b>" + topText + "</b><br><br>" + bottomText + "<br></center>";
+
+    return apology_txt;
+}    
+
+// update search option upon change
+function onSearchOptionChange() {
+    $('#' + searchOption_id).on("change", function () {
+        $("#" + searchTerm_id).typeahead('destroy');
+        searchOption = $('#' + searchOption_id).find(":selected").text(); // code from https://stackoverflow.com/a/10659117/7194743
+        executeTypeahead();
+        $('#' + searchOption_id).focus();
+    })
+}
+
+// configure typeahead
+function executeTypeahead() {
+    $("#" + searchTerm_id).focus();
+
+    $("#" + searchTerm_id).typeahead({
+        highlight: false,
+        minLength: 1
+    }, {
+        display: function(suggestion) {
+            return null; // See "Note 3" at the bottom about what to display.
+        },
+        limit: 20,
+        source: suggest,
+        templates: {
+            suggestion: Handlebars.compile(
+                "<div>" +
+                "{{term}}" +
+                "</div>"
+            )
+        }
+    });
+}
 
 /* This block handles tab key press in input "#q" better, but there are caveats. Therefore this has been discarded for now.
 The working part is that when tab is pressed, focus moves to 'fetch' button while leaving typed value as it is.
@@ -77,204 +194,151 @@ function handleTabPress(inputId) {
 handleTabPress("#" + searchTerm_id);
 */
 
-    function handleInput() {
+// Deal with it when input (keyword or author name) is submitted
+function handleInput() {
 
-        // fetch records for the term selected from drop-down
-        $("#" + searchTerm_id).on("typeahead:selected", function(eventObject, suggestion, name) {
-            fetch(suggestion, null);
-        });
+    // fetch records for the term selected from drop-down
+    $("#" + searchTerm_id).on("typeahead:selected", function(eventObject, suggestion, name) {
+        fetch(suggestion, null);
+    });
 
-        // fetch records for the term typed in the form if enter key is pressed
-        $("form").submit(function(e) {
-            fetch(this, e);
-        });
+    // fetch records for the term typed in the form if enter key is pressed
+    $("form").submit(function(e) {
+        fetch(this, e);
+    });
 
-        // do not fetch, but only autocomplete search term if tab key is pressed
-        $("#" + searchTerm_id).on("typeahead:autocomplete", function(eventObject, suggestion, name) {
-            $("#" + searchTerm_id).val(suggestion.term);
-        });
+    // do not fetch, but only autocomplete search term if tab key is pressed
+    $("#" + searchTerm_id).on("typeahead:autocomplete", function(eventObject, suggestion, name) {
+        $("#" + searchTerm_id).val(suggestion.term);
+    });
 
 
-        function fetch(termContainer, e) {
+    function fetch(termContainer, e) {
 
-            /* get search parameters */
-            var searchTerm;
-            var numArticles;
-            var numDays;
-            var numTopAuthors;
+        /* get search parameters */
+        var searchTerm;
+        var numArticles;
+        var numDays;
+        var numTopAuthors;
 
-            // typeahead selection
-            if (!e) {
-                searchTerm = termContainer.term;
-                numArticles = $("#" + numArticles_id).val();
-                numDays = $("#" + numDays_id).val();
-                numTopAuthors = $("#" + numTopAuthors_id).val();
+        // typeahead selection
+        if (!e) {
+            searchTerm = termContainer.term;
+            numArticles = $("#" + numArticles_id).val();
+            numDays = $("#" + numDays_id).val();
+            numTopAuthors = $("#" + numTopAuthors_id).val();
+        }
+        // submission by pressing enter
+        else {
+            // do not refresh page
+            e.preventDefault();
+
+            // note input values
+            searchTerm = termContainer.q.value;
+            numArticles = termContainer.a.value;
+            numDays = termContainer.d.value;
+            numTopAuthors = termContainer.n.value;
+        }
+
+        // 1. do nothing if one or more of search parameters are (1) or (2)
+        function isEmpty(value) {
+            if (value == '' || !value.replace(/\s/g, '').length) {
+                return true;
             }
-            // submission by pressing enter
-            else {
-                // do not refresh page
-                e.preventDefault();
+        }
 
-                // note input values
-                searchTerm = termContainer.q.value;
-                numArticles = termContainer.a.value;
-                numDays = termContainer.d.value;
-                numTopAuthors = termContainer.n.value;
+        var noFetch = false;
+        var apology;
+        var toFocus = searchTerm_id;
+
+        // (1) empty (enter was pressed without typing a searchTerm) or
+        // (2) contain only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
+        if (isEmpty(numTopAuthors) || isEmpty(numDays) || isEmpty(numArticles) || isEmpty(searchTerm)) {
+            noFetch = true;
+            apology = apology_inputNull;
+            if (isEmpty(numTopAuthors)) {
+                toFocus = numTopAuthors_id;
             }
-
-            // 1. do nothing if one or more of search parameters are (1) or (2)
-            function isEmpty(value) {
-                if (value == '' || !value.replace(/\s/g, '').length) {
-                    return true;
-                }
+            else if (isEmpty(numDays)) {
+                toFocus = numDays_id;
             }
-
-            var noFetch = false;
-            var apology;
-            var toFocus = searchTerm_id;
-
-            // (1) empty (enter was pressed without typing a searchTerm) or
-            // (2) contain only white spaces (code from https://stackoverflow.com/a/10262019/7194743)
-            if (isEmpty(numTopAuthors) || isEmpty(numDays) || isEmpty(numArticles) || isEmpty(searchTerm)) {
-                noFetch = true;
-                apology = apology4;
-                if (isEmpty(numTopAuthors)) {
-                    toFocus = numTopAuthors_id;
-                }
-                else if (isEmpty(numDays)) {
-                    toFocus = numDays_id;
-                }
-                else if (isEmpty(numArticles)) {
-                    toFocus = numArticles_id;
-                }
-                // "searchTerm" already has the focus, so it's skipped
+            else if (isEmpty(numArticles)) {
+                toFocus = numArticles_id;
             }
-            // input values for number of articles and/or days are not numbers.
-            else if (isNaN(numTopAuthors) || isNaN(numDays) || isNaN(numArticles)) {
-                noFetch = true;
-                apology = apology5;
-                if (isNaN(numTopAuthors)) {
-                    toFocus = numTopAuthors_id;
-                }
-                else if (isNaN(numDays)) {
-                    toFocus = numDays_id;
-                }
-                else if (isNaN(numArticles)) {
-                    toFocus = numArticles_id;
-                }
+            // "searchTerm" already has the focus, so it's skipped
+        }
+        // input values for number of articles and/or days are not numbers.
+        else if (isNaN(numTopAuthors) || isNaN(numDays) || isNaN(numArticles)) {
+            noFetch = true;
+            apology = apology_inputInvalid;
+            if (isNaN(numTopAuthors)) {
+                toFocus = numTopAuthors_id;
             }
-
-            if (noFetch) {
-
-                resetFormOnSubmit(toFocus);
-                resetDisplay(images_div);
-                apologise(images_div, apology);
-                return;
+            else if (isNaN(numDays)) {
+                toFocus = numDays_id;
             }
+            else if (isNaN(numArticles)) {
+                toFocus = numArticles_id;
+            }
+        }
 
-
-            // 2. otherwise, continue fetching.
-
-            // pack input values
-            parameters = {
-                "term": searchTerm,
-                "retmax": numArticles,
-                "reldate": numDays,
-                "numTopAuthors": numTopAuthors
-            };
-
-            // remove drop-down
+        // display error notification if (1) or (2) is true
+        if (noFetch) {
             resetFormOnSubmit(toFocus);
+            resetDisplay(searchDetail1_class, searchDetail2_class, searchDetail3_class, searchDetail4_class, images_class, pl1Div_class, pl23Div_class, barDialog_class);
+            apologise(images_class, apology);
+            // $("." + images_class).append();
+            return;
+        }
 
-            $("svg").remove();
-            $("." + barDialog_div).remove();
 
-            resetDisplay(searchDetail1_div, searchDetail2_div, searchDetail3_div, searchDetail4_div, images_div, pl1Svg_div, pl23Svg_div);
-            displaySearchDetail(searchDetail1_div, "Search term", searchTerm.toLowerCase());
-            displayGif(images_div, loadingGif); // See Note 6 at the bottom.
-            records(parameters);
+        // 2. otherwise, continue fetching.
 
-            function resetFormOnSubmit(toFocus) {
-                if (toFocus == searchTerm_id) {
-                    $("#" + searchTerm_id).typeahead('destroy');
-                    $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
-                    $("#" + numTopAuthors_id).val(numTopAuthors);
-                    $("#" + numArticles_id).val(numArticles);
-                    $("#" + numDays_id).val(numDays);
-                    executeTypeahead();
-                }
-                else {
-                    // leave searchTerm in input box
-                    $("#" + searchTerm_id).typeahead('val', searchTerm);
-                }
+        // pack input values
+        parameters = {
+            "term": searchTerm,
+            "retmax": numArticles,
+            "reldate": numDays,
+            "numTopAuthors": numTopAuthors,
+            "searchOption": searchOption
+        };
 
+        // remove drop-down
+        resetFormOnSubmit(toFocus);
+
+        // $("svg").remove();
+        // $("." + barDialog_class).remove();
+
+        resetDisplay(searchDetail1_class, searchDetail2_class, searchDetail3_class, searchDetail4_class, images_class, pl1Div_class, pl23Div_class, barDialog_class);
+        displaySearchDetail(searchDetail1_class, "Search term", searchTerm.toLowerCase());
+        displayGif(images_class, loadingGif); // See Note 6 at the bottom.
+        records(parameters);
+
+        function resetFormOnSubmit(toFocus) {
+            
+            // if there is problematic input or input box, give it focus
+            if (noFetch) {
                 $("#" + toFocus).focus();
                 $("#" + toFocus).select();
             }
+            // otherwise, 
+            else {
+                $("#" + searchTerm_id).typeahead('destroy');
+                // $("form").trigger("reset"); // this line is necessary if submissionType is "submissionByEnter" (without this, the suggestions list reappears immediately)
+                // $("#" + numTopAuthors_id).val(numTopAuthors);
+                // $("#" + numArticles_id).val(numArticles);
+                // $("#" + numDays_id).val(numDays);
+                // $("#" + searchTerm_id).val(searchTerm);
+                executeTypeahead();
+            }
+            
+
+            // leave searchTerm in input box
+            $("#" + searchTerm_id).typeahead('val', searchTerm);
         }
     }
-
-    executeTypeahead();
-    handleInput();
-
-});
-
-// classes for SVGs and DIVs
-var pl1Svg_class = "author";
-var pl2Svg_class = "year";
-var pl3Svg_class = "journal";
-
-var searchDetail1_div = "searchDetail1";
-var searchDetail2_div = "searchDetail2";
-var searchDetail3_div = "searchDetail3";
-var searchDetail4_div = "searchDetail4";
-
-var images_div = "images"; // for "loadingGif" or apologies images
-var pl1Svg_div = "authorDiv";
-var pl23Svg_div = "yearJournalDiv";
-var barDialog_div = "dialog_bar"
-
-// ids for input boxes in the form
-var numTopAuthors_id = "n";
-var numArticles_id = "a";
-var numDays_id = "d";
-var searchTerm_id = "q";
-
-// to be set in "chartDim" function
-var wToSratio;
-var svgMaxWidth;
-
-// load GIF image to display after submitting keyword
-var loadingGif = new Image();
-loadingGif.alt = "loading";
-loadingGif.src = "/static/loading.gif";
-
-// load image to display when there is a problem
-var imageUrl = "http://i.imgur.com/A3ZR65I.png";
-// data fetch problem 1: empty data received
-var apology1 = apologyImage("no records found", "no_records_found", "try_a_different_keyword", imageUrl)
-
-// data fetch problem 2: error message received
-var apology2 = apologyImage("error", "error", "try_again", imageUrl)
-
-// data fetch problem 3: no data received (server may be offline or keyword found no articles)
-var apology3 = apologyImage("record fetching failed", "record_fetching_failed", "either_keyword_found_no_aritcles_server_may_be_offline", imageUrl)
-
-// keyword submission problem 1: one or more input values are empty or contains only white spaces
-var apology4 = apologyImage("empty input", "empty_input", "fill_all_input_boxes", imageUrl)
-// keyword submission problem 2: number of articles and/or days to check is not a number
-var apology5 = apologyImage("invalid input type", "invalid_input_type", "numbers_are_required_for_all_input_except_keyword", imageUrl)
-
-
-
-function apologyImage(altText, topText, bottomText, imageUrl) {
-    var apology = new Image();
-    apology.alt = altText;
-    var topText = topText;
-    var bottomText = bottomText;
-    apology.src = "https://memegen.link/custom/" + topText + "/" + bottomText + ".jpg?alt=" + imageUrl;
-    return apology;
 }
+
 
 function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     // change all SVGs unless one is specified
@@ -330,7 +394,7 @@ function displaySearchDetail(divClass, label, searchDetail, label_tooltip, searc
     $("." + divClass).css("text-align", "justify");
     $("." + divClass).css("font-size", "20px");
     
-    if (divClass == searchDetail1_div) {
+    if (divClass == searchDetail1_class) {
         $("." + divClass).css("margin-top", "30px");        
     }
     
@@ -361,10 +425,17 @@ function displayGif(divClass, loadingGif) {
     $("." + divClass).append(loadingGif);
 }
 
-function resetDisplay(divClass1, divClass2, divClass3, divClass4, divClass5, divClass6, divClass7) {
+function resetDisplay() {
+    // arguments are divClasses
     for (i of arguments) {
+        // remove contents of divClasses
         $("." + i).empty();
         $("." + i).removeAttr("style");
+        
+        // for barDialog_class, remove itself rather than just its contents
+        if (i == barDialog_class && $("." + i).length) {
+            $("." + barDialog_class).remove();
+        }
     }
 }
 
@@ -398,7 +469,7 @@ function dataFetchProblem(data) {
 
     // no data received (server may be offline or keyword found no articles)
     if (data == null) {
-        apology = apology3;
+        apology = apology_fetchFail;
     }
 
     else {
@@ -410,23 +481,30 @@ function dataFetchProblem(data) {
 
         // empty data received
         if (data_keys.length == 0) {
-            apology = apology1;
+            apology = apology_noRec;
         }
         // error message received
         else if (data == "error") {
-            apology = apology2;
+            apology = apology_error;
         }
     }
     
     return apology;
 }
 
-function apologise(divClass, apology) {
+function apologise(divClass, apologyPack) {
+    var apology = apologyPack.apology;
 
-    // display image
-    $("." + divClass).css("justify-content", "center");
-    $("." + divClass).css("display", "flex");
-    $("." + divClass).css("text-align", "justify");
+    // if apology is an image (not text), and the image failed to be loaded
+    if (apology instanceof HTMLImageElement && apology.height == 0) {
+        // prepare an apology in text version
+        var topText = apologyPack.topText;
+        var bottomText = apologyPack.bottomText;
+        apology = apologyInText(topText, bottomText);
+
+        // add Div style
+        $("." + divClass).css("background-color", "lightblue");
+    }
     $("." + divClass).append(apology);
 }
 
@@ -434,7 +512,17 @@ function apologise(divClass, apology) {
  * fetches suggestions from Pubmed API
  */
 function suggest(query, syncResults, asyncResults) {
-    // get places matching query (asynchronously)
+
+    // determine autocomplete dictionary to use
+    var autoCompDict;
+    if (searchOption == "Keyword") {
+        autoCompDict = "pm_related_queries_2";
+    }
+    else if (searchOption == "Author") {
+        autoCompDict = "auf";
+    }
+
+    // get input value
     var parameters = {
         q: query.toLowerCase() // search term
     };
@@ -444,7 +532,7 @@ function suggest(query, syncResults, asyncResults) {
     matches_dic = [];
 
     // get list of suggestions
-    $.getJSON("https://www.ncbi.nlm.nih.gov/portal/utils/autocomp.fcgi?dict=pm_related_queries_2&callback=?", parameters, NSuggest_CreateData)
+    $.getJSON("https://www.ncbi.nlm.nih.gov/portal/utils/autocomp.fcgi?dict=" + autoCompDict + "&callback=?", parameters, NSuggest_CreateData)
         .always(function(data, textStatus, jqXHR) { // See "Note 1" at the bottom about not including ".done"
             asyncResults(matches_dic);
 
@@ -475,14 +563,14 @@ function records(parameters) {
         $.getJSON(Flask.url_for("records"), parameters)
         .done(function(data, textStatus, jqXHR) {
             // remove GIF (See "Note 5" at the bottom)
-            resetDisplay(images_div);
+            resetDisplay(images_class);
 
             // prepare apology if data is empty
             apology = dataFetchProblem(data);
 
             // display apology message if there was a problem fetching data
             if (apology) {
-                apologise(images_div, apology);
+                apologise(images_class, apology);
             }
             
             // otherwise...
@@ -499,15 +587,15 @@ function records(parameters) {
                 var searchDetail2_tooltip = null;
                 var dbUpdating = data["dbUpdating"];
                 if ((typeof(dbUpdating) !== "undefined") && (dbUpdating)) {
-                    displaySearchDetail(searchDetail4_div, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
+                    displaySearchDetail(searchDetail4_class, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
                 }
                 // prepare notifification message if server is up-to-date, but fewer articles than the requested number has been fetched
                 else if (parameters.retmax > parseInt(searchDetail2)) {
                     searchDetail2_tooltip = "Some types of articles have been excluded (e.g. retraction notifications) - see \"About\" page.";
                 }
 
-                displaySearchDetail(searchDetail2_div, "Number of articles fetched", searchDetail2, null, searchDetail2_tooltip);
-                displaySearchDetail(searchDetail3_div, "Publication year of oldest article fetched", searchDetail3);
+                displaySearchDetail(searchDetail2_class, "Number of articles fetched", searchDetail2, null, searchDetail2_tooltip);
+                displaySearchDetail(searchDetail3_class, "Publication year of oldest article fetched", searchDetail3);
 
                 /*
                 draw plots
@@ -522,11 +610,11 @@ function records(parameters) {
             console.log(errorThrown.toString());
 
             // remove GIF
-            resetDisplay(images_div);
+            resetDisplay(images_class);
 
             // display apology message
             apology = dataFetchProblem(null);
-            apologise(images_div, apology);
+            apologise(images_class, apology);
 
         });
 }
@@ -565,7 +653,7 @@ function dialogsForPlots(svgClass, plotData) {
             })
             .enter()
             .append('div')
-                .attr('class', barDialog_div)
+                .attr('class', barDialog_class)
                 .attr('id', function (d) {
                         return d.barId + "_dialog";
                 })
@@ -626,9 +714,9 @@ function dialogsForPlots(svgClass, plotData) {
 function drawGraphs(data, term) { // term will be passed to drawBarChart
 
     // Create SVG element
-    var pl1Svg = insertSVG(pl1Svg_class, pl1Svg_div);
-    var pl2Svg = insertSVG(pl2Svg_class, pl23Svg_div);
-    var pl3Svg = insertSVG(pl3Svg_class, pl23Svg_div);
+    var pl1Svg = insertSVG(pl1Svg_class, pl1Div_class);
+    var pl2Svg = insertSVG(pl2Svg_class, pl23Div_class);
+    var pl3Svg = insertSVG(pl3Svg_class, pl23Div_class);
 
     // dimension for chart within SVG
     var pl1Dim;
@@ -1876,7 +1964,7 @@ The closest "bar" class is found (which is the closest parent element that conta
 
 Note 5
 Following code does the same thing. Does it do it differently?
-$.when(removeGif(pl1Svg_div)).then(drawGraphs(data, parameters.term));
+$.when(removeGif(pl1Div_class)).then(drawGraphs(data, parameters.term));
 
 
 Note 6
@@ -1891,18 +1979,18 @@ loadingGif.alt = "loading";
 loadingGif.src = "/static/loading.gif";
 
 
-displayGif(images_div, loadingGif); // See Note 6 at the bottom.
+displayGif(images_class, loadingGif); // See Note 6 at the bottom.
 records(parameters);
 __________________________________
 
 -- Following is the previous version
-function displayGif(images_div, gif) {
+function displayGif(images_class, gif) {
     $("." + divClass1).css("justify-content", "center");
     $("." + divClass1).css("display", "flex");
     $("." + divClass1).append("<img alt='loading' src='" + gif + "'/>");
 }
 
-displayGif(images_div, "/static/loading.gif"); // See Note 6 at the bottom.
+displayGif(images_class, "/static/loading.gif"); // See Note 6 at the bottom.
 records(parameters);
 __________________________________
 

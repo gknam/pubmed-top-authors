@@ -44,9 +44,10 @@ def records():
     retmax = request.args.get('retmax')
     reldate = request.args.get('reldate')
     numTopAuthors = int(request.args.get('numTopAuthors'))
+    searchOption = request.args.get('searchOption')
     
     try:
-        pmids = getPmids(term, retmax, reldate)
+        pmids = getPmids(term, retmax, reldate, searchOption)
     except:
         return jsonify("error")
     

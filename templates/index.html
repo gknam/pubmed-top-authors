@@ -98,15 +98,48 @@
     <!-- http://getbootstrap.com/css/#forms -->
     <form id="form">
         <div class="form-group">
+            <select id="invisel">
+                <option>Keyword</option>
+            </select>
             Number of most-published authors to identify
-            <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="1" autocomplete="off"/>
+            <div class="inputBox">
+                <select id="invisel" id="invisel">
+                    <option>Keyword</option>
+                </select>
+                <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="1" autocomplete="off" />
+            </div>
+            <select id="invisel">
+                <option>Keyword</option>
+            </select>
             Max number of days from today
-            <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off"/>
+            <div class="inputBox">
+                <select id="invisel">
+                    <option>Keyword</option>
+                </select>
+                <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off" />
+            </div>
+            <select id="invisel">
+                <option>Keyword</option>
+            </select>
             Max number of articles to check
-            <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="2" autocomplete="off"/>
-            Keyword<br>
-            <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="3" autocomplete="off" autofocus/>
-            <button type="submit" class="btn" id="fetch" tabindex="4" >Fetch!</button>
+            <div class="inputBox">
+                <select id="invisel">
+                    <option>Keyword</option>
+                </select>
+                <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="2" autocomplete="off" />
+            </div>
+            <select id="invisel">
+                <option>Keyword</option>
+            </select>
+            Keyword or Author
+            <div class="inputBox">
+                <select id="soption" tabindex="3">
+                    <option>Author</option>
+                    <option selected="selected">Keyword</option>
+                </select>
+                <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="4" autocomplete="off" autofocus/>
+                <button type="submit" class="btn" id="fetch" tabindex="5">Fetch!</button>
+            </div>
         </div>
     </form>
     <div class="searchDetail1"></div>

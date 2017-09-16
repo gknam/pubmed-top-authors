@@ -29,12 +29,17 @@ def getXmlIterTreeAndRoot(f):
 
     return xmlIterTree, root
 
-def getPmids(term, retmax, reldate):
+def getPmids(term, retmax, reldate, searchOption):
     """Get PMIDs for term."""
-    
+
     retmax = round(int(retmax))
     reldate = round(int(reldate))
-    
+
+    if searchOption == "Author":
+        term += "[au]"
+    elif searchOption == "Keyword":
+        pass
+
     # maximum number of articles to retrieve
     retmax_limit = 100000
 
@@ -65,6 +70,7 @@ def getPmids(term, retmax, reldate):
         retstart += retmax_limit
 
     # return results
+    print(pmids)
     return pmids
 
 def getFullRecs(pmids):
@@ -73,10 +79,10 @@ def getFullRecs(pmids):
     # info for a summary report to be given in the front-end.
     # pmids_included: number of articles checked (after excluding inappropriate ones)
     # pubYear_oldest: publication year for oldest article fetched.
-    
+
     pmids_included = len(pmids)
     pubYear_oldest = 0 # today's date
-    
+
     # get records from Pubmed
     # record[0]: author (essential info)
     # record[1]: allAuthors
@@ -177,7 +183,7 @@ def getFullRecs(pmids):
                         authorsInfo = elem.findall('.//AuthorList/Author[@ValidYN="Y"][LastName][ForeName]')
                         for i in range(len(authorsInfo)):
                             au = authorsInfo[i]
-                            
+
                             lname = toASCII(au.find("LastName").text)
                             fname = toASCII(au.find("ForeName").text)
                             author = lname + ', ' + fname
@@ -188,7 +194,7 @@ def getFullRecs(pmids):
                                 initials = toASCII(' '.join([i + '.' for i in au.find("Initials").text]))
                             except:
                                 initials = toASCII(' '.join([i[0] + '.' for i in fname.split()]))
-                            
+
                             try:
                                 authorsInfo_len = len(authorsInfo)
                                 # when there are multiple authors
@@ -203,10 +209,10 @@ def getFullRecs(pmids):
                                 pass
                     except:
                         pass
-                    
+
                     if not author:
                         continue
-                    
+
                     try:
                         record[1].append(allAuthors)
                     except:
@@ -232,7 +238,7 @@ def getFullRecs(pmids):
                                 continue
 
                         record[2].append(year)
-                        
+
                         # note publication year of oldest article in record (i.e. in current XML)
                         if pubYear_oldest:
                             if int(year) <= pubYear_oldest:
@@ -247,12 +253,12 @@ def getFullRecs(pmids):
                     journal = ''
                     try:
                         for jAbbr in elem.findall('MedlineJournalInfo/MedlineTA'):
-    
+
                             try:
                                 journal = toASCII(jAbbr.text)
                             except:
                                 continue
-    
+
                             record[4].append(journal)
                     except:
                         continue
@@ -295,7 +301,7 @@ def getFullRecs(pmids):
                         if doi:
                             doiLink = "http://dx.doi.org/" + doi
                             record[10].append(doiLink)
-                        
+
                         # article title
                         try:
                             aTitle = toASCII(a.find('ArticleTitle').text)
@@ -307,7 +313,7 @@ def getFullRecs(pmids):
                             aTitle = ''
 
                         record[3].append(aTitle)
-                        
+
                         # journal info , volume and issue
                         for j in a.findall('Journal'):
 
@@ -318,7 +324,7 @@ def getFullRecs(pmids):
                                 journalNonAbbr = journal
                             if journalNonAbbr == None:
                                 journalNonAbbr = ''
-                                
+
                             record[5].append(journalNonAbbr)
 
                             for ji in j.findall('JournalIssue'):
@@ -330,7 +336,7 @@ def getFullRecs(pmids):
 
                                 if journalVol == None:
                                     journalVol = ''
-                                
+
                                 record[6].append(journalVol)
 
                                 # issue
@@ -341,21 +347,21 @@ def getFullRecs(pmids):
 
                                 if journalIss == None:
                                     journalIss = ''
-                                
+
                                 record[7].append(journalIss)
-                                
+
                         # page numbers
                         pageNum = ''
                         try:
                             pageNum = a.find('Pagination/MedlinePgn').text
                         except:
                             pass
-                        
+
                         if pageNum == None:
                             pageNum = ''
-                        
+
                         record[8].append(pageNum)
-                    
+
                     # add key info to records
                     # make sure there is no empty field
                     if [] not in record:
@@ -364,7 +370,7 @@ def getFullRecs(pmids):
 
                             # put together full reference info
                             ref = []
-                            
+
                             for i in range(len(record)):
                                 if i in {0, 4}:
                                     continue
@@ -394,7 +400,7 @@ def getFullRecs(pmids):
 
                     elem.clear()
                 root.clear()
-    
+
     # sort reference info
     for author in records:
         # sort ref for journals by year, then authors

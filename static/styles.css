@@ -141,3 +141,28 @@ p {
 ul {
     list-style-position: outside;    
 }
+
+.images {
+    /*word-break: break-word;*/
+    color: #ff6600;
+    font-size: 30px;
+    max-width: 500px;
+    margin: auto;
+    justify-content: center;
+    display: flex;
+    text-align: justify;
+}
+
+select {
+    float: left;
+    margin-right: 5px;
+}
+
+.inputBox {
+    display: flex;
+    align-items: center;
+}
+
+#invisel {
+    opacity: 0;
+}
