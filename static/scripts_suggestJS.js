@@ -622,6 +622,8 @@ function records(parameters) {
 function NSuggest_CreateData(q, matches, count) {
     matches_dic = [];
     for (var i of matches) {
+        var indexOfAtSign = i.indexOf('@');
+        i = indexOfAtSign > -1 ? i.substring(0, indexOfAtSign) : i;
         matches_dic.push({ "term": i });
     }
 
