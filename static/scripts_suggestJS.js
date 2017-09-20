@@ -37,7 +37,12 @@ var numTopAuthors_id = "n";
 var numArticles_id = "a";
 var numDays_id = "d";
 var searchTerm_id = "q";
-var searchOption_id = "soption"
+var searchOption_id = "soption";
+
+// colours to be used in the plots
+var barColour_plot1_default = "#ff33bb";
+var barColour_plot23_default = "steelblue";
+var barColour_plot23_selected = "red";
 
 // to be set in "chartDim" function
 var wToSratio;
@@ -340,6 +345,18 @@ function handleInput() {
 }
 
 
+
+function pickPlotColour(currentSvgClass, altColours=false) {
+    var barColour;
+    if (currentSvgClass == pl1Svg_class) {
+        barColour = altColours ? barColour_plot23_default : barColour_plot1_default;
+    }
+    else {
+        barColour = altColours ? barColour_plot23_selected : barColour_plot23_default;
+    }
+    return barColour;
+}
+
 function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
     // change all SVGs unless one is specified
     var svgToAdjust = 'svg';
@@ -455,6 +472,9 @@ function setUpDialog(linkId, dialogId, dialogTitle) {
     .prev(".ui-dialog-titlebar")
     .find(".ui-button-icon")
     .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
+
+    // title bar colour
+    $(".ui-dialog-titlebar").css("background-color", barColour_plot23_default);
 
     // enable dialogue for link (code based on https://stackoverflow.com/a/964507/7194743)
     if (linkId) {
@@ -1058,9 +1078,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         var fontSize = chartDim.fontSize;
         var dataCount = chartDim.dataCount;
 
-        var barColour_unclicked = "#e600e6"
-        var barColour_clicked = "green"
-
         // quit if no data
         if (dataCount == 0) {
             return;
@@ -1141,7 +1158,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 return (d.x / xAxis_max) * (width - marginLeft);
             })
             .attr("height", barHeight)
-            .attr("fill", barColour_unclicked);
+            .attr("fill", pickPlotColour(svgClass));
 
         // Add text (number of publications)
         bar.append("text")
@@ -1203,31 +1220,34 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             // (code from https://stackoverflow.com/a/20881348/7194743)
 
             .off('mouseover').on('mouseover', function() {
+                var currentSvgClass = $(this).closest('svg').attr("class");
+
                 // change rect colour (mouse over bar)
                 if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                    $(this).attr("fill", barColour_clicked);
+                    $(this).attr("fill", pickPlotColour(currentSvgClass, altColours=true));
                 }
                 // change rect colour (mouse over text in rect)
                 else {
                     // code from http://stackoverflow.com/a/2679026
-                    $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
+                    $(this).closest(':has(rect)').find('rect').attr("fill", pickPlotColour(currentSvgClass, altColours=true));
                 }
             })
 
             .off('mouseleave').on('mouseleave', function() {
                 
                 var changeColour = true;
+                var currentSvgClass = $(this).closest('svg').attr("class");
                 
                 // For plot 1, do not change rect colour on mouseleave if bar has been clicked ("barId" is set on click).
-                if ($(this).closest('svg').attr("class") == pl1Svg_class) {
+                if (currentSvgClass == pl1Svg_class) {
                     if ($(this).closest('.bar').attr("id") == barId) {
                         changeColour = false; // See "Note 4" at the bottom. This line and the codes in mouseover does the same thing, but the approach is different.
                     }
                 }
 
-                // Change colour on mouse leave always for plots 2 and 3, and in all other cases for plot 1.
+                // Change colour on mouse leave (1) in all other cases for plot 1 and (2) always for plots 2 and 3.
                 if (changeColour) {
-                    $(this).closest('.bar').find('rect').attr("fill", barColour_unclicked);
+                    $(this).closest('.bar').find('rect').attr("fill", pickPlotColour(currentSvgClass));
                 }
             })
 
@@ -1235,11 +1255,11 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 // if ($(this).closest('.bar').attr("id") != barId) {
                 //     // recover rect colour (mouse over bar)
                 //     if ($(this).prop("tagName") == "rect") {
-                //             $(this).attr("fill", barColour_unclicked);
+                //             $(this).attr("fill", barColour_plot1_default);
                 //     }
                 //     // recover rect colour (mouse over text in rect)
                 //     else {
-                //             $(this).closest('rect').attr("fill", barColour_unclicked);
+                //             $(this).closest('rect').attr("fill", barColour_plot1_default);
                 //         }
                 //     }
                 // })
@@ -1248,20 +1268,22 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
                 // // change rect colour (mouse over bar)
                 // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                //     $(this).attr("fill", barColour_clicked);
+                //     $(this).attr("fill", barColour_plot23_default);
                 // }
                 // // change rect colour (mouse over text in rect)
                 // else {
                 //     // code from http://stackoverflow.com/a/2679026
-                //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
+                //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
                 // }
+
+                var currentSvgClass = $(this).closest('svg').attr("class");
 
                 // get bar group ID (author) of clicked bar
                 barId_temp = $(this).closest('.bar').attr("id");
                 // var chartClass_part = ($(this).closest('.chart').attr("class").split(" ")[1]);
 
                 // react to click in plots 2 and 3
-                if ($(this).closest('svg').attr("class") != pl1Svg_class) {
+                if (currentSvgClass != pl1Svg_class) {
                     $('#' + barId_temp + "_dialog").dialog("open");
                     return false;
                 }
@@ -1283,15 +1305,15 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                         $('.' + barId).attr("visibility", "visible");
 
                         /* recover rect colour of previously coloured rect */
-                        $('#' + oldBarId).find('rect').attr("fill", barColour_unclicked);
+                        $('#' + oldBarId).find('rect').attr("fill", pickPlotColour(currentSvgClass));
                         // //  when bar clicked
                         // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                        //     $('#' + oldBarId).attr("fill", barColour_clicked);
+                        //     $('#' + oldBarId).attr("fill", barColour_plot23_default);
                         // }
                         // // when text in rect clicked
                         // else {
                         //     // code from http://stackoverflow.com/a/2679026
-                        //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
+                        //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
                         // }
 
                         // recover rect colour of prevoiusly clicked bar
@@ -1526,7 +1548,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .data([plotData])
             .attr("class", "line")
             .attr("fill", "none")
-            .attr("stroke", "steelblue")
+            .attr("stroke", barColour_plot23_default)
             // .attr("stroke-width", "2px")
             .attr("d", valueline);
 
@@ -1563,7 +1585,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .enter()
             .append("circle")
             .attr("r", r)
-            .attr("fill", "steelblue")
+            .attr("fill", barColour_plot23_default)
             .attr("cx", function(d) { return xScale(d.x); })
             .attr("cy", function(d) { return yScale(d.y); })
             // .on("mouseover", function(d) { return d.y; })
@@ -1601,10 +1623,10 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
         focus.append("circle")
           .attr("r", 5)
-          .attr("fill", "red");
+          .attr("fill", barColour_plot23_selected);
 
         focus.append("text")
-          .attr("fill", "red")
+          .attr("fill", barColour_plot23_selected)
           .attr("font-weight", "bold")
           .attr("text-anchor", "middle")
           .attr("x", 0)
@@ -1734,7 +1756,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //         return (d.x / xAxis_max) * (width - marginLeft);
         //     })
         //     .attr("height", barHeight)
-        //     .attr("fill", barColour_unclicked);
+        //     .attr("fill", barColour_plot1_default);
 
         // // Add text (number of publications)
         // bar.append("text")
@@ -1793,21 +1815,21 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         //     .mouseover(function() {
         //         // bar
         //         if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-        //             $(this).attr("fill", barColour_clicked);
+        //             $(this).attr("fill", barColour_plot23_default);
         //         }
         //         // text in rect
         //         else {
-        //             $(this).closest('rect').attr("fill", barColour_clicked);
+        //             $(this).closest('rect').attr("fill", barColour_plot23_default);
         //             // alternative code (http://stackoverflow.com/a/2679026):
-        //             // $(this).closest(':has(rect)').find('rect').attr("fill", barColour_clicked);
+        //             // $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
         //         }
         //     })
 
         // .mouseleave(function() {
         //     if ($(this).prop("tagName") == "rect") {
-        //         $(this).attr("fill", barColour_unclicked);
+        //         $(this).attr("fill", barColour_plot1_default);
         //     } else {
-        //         $(this).closest('rect').attr("fill", barColour_unclicked);
+        //         $(this).closest('rect').attr("fill", barColour_plot1_default);
         //     }
         // })
 

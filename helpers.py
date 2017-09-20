@@ -70,7 +70,6 @@ def getPmids(term, retmax, reldate, searchOption):
         retstart += retmax_limit
 
     # return results
-    print(pmids)
     return pmids
 
 def getFullRecs(pmids):
