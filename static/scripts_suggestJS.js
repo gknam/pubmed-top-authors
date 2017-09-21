@@ -600,8 +600,12 @@ function records(parameters) {
                 */
 
                 // number of articles checked and publication date of oldest article fetched
-                var searchDetail2 = data["numberOfArticlesFetched"].toString();
+                var searchDetail2_all = data["numbersOfArticles"][0].toString(); // number of all articles found
+                var searchDetail2_inc = data["numbersOfArticles"][1].toString(); // number of included articles after possible exclusion
                 var searchDetail3 = data["oldestPubyearChecked"].toString();
+
+                // number of excluded articles due to being of inappropriate types
+                var numExcludedArticles = parseInt(searchDetail2_all) - parseInt(searchDetail2_inc);
 
                 // notify user if server database is outdated (i.e. being updated right now)
                 var searchDetail2_tooltip = null;
@@ -610,11 +614,11 @@ function records(parameters) {
                     displaySearchDetail(searchDetail4_class, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
                 }
                 // prepare notifification message if server is up-to-date, but fewer articles than the requested number has been fetched
-                else if (parameters.retmax > parseInt(searchDetail2)) {
-                    searchDetail2_tooltip = "Some types of articles have been excluded (e.g. retraction notifications) - see \"About\" page.";
+                else if (numExcludedArticles) {
+                    searchDetail2_tooltip = searchDetail2_all + " articles have been found, but " + numExcludedArticles.toString() + " have been excluded due to being inappropriate types (e.g. retraction notifications) - see \"About\" page.";
                 }
 
-                displaySearchDetail(searchDetail2_class, "Number of articles fetched", searchDetail2, null, searchDetail2_tooltip);
+                displaySearchDetail(searchDetail2_class, "Number of articles fetched", searchDetail2_inc, null, searchDetail2_tooltip);
                 displaySearchDetail(searchDetail3_class, "Publication year of oldest article fetched", searchDetail3);
 
                 /*
@@ -800,7 +804,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     for (var i in data) {
 
         // skip max plot dimensions info
-        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numberOfArticlesFetched" || i == "oldestPubyearChecked" || i == "dbUpdating") {}
+        if (i == "dataCount" || i == "dataStrLengthMax" || i == "numbersOfArticles" || i == "oldestPubyearChecked" || i == "dbUpdating") {}
 
         // process publication records
         else {

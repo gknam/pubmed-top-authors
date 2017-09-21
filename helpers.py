@@ -76,10 +76,11 @@ def getFullRecs(pmids):
     """ Get full records from PMID """
 
     # info for a summary report to be given in the front-end.
-    # pmids_included: number of articles checked (after excluding inappropriate ones)
+    # pmidsInc_len: number of articles checked (after excluding inappropriate ones)
     # pubYear_oldest: publication year for oldest article fetched.
 
-    pmids_included = len(pmids)
+    pmidsAll_len = len(pmids)
+    pmidsInc_len = pmidsAll_len
     pubYear_oldest = 0 # today's date
 
     # get records from Pubmed
@@ -166,7 +167,7 @@ def getFullRecs(pmids):
                             skipArticle = True
 
                     if skipArticle:
-                        pmids_included -= 1
+                        pmidsInc_len -= 1
                         continue
 
                     # ↑↑↑ skip article if it should be excluded: end ↑↑↑ #
@@ -416,9 +417,9 @@ def getFullRecs(pmids):
 
     records = collections.OrderedDict(sorted(records.items()))
 
-    return records, pmids_included, pubYear_oldest
+    return records, pmidsAll_len, pmidsInc_len, pubYear_oldest
 
-def topAuthorsRecs(records, pmids_included, pubYear_oldest, numTopAuthors):
+def topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors):
     """ get records of authors with most publication """
 
     # max plot dimensions (for equalising plot dimensions in the browser)
@@ -513,7 +514,7 @@ def topAuthorsRecs(records, pmids_included, pubYear_oldest, numTopAuthors):
     topAuthorsRecs.update({"dataCount": {"authorCountMax": authorCountMax, "journalCountMax": journalCountMax, "yearCountMax": yearCountMax}})
     topAuthorsRecs.update({"dataStrLengthMax": {"authorStrLenMax": authorStrLenMax, "journalStrLenMax": journalStrLenMax, "yearStrLenMax": yearStrLenMax}})
     # add info for summary reports
-    topAuthorsRecs.update({"numberOfArticlesFetched": pmids_included})
+    topAuthorsRecs.update({"numbersOfArticles": [pmidsAll_len, pmidsInc_len]})
     topAuthorsRecs.update({"oldestPubyearChecked": pubYear_oldest})
 
     return topAuthorsRecs
