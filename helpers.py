@@ -1,6 +1,7 @@
 import re
 import collections
 from unidecode import unidecode
+from operator import itemgetter
 import urllib, json
 import xml.etree.ElementTree as ET
 
@@ -404,13 +405,11 @@ def getFullRecs(pmids):
         # (code from https://stackoverflow.com/a/4233482/7194743)
         for j in records[author][1]["journals"]:
             jRec = records[author][1]["journals"][j]
-            refSorted = sorted(jRec[1], key = lambda x: (x[1], x[0]))
-            jRec[1] = refSorted
+            jRec[1] = sortRefs(jRec[1])
         # sort ref for years by year, then authors
         for y in records[author][2]["years"]:
             yRec = records[author][2]["years"][y]
-            refSorted = sorted(yRec[1], key = lambda x: (x[1], x[0]))
-            yRec[1] = refSorted
+            yRec[1] = sortRefs(yRec[1])
 
     records = collections.OrderedDict(sorted(records.items()))
 
@@ -553,6 +552,31 @@ def dashToSpace(string):
                   \u3161|\u1173|\u301C|\u3030|\u30FC|\u4E00|\uA4FE|\uFE31|\
                   \uFE32|\uFE58|\uFF5E|\uFE63|\uFF0D|\u10110|\u1104B|\u11052|\
                   \u110BE|\u1D360', ' ', string)
+
+def sortRefs(ref):
+    '''
+    Sort reference info unaffected by '&', ' ' and ','.
+    
+    Code based on https://stackoverflow.com/ref/5212885/7194743
+    '''
+    
+    indices = []
+    for i in range(len(ref)):
+        indices.append(i)
+    
+    ref_stripped = []
+    for i in range(len(ref)):
+        ref_stripped.append([re.sub("&| |,", "", j) for j in ref[i]])
+        ref_stripped[i].append(i)
+    
+    ref_stripped_sorted = sorted(ref_stripped, key=itemgetter(*indices))
+
+    ref_sorted = []
+    for i in range(len(ref_stripped_sorted)):
+        ind = ref_stripped_sorted[i][-1]
+        ref_sorted.append(ref[ind])
+    
+    return ref_sorted
 
 '''
 This is a different version of toASCII, discarded due to slow performance.
