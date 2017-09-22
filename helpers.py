@@ -1,8 +1,5 @@
-import datetime
 import re
-import sys
 import collections
-import unicodedata
 from unidecode import unidecode
 import urllib, json
 import xml.etree.ElementTree as ET
@@ -184,16 +181,16 @@ def getFullRecs(pmids):
                         for i in range(len(authorsInfo)):
                             au = authorsInfo[i]
 
-                            lname = toASCII(au.find("LastName").text)
-                            fname = toASCII(au.find("ForeName").text)
+                            lname = toASCII(dashToSpace(au.find("LastName").text))
+                            fname = toASCII(dashToSpace(au.find("ForeName").text))
                             author = lname + ', ' + fname
                             record[0].append(author)
 
                             # this is extra info (i.e. not essential)
                             try:
-                                initials = toASCII(' '.join([i + '.' for i in au.find("Initials").text]))
+                                initials = toASCII(dashToSpace(' '.join([i + '.' for i in au.find("Initials").text])))
                             except:
-                                initials = toASCII(' '.join([i[0] + '.' for i in fname.split()]))
+                                initials = toASCII(dashToSpace(' '.join([i[0] + '.' for i in fname.split()])))
 
                             try:
                                 authorsInfo_len = len(authorsInfo)
@@ -255,7 +252,7 @@ def getFullRecs(pmids):
                         for jAbbr in elem.findall('MedlineJournalInfo/MedlineTA'):
 
                             try:
-                                journal = toASCII(jAbbr.text)
+                                journal = toASCII(dashToSpace(jAbbr.text))
                             except:
                                 continue
 
@@ -304,7 +301,7 @@ def getFullRecs(pmids):
 
                         # article title
                         try:
-                            aTitle = toASCII(a.find('ArticleTitle').text)
+                            aTitle = toASCII(dashToSpace(a.find('ArticleTitle').text))
                         except:
                             pass
 
@@ -319,7 +316,7 @@ def getFullRecs(pmids):
 
                             # non-abbreviated title
                             try:
-                                journalNonAbbr = toASCII(j.find('Title').text)
+                                journalNonAbbr = toASCII(dashToSpace(j.find('Title').text))
                             except:
                                 journalNonAbbr = journal
                             if journalNonAbbr == None:
@@ -539,6 +536,23 @@ def toASCII(s):
 
     return d
 
+def dashToSpace(string):
+    """
+    Remove dash characters from string.
+
+    Dash characters have been collected from Wikipedia
+    (https://en.wikipedia.org/wiki/Dash#Similar_Unicode_characters)
+    """
+    return re.sub('\u2012|\u2013|\u2014|\u2015|\u2053|\u2E3A|\u2E3B|\u2012|\
+                  \u2013|\u2014|\u2015|\u2053|\u007E|\u02DC|\u223C|\u301C|\
+                  \uFF5E|\u002D|\u005F|\u007E|\u00AD|\u00AF|\u005F|\u203E|\
+                  \u02C9|\u02CD|\u02D7|\u02DC|\u2010|\u2011|\u2012|\u203E|\
+                  \u00AF|\u2043|\u207B|\u208B|\u2212|\u223C|\u23AF|\u23E4|\
+                  \u2500|\u2796|\u2E3A|\u2E3B|\u10191|\u058A|\u05BE|\u1400|\
+                  \u1428|\u1806|\u1B78|\u2E0F|\u2E17|\u2E1A|\u2E40|\u30A0|\
+                  \u3161|\u1173|\u301C|\u3030|\u30FC|\u4E00|\uA4FE|\uFE31|\
+                  \uFE32|\uFE58|\uFF5E|\uFE63|\uFF0D|\u10110|\u1104B|\u11052|\
+                  \u110BE|\u1D360', ' ', string)
 
 '''
 This is a different version of toASCII, discarded due to slow performance.

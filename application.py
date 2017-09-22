@@ -1,9 +1,4 @@
-import os
-import re
-
-import urllib, json
-
-from flask import Flask, jsonify, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request
 from flask_jsglue import JSGlue
 
 from helpers import getPmids, getFullRecs, topAuthorsRecs
