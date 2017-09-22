@@ -558,6 +558,7 @@ def sortRefs(ref):
     Sort reference info unaffected by '&', ' ' and ','.
     
     Code based on https://stackoverflow.com/ref/5212885/7194743
+    Alternative method at https://stackoverflow.com/a/4233482/7194743
     '''
     
     indices = []
