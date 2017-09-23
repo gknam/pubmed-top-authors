@@ -1,9 +1,13 @@
+import os
 import re
 import collections
 from unidecode import unidecode
 from operator import itemgetter
 import urllib, json
 import xml.etree.ElementTree as ET
+import string
+import random
+from glob import glob
 
 def getXmlIterTreeAndRoot(f):
     """
@@ -102,9 +106,6 @@ def getFullRecs(pmids):
 
     pmids = ','.join(pmids)
 
-    xml = "/home/gknam/Desktop/pubmed.xml"
-    open(xml, "w").close()
-
     # get records from Pubmed
     # note: To minimise use of memory, the requested XML will be saved as file
     # and each element will be accessed iteratively (instead of directly
@@ -113,12 +114,12 @@ def getFullRecs(pmids):
     # 1. using GET method
     try:
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
-        urllib.request.urlretrieve(url, filename=xml)
+        xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename())
     # 2. using POST method (if pmids is too long)
     except urllib.error.HTTPError:
         ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
-        urllib.request.urlretrieve(url, filename=xml, data=ids)
+        xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename(), data=ids)
 
     # for checking articles to exclude
     rt_discardCurrent = {"ErratumFor", "PartialRetractionOf", "ReprintIn", \
@@ -129,6 +130,10 @@ def getFullRecs(pmids):
                          "Published Erratum"}
 
     with open(xml, "r") as f:
+
+        # remove xml file to save space
+        os.remove(xml)
+
         # read in XMl and get root
         xmlIterTree, root = getXmlIterTreeAndRoot(f)
 
@@ -556,28 +561,46 @@ def dashToSpace(string):
 def sortRefs(ref):
     '''
     Sort reference info unaffected by '&', ' ' and ','.
-    
+
     Code based on https://stackoverflow.com/ref/5212885/7194743
     Alternative method at https://stackoverflow.com/a/4233482/7194743
     '''
-    
+
     indices = []
-    for i in range(len(ref)):
+    for i in range(len(ref[0])):
         indices.append(i)
-    
+
     ref_stripped = []
     for i in range(len(ref)):
         ref_stripped.append([re.sub("&| |,", "", j) for j in ref[i]])
         ref_stripped[i].append(i)
-    
+
     ref_stripped_sorted = sorted(ref_stripped, key=itemgetter(*indices))
 
     ref_sorted = []
     for i in range(len(ref_stripped_sorted)):
         ind = ref_stripped_sorted[i][-1]
         ref_sorted.append(ref[ind])
-    
+
     return ref_sorted
+
+def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath="xml_efetch/"):
+    """
+    Generate random strings of 8 digits as an XML filename, making sure that
+    the filename is different from an existing one.
+
+    This is done to prevent one XML overwriting another in case multiple XML
+    downloads are invoked at the same time (e.g. if several users submit queries
+    at similar times).
+    """
+    notDone = True
+
+    while notDone:
+        # code from https://stackoverflow.com/a/2257449/7194743
+        xml = filepath + ''.join(random.choice(chars) for _ in range(size)) + ".xml"
+        notDone = glob(xml)
+
+    return xml
 
 '''
 This is a different version of toASCII, discarded due to slow performance.
