@@ -5,15 +5,27 @@ $(function() {
     setUpDialog("#about", "#dialog_about", "About")
     setUpDialog("#contact", "#dialog_contact", "Contact")
 
+    // initiate suggestions list in search text box
     executeTypeahead();
 
     // get search option ("Keyword" or "Author")
     searchOption = $('#' + searchOption_id).find(":selected").text(); // code from https://stackoverflow.com/a/10659117/7194743;
-    // reload typeahead when search option changes
+
+    // get database option ("original" or "extract")
+    databaseOption = $('#' + databaseOption_id).find(":selected").attr("id");
+
+    // update search option and reload typeahead on change
     onSearchOptionChange();
+
+    // update database option on change
+    onDbOptionChange();
 
     // deal with 
     handleInput();
+
+    // load jQuery UI tooltip
+    var doption_tooltip = '<b>Original</b><br>Data are fetched directly in XML format from NCBI&#39;s pubmed database. This is reliable, but slow.<br><br><b>Extracts from original</b><br>Data are fetched from a database in this website&#39;s server. The server database contains the data which have been pre-fetched in similar ways as the "Original" option uses. This could be faster, but less reliable. This is because the updating system has not been fully tested, which means that the server database could be temporarily outdated (currently it checks for updates every 10 minutes) or inaccurate';
+    setUpTooltip(".doption_tooltip", doption_tooltip);
 
 });
 
@@ -32,7 +44,8 @@ var pl1Div_class = "authorDiv";
 var pl23Div_class = "yearJournalDiv";
 var barDialog_class = "dialog_bar"
 
-// ids for input boxes in the form
+// ids from the form
+var databaseOption_id = "doption";
 var numTopAuthors_id = "n";
 var numArticles_id = "a";
 var numDays_id = "d";
@@ -124,6 +137,12 @@ function onSearchOptionChange() {
         searchOption = $('#' + searchOption_id).find(":selected").text(); // code from https://stackoverflow.com/a/10659117/7194743
         executeTypeahead();
         $('#' + searchOption_id).focus();
+    })
+}
+
+function onDbOptionChange() {
+    $('#' + databaseOption_id).on("change", function () {
+        databaseOption = $('#' + databaseOption_id).find(":selected").attr("id");
     })
 }
 
@@ -305,7 +324,8 @@ function handleInput() {
             "retmax": numArticles,
             "reldate": numDays,
             "numTopAuthors": numTopAuthors,
-            "searchOption": searchOption
+            "searchOption": searchOption,
+            "databaseOption": databaseOption
         };
 
         // remove drop-down
@@ -416,19 +436,23 @@ function displaySearchDetail(divClass, label, searchDetail, label_tooltip, searc
     }
     
     // add label (and its tooltip if available)
+    var label_tooltipClass = divClass + "_labelTooltip"
     if (label) {
         if (label_tooltip) {
-            $("." + divClass).html("<a title='" + label_tooltip + "'>" + label + "</a>");
+            $("." + divClass).html("<a title='' class='" + label_tooltipClass + "'>" + label + "</a>");
+            setUpTooltip("." + label_tooltipClass, label_tooltip);
         }
         else {
-            $("." + divClass).html(label + "");
+            $("." + divClass).html(label);
         }
     }
 
     // add searchDetail (and its tooltip if available)
+    var tooltipClass = divClass + "_tooltip"
     if (searchDetail) {
         if (searchDetail_tooltip) {
-            $("." + divClass).append(":&nbsp<a title='" + searchDetail_tooltip + "'><b>" + searchDetail + "</b></a>");
+            $("." + divClass).append(":&nbsp<a title='' class='" + tooltipClass + "'><b>" + searchDetail + "</b></a>");
+            setUpTooltip("." + tooltipClass, searchDetail_tooltip);
         }
         else {
             $("." + divClass).append(":&nbsp<b>" + searchDetail + "</b>");
@@ -454,6 +478,15 @@ function resetDisplay() {
             $("." + barDialog_class).remove();
         }
     }
+}
+
+function setUpTooltip(linkId, tooltip_content) {
+    $(linkId).tooltip({
+        items: "a[title]",
+        content: function(ui) {
+            return tooltip_content;
+        }
+    })
 }
 
 function setUpDialog(linkId, dialogId, dialogTitle) {
@@ -610,12 +643,12 @@ function records(parameters) {
                 // notify user if server database is outdated (i.e. being updated right now)
                 var searchDetail2_tooltip = null;
                 var dbUpdating = data["dbUpdating"];
-                if ((typeof(dbUpdating) !== "undefined") && (dbUpdating)) {
-                    displaySearchDetail(searchDetail4_class, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment. This means (1) that some articles found on Pubmed may have been missed or (2) that the info fetched from the server database for some articles may be outdated.");
+                if ((databaseOption == "extract") && (dbUpdating)) {
+                    displaySearchDetail(searchDetail4_class, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment.<br><br>This means one of the following.<br>(1) Some articles found on Pubmed may have been missed. Or<br>(2)The info fetched from the server database may be outdated for some articles.");
                 }
                 // prepare notifification message if server is up-to-date, but fewer articles than the requested number has been fetched
                 else if (numExcludedArticles) {
-                    searchDetail2_tooltip = searchDetail2_all + " articles have been found, but " + numExcludedArticles.toString() + " have been excluded due to being inappropriate types (e.g. retraction notifications) - see \"About\" page.";
+                    searchDetail2_tooltip = "<b>" + searchDetail2_all + "</b> articles have been found, but <b>" + numExcludedArticles.toString() + "</b> have been excluded due to being inappropriate types (e.g. retraction notifications) - see \"About\" page.";
                 }
 
                 displaySearchDetail(searchDetail2_class, "Number of articles fetched", searchDetail2_inc, null, searchDetail2_tooltip);

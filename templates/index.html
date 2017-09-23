@@ -101,12 +101,26 @@
             <select id="invisel">
                 <option>Keyword</option>
             </select>
-            Number of most-published authors to identify
+            <a title="" class="doption_tooltip">*Database to query</a>
             <div class="inputBox">
-                <select id="invisel" id="invisel">
+                <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="1" autocomplete="off" />
+                <select id="doption" tabindex="1">
+                    <option id="original" selected="selected">Original (more reliable, but slower)</option>
+                    <option id="extract">Extracts from original (faster, but less reliable)</option>
+                </select>
+            </div>
+            <br>
+            <select id="invisel">
+                <option>Keyword</option>
+            </select>
+            Number of most-published authors to identify
+            <div class="inputBox">
+                <select id="invisel">
+                    <option>Keyword</option>
+                </select>
+                <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="2" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
@@ -116,7 +130,7 @@
                 <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off" />
+                <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="3" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
@@ -126,19 +140,19 @@
                 <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="2" autocomplete="off" />
+                <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="4" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
             </select>
             Keyword or Author
             <div class="inputBox">
-                <select id="soption" tabindex="3">
+                <select id="soption" tabindex="5">
                     <option>Author</option>
                     <option selected="selected">Keyword</option>
                 </select>
-                <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="4" autocomplete="off" autofocus/>
-                <button type="submit" class="btn" id="fetch" tabindex="5">Fetch!</button>
+                <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="6" autocomplete="off" autofocus/>
+                <button type="submit" class="btn" id="fetch" tabindex="7">Fetch!</button>
             </div>
         </div>
     </form>
