@@ -2,19 +2,19 @@ import ast
 import asyncio
 import collections
 import datetime
-from glob import glob
 import gzip
 import hashlib
-import socket
 import logging
 import os
+import random
 import re
 import time
-import xml.etree.ElementTree as ET
+import socket
 import string
-import random
+import xml.etree.ElementTree as ET
 
 from ftplib import FTP
+from glob import glob
 from unidecode import unidecode
 from urllib.request import urlretrieve
 from operator import itemgetter
@@ -22,7 +22,7 @@ from operator import itemgetter
 import urllib, json
 
 ### Note 1 ###
-# Each time a file is read or written, ".replace('\x00', '')" is added to 
+# Each time a file is read or written, ".replace('\x00', '')" is added to
 # prevent null bytes ('\x00') being written and remove them if already written
 #
 ## Note 2 ###
@@ -33,10 +33,16 @@ import urllib, json
 # directly from Pubmed using eFetch ("original") or
 # from server database which contains extracts from Pubmed database
 # of NCBI ("extract").
-# 
+#
 # The only functions whose names indicate these versions are getFullRecs_ori
 # and getFullRecs_ext.
 ##############
+
+# tool name and developer's email
+# (NCBI will contact the developer with this in case there is a problem
+# (http://bit.ly/2whcAzM))
+tool = "pubmedTopAuthors"
+email = "simon_nam@hotmail.com"
 
 # dbUpdating status indicator
 dbUpdating = False
@@ -51,7 +57,7 @@ logging.basicConfig(level=logging.DEBUG, filename=tempLog)
 def getPmids(term, retmax, reldate, searchOption):
     """
     Get PMIDs for term.
-    
+
     version required by: both
     """
 
@@ -77,7 +83,7 @@ def getPmids(term, retmax, reldate, searchOption):
         retmax_part = retmax if retmax <=retmax_limit else retmax_limit
 
         # retrieve PMIDs
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&tool={}&email={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)), urllib.parse.quote(tool), urllib.parse.quote(email))
         feed = urllib.request.urlopen(url)
         obj = json.loads(feed.read().decode("utf-8"))
 
@@ -98,7 +104,7 @@ def getPmids(term, retmax, reldate, searchOption):
 def getFullRecs_ext(db, pmids):
     """
     For each PMID, get full records from database
-    
+
     version required by: extract
     """
 
@@ -306,7 +312,7 @@ def getFullRecs_ext(db, pmids):
                 yRec = records[author][2]["years"][y]
                 yRec[1] = sortRefs(yRec[1])
 
-        
+
         # sort whole records
         records = collections.OrderedDict(sorted(records.items()))
 
@@ -315,7 +321,7 @@ def getFullRecs_ext(db, pmids):
 def getFullRecs_ori(pmids):
     """
     Get full records from PMID
-    
+
     version required by: original
     """
 
@@ -355,11 +361,11 @@ def getFullRecs_ori(pmids):
 
     # 1. using GET method
     try:
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml&tool={}&email={}".format(pmids, urllib.parse.quote(tool), urllib.parse.quote(email))
         xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename())
     # 2. using POST method (if pmids is too long)
     except urllib.error.HTTPError:
-        ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
+        ids = urllib.parse.urlencode({"id": pmids, "tool": tool, "email": email}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
         xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename(), data=ids)
 
@@ -665,7 +671,7 @@ def getFullRecs_ori(pmids):
 def topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors):
     """
     get records of authors with most publication
-    
+
     version required by: both
     """
     global dbUpdating
@@ -777,7 +783,7 @@ def toASCII(s):
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
     https://stackoverflow.com/a/518232
-    
+
     version required by: both
     """
 
@@ -796,7 +802,7 @@ def toASCII(s):
 def removeFromLog(logName, key):
     """
     Removes key from log
-    
+
     version required by: extract
     """
     with open(logName, "a+") as f:
@@ -819,10 +825,10 @@ def call_in_background(target, db, *, loop=None, executor=None):
     If not given, *executor* defaults to the loop's default executor
 
     Returns the scheduled task.
-    
+
     version required by: extract
     """
-    
+
     if loop is None:
         # code from https://stackoverflow.com/a/25066490/7194743
         loop = asyncio.new_event_loop()
@@ -844,10 +850,10 @@ def ftpJob(ftpAddress, directory, *args):
     Return a tuple: First value indicates whether FTP loggin was successful.
                     Second value is the result of the command if "returnVal"
                         assignment was indicated in args.
-                        
+
     version required by: extract
     """
-    
+
     ftp = ""
     ftpJobDone = False
     failedFtpJobs_file = "logs_others/failedFtpJobs.txt"
@@ -901,7 +907,7 @@ def ftpQuit(ftp):
     """
     version required by: extract
     """
-    
+
     if type(ftp) == FTP:
         try:
             ftp.quit()
@@ -914,7 +920,7 @@ def ftpGetMd5(f, ftp):
     code from http://smithje.github.io/python/2013/07/02/md5-over-ftp
 
     Fetches MD5 of specified file on FTP server.
-    
+
     version required by: extract
     """
     f_md5 = hashlib.md5()
@@ -928,7 +934,7 @@ def dashToSpace(chars):
 
     Dash characters have been collected from Wikipedia
     (https://en.wikipedia.org/wiki/Dash#Similar_Unicode_characters)
-    
+
     version required by: both
     """
     return re.sub('\u2012|\u2013|\u2014|\u2015|\u2053|\u2E3A|\u2E3B|\u2012|\
@@ -945,7 +951,7 @@ def dashToSpace(chars):
 def dbConExe(db, command, **kwargs):
     """
     Temporarily connect to db and return rows if available
-    
+
     version required by: extract
     """
 
@@ -975,11 +981,11 @@ def getXmlIterTreeAndRoot(f):
     through xmlIterTree, root element will be cleared every time an element's
     end is reached. Otherwises memory usage keeps increasing
     (see http://effbot.org/zone/element-iterparse.htm).
-    
+
     version required by: both
     """
     # This line is needed in xmlToDb function in "extract" version.
-    # This is because XML file is read twice. At second reading, this returns 
+    # This is because XML file is read twice. At second reading, this returns
     # the file position indicator (or "cursor", so-to-speak) to the beginning
     # of the XML.
     f.seek(os.SEEK_SET)
@@ -1036,7 +1042,7 @@ def updateDb(db):
 
     Note 3:
         set is often used instead of list to ensure there are no repeating values.
-    
+
     version required by: extract
     """
 #    print("db update started")
@@ -1383,7 +1389,7 @@ def xmlToDb(db, xml):
                         xml (XML filename) and pmid are also
                         essential info, but they cannot have been missed if the
                         logging stage has been reached.
-    
+
     version required by: extract
     """
     # file and directory paths
@@ -1911,7 +1917,7 @@ def saveVarAsLog(logName, key, value):
     """
     Creates and or update a dictionary with "key" and "value",
     then saves the dicitonary into a log ("logName").
-    
+
     version required by: extract
     """
 
@@ -1940,12 +1946,12 @@ def logToDic(logName):
     """
     "logName" is a log with dict saved as string.
     Returns dict converted from the string.
-    
+
     version required by: extract
     """
     with open(logName, "a+") as f:
         f.seek(os.SEEK_SET)
-        
+
         # in case a file is filled with '\x00' (null bytes)
         # code based on https://stackoverflow.com/a/4169762/7194743
         dicStr = f.read().replace('\x00', '')
@@ -1964,7 +1970,7 @@ def getListsInDic(dic):
     """
     dic is a dictionary whose values are lists.
     Combines and returns all lists in dic.
-    
+
     version required by: extract
     """
     out = []
@@ -2023,29 +2029,29 @@ def updateDbStart(db):
 def sortRefs(ref):
     '''
     Sort reference info unaffected by '&', ' ' and ','.
-    
+
     Code based on https://stackoverflow.com/ref/5212885/7194743
     Alternative method at https://stackoverflow.com/a/4233482/7194743
-    
+
     version required by: both
     '''
-    
+
     indices = []
     for i in range(len(ref[0])):
         indices.append(i)
-    
+
     ref_stripped = []
     for i in range(len(ref)):
         ref_stripped.append([re.sub("&| |,", "", j) for j in ref[i]])
         ref_stripped[i].append(i)
-    
+
     ref_stripped_sorted = sorted(ref_stripped, key=itemgetter(*indices))
 
     ref_sorted = []
     for i in range(len(ref_stripped_sorted)):
         ind = ref_stripped_sorted[i][-1]
         ref_sorted.append(ref[ind])
-    
+
     return ref_sorted
 
 def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath="xml_efetch/"):
@@ -2056,7 +2062,7 @@ def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, file
     This is done to prevent one XML overwriting another in case multiple XML
     downloads are invoked at the same time (e.g. if several users submit queries
     at similar times).
-    
+
     version required by: original
     """
     notDone = True
@@ -2082,7 +2088,7 @@ def toASCII(s):
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
     https://stackoverflow.com/a/518232
-    
+
     version required by: both
     """
 

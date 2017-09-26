@@ -22,7 +22,7 @@ if app.config["DEBUG"]:
 # configure CS50 Library to use SQLite database
 db_file = "database/pubmed.db"
 db = create_engine("sqlite:///" + db_file)
-        
+
 # create db if it does not exist
 with open(db_file, "a") as f:
     pass
@@ -66,7 +66,7 @@ def index():
 def records():
     """Retreive key records of authors with most publications."""
     global db
-    
+
     # ensure parameter is present
     if not request.args.get("term"):
         raise RuntimeError("missing term")
@@ -83,7 +83,7 @@ def records():
         pmids = getPmids(term, retmax, reldate, searchOption)
     except:
         return jsonify("error")
-    
+
     # get full records from pmids
     if pmids:
         if databaseOption == "extract":
@@ -92,27 +92,7 @@ def records():
             records, pmidsAll_len, pmidsInc_len, pubYear_oldest = getFullRecs_ori(pmids)
     else:
         return jsonify({})
-    
+
     # get summary from full records
     topRecs = topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors)
     return jsonify(topRecs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

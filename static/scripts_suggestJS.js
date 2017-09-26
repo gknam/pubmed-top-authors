@@ -24,7 +24,7 @@ $(function() {
     handleInput();
 
     // load jQuery UI tooltip
-    var doption_tooltip = '<b>Original</b><br>Data are fetched directly in XML format from NCBI&#39;s pubmed database. This is reliable, but slow.<br><br><b>Extracts from original</b><br>Data are fetched from a database in this website&#39;s server. The server database contains the data which have been pre-fetched in similar ways as the "Original" option uses. This could be faster, but less reliable. This is because the updating system has not been fully tested, which means that the server database could be temporarily outdated (currently it checks for updates every 10 minutes) or inaccurate';
+    var doption_tooltip = '<b>Original</b><br>Data are fetched directly in XML format from NCBI&#39;s pubmed database. This is reliable, but slow.<br><br><b>Extracts from original</b><br>Data are fetched from a database in this website&#39;s server. The server database contains the data which have been pre-fetched in similar ways as the "Original" option uses. This could be faster, but less reliable. This is because the updating system has not been fully tested, which means that the server database could be temporarily outdated (currently it checks for updates every 10 minutes) or inaccurate.';
     setUpTooltip(".doption_tooltip", doption_tooltip);
 
 });
@@ -507,7 +507,8 @@ function setUpDialog(linkId, dialogId, dialogTitle) {
     .switchClass("ui-icon-closethick", "ui-icon-circle-close"); // Note jQuery UI requires no "." to precede class names.
 
     // title bar colour
-    $(".ui-dialog-titlebar").css("background-color", barColour_plot23_default);
+    $(".ui-dialog-titlebar").css("background-color", barColour_plot23_default)
+                            .css("color", "white");
 
     // enable dialogue for link (code based on https://stackoverflow.com/a/964507/7194743)
     if (linkId) {
