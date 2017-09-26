@@ -392,17 +392,6 @@ function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
         vbArray_new.push(arguments[i]);
     }
 
-    // console.log("arguments[0] = " + arguments[0]);
-    // console.log("arguments[1] = " + arguments[1]);
-    // console.log("arguments[2] = " + arguments[2]);
-    // console.log("arguments[3] = " + arguments[3]);
-    // console.log("arguments[4] = " + arguments[4]);
-    // console.log("vb_xMin: " + vb_xMin);
-    // console.log("vb_YMin: " + vb_YMin);
-    // console.log("vb_width: " + vb_width);
-    // console.log("vb_height: " + vb_height);
-    // console.log("svgClass: " + svgClass);
-
     // code from https://stackoverflow.com/a/24913841/7194743
     $(svgToAdjust).each(function () {
         // code from https://stackoverflow.com/a/7682976/7194743
@@ -413,8 +402,6 @@ function changeSvgViewboxDim(vb_xMin, vb_YMin, vb_width, vb_height, svgClass) {
         // change viewBox values if new values have been given as input
         for (var i in vbArray_current) {
             if (vbArray_new[i] != null) {
-                // console.log("arguments[" + i + "]: " + arguments[i]);
-                // console.log("arguments[" + i + "] = " + arguments[i]);
                 vbArray_current[i] = vbArray_new[i].toString();
             }
         }
@@ -705,7 +692,6 @@ function dialogsForPlots(svgClass, plotData) {
                     output = (function() {return})()
                 }
                 else {
-                    // console.log(d.barId);
                     output = d.barId;
                 }
 
@@ -783,25 +769,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
     var pl2Dim;
     var pl3Dim;
 
-    // d3.select("body")
-    //     .append("svg")
-    //     .attr("width", width + marginLeft + marginRight)
-    //     .attr("height", height + marginTop + marginBottom)
-    //     .attr("class", "pl1")
-    //     .attr("shape-rendering", "crispEdges"),
-    //     pl2Svg = d3.select("body")
-    //     .append("svg")
-    //     .attr("width", width + marginLeft + marginRight)
-    //     .attr("height", height + marginTop + marginBottom)
-    //     .attr("class", "pl2")
-    //     .attr("shape-rendering", "crispEdges"),
-    //     pl3Svg = d3.select("body")
-    //     .append("svg")
-    //     .attr("width", width + marginLeft + marginRight)
-    //     .attr("height", height + marginTop + marginBottom)
-    //     .attr("class", "pl3")
-    //     .attr("shape-rendering", "crispEdges");
-
     // data for each plot
     var pl1 = []; // authors (x-axis) and number of publications (y-axis)
     var pl2 = []; // years (x-axis) and number of publications (y-axis)
@@ -877,8 +844,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                         yearPubs.push(i[0]);
                         yearRefs.push(i[1]);
                     };
-                    // console.log(yearPubs[0]);
-                    // console.log(yearRefs[0]);
 
                     var yearIdList = [];
                     var yearPubsAll = [];
@@ -1043,19 +1008,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             svgHeight_new = height + marginTop + marginBottom;
             // console.log(svgElement.attr("class") + ": " + svgHeight_current + ", " + svgHeight_new);
             var svgHeight_chosen = svgHeight_current > svgHeight_new ? svgHeight_current : svgHeight_new;
-            // console.log("svgHeight_current: " + (svgHeight_current * wToSratio) + "; svgHeight_new: " + (svgHeight_new * wToSratio));
-
-            // if (svgElement.attr("class") == pl1Svg_class) {
-            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
-            // }
-
-
-            // if (svgElement.attr("class") == pl3Svg_class) {
-            //     console.log(svgElement.attr("class") + ',' + dataCount + ',' + svgHeight_current);
-            // }            
         }
         else { // for plot 2's line graph
-            // console.log(svgElement.attr("class") + ": " + "testNotNull");
             // set SVG height for first graph
             var svgHeight_temp2 = dataValuesCount * 50 + marginTop + marginBottom;
 
@@ -1075,16 +1029,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
         }
         svgMaxWidth = $("body").prop("clientWidth"); // code from https://stackoverflow.com/a/8340177
         svgElement.attr("viewBox", "0 0 0 " + (svgHeight_chosen));
-
-        // svgElement.attr("height", function() {
-        //     if (dataValuesCount == null) {
-        //         return parseInt(svgHeight_current) + (fontSize * 2);
-        //     } else {
-        //         return dataValuesCount * 40 + (fontSize * 2);
-        //     }
-        // });
-
-
 
         return {
             width: width,
@@ -1123,8 +1067,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
         // determine number of ticks on X-axis (number of publications)
         var xAxis_max = d3.max(plotData, function(d) {
-            // console.log(svgClass);
-            // console.log(d);
             return d.x;
         });
 
@@ -1289,30 +1231,7 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 }
             })
 
-
-                // if ($(this).closest('.bar').attr("id") != barId) {
-                //     // recover rect colour (mouse over bar)
-                //     if ($(this).prop("tagName") == "rect") {
-                //             $(this).attr("fill", barColour_plot1_default);
-                //     }
-                //     // recover rect colour (mouse over text in rect)
-                //     else {
-                //             $(this).closest('rect').attr("fill", barColour_plot1_default);
-                //         }
-                //     }
-                // })
-
             .off('click').on('click', function() {
-
-                // // change rect colour (mouse over bar)
-                // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                //     $(this).attr("fill", barColour_plot23_default);
-                // }
-                // // change rect colour (mouse over text in rect)
-                // else {
-                //     // code from http://stackoverflow.com/a/2679026
-                //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
-                // }
 
                 var currentSvgClass = $(this).closest('svg').attr("class");
 
@@ -1344,19 +1263,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
 
                         /* recover rect colour of previously coloured rect */
                         $('#' + oldBarId).find('rect').attr("fill", pickPlotColour(currentSvgClass));
-                        // //  when bar clicked
-                        // if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-                        //     $('#' + oldBarId).attr("fill", barColour_plot23_default);
-                        // }
-                        // // when text in rect clicked
-                        // else {
-                        //     // code from http://stackoverflow.com/a/2679026
-                        //     $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
-                        // }
-
-                        // recover rect colour of prevoiusly clicked bar
-                        // $('#' + oldBarId).attr("fill",.off('click').on('click', 600e6");
-
 
                         /* mouseover for plot2's line graph */
                         // Advice from https://stackoverflow.com/a/20837758
@@ -1511,39 +1417,11 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 return yScale(d.y);
             });
 
-        // // append the svg obgect to the body of the page
-        // // appends a 'group' element to 'svg'
-        // // moves the 'group' element to the top left margin
-
-
-
-
-        // var svg = d3.select("body").append("svg")
-        //     .attr("width", width + marginLeft + marginRight)
-        //     .attr("height", height + margin.top + margin.bottom)
-        //     .append("g")
-        //     .attr("transform",
-        //         "translate(" + marginLeft + "," + margin.top + ")");
-
         // add chart
         var chart = svgElement.append("g")
             .attr("class", "chart " + auId)
             .attr("visibility", visibility)
             .attr("transform", "translate(" + (marginLeft * 2) + "," + marginTop + ")");
-
-        // // Scale the range of the data
-        // xScale.domain(d3.extent(plotData, function(d) {
-        //     return d.x;
-        // }));
-
-
-        // xScale.ticks(d3.timeYear.every(function(d) {
-        //     return 1;
-        // }));
-
-        // yScale.domain([0, d3.max(plotData, function(d) {
-        //     return d.y;
-        // })]);
 
         // Add chart title
         chart.selectAll("text")
@@ -1558,7 +1436,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .text(function(d) {
                 var lastName = d.au.split(", ")[0];
                 var firstName = d.au.split(", ")[1];
-                // console.log(d.ref);
                 return firstName + " " + lastName + "'s publications";
             });
 
@@ -1604,12 +1481,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("font-weight", "bold")
             .text("Number of publications per " + svgElement.attr("class"));
 
-            // // pull the transform data out of the tick
-            // var transform = d3.transform(tick.attr("transform")).translate;
-
-            // // passed in "data" is the value of the tick, transform[0] holds the X value
-
-
         // Add the Y Axis
         chart.append("g")
             .attr("class", xAxisClass)
@@ -1626,30 +1497,6 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
             .attr("fill", barColour_plot23_default)
             .attr("cx", function(d) { return xScale(d.x); })
             .attr("cy", function(d) { return yScale(d.y); })
-            // .on("mouseover", function(d) { return d.y; })
-
-        /* this has been discarded due to the chart looking messy.
-        // display values above circles
-        values = chart.append("g")
-
-        values.selectAll("text")
-            .data(plotData)
-            .enter()
-            .append("text")
-            .attr("x", function(d) {
-                return xScale(d.x);
-            })
-            .attr("y", function(d) {
-                return yScale(d.y) - r * 1.5;
-            })
-            .attr("text-anchor", "middle")
-            .attr("font-size", fontSize * 0.8)
-            .attr("font-weight", "bold")
-            .attr("fill", "red")
-            .text(function(d) {
-                return d.y;
-            });
-        */    
         
         // Create dialogs for circle-click
         dialogsForPlots(svgClass, plotData)        
@@ -1692,12 +1539,8 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 d0 = plotData[i - 1],
                 d1 = plotData[i],
                 d = x0 - d0.x > d1.x - x0 ? d1 : d0;
-                // console.log($(this).prop("tagName"));
-                // console.log($(this).closest(':has(.focus)').find('.focus').attr("class"));
             focus.attr("transform", "translate(" + xScale(d.x) + "," + yScale(d.y) + ")");
-            // console.log(d);
             focus.select("text").text(d.y);
-            // $(this).parent().find('.focus').attr("display")
         }
 
         function mouseClick() {
@@ -1708,210 +1551,10 @@ function drawGraphs(data, term) { // term will be passed to drawBarChart
                 d0 = plotData[i - 1],
                 d1 = plotData[i],
                 d = x0 - d0.x > d1.x - x0 ? d1 : d0;
-                // console.log($(this).prop("tagName"));
-                // console.log($(this).closest(':has(.focus)').find('.focus').attr("class"));
-            // focus.attr("transform", "translate(" + xScale(d.x) + "," + yScale(d.y) + ")");
             $('#' + d.barId + "_dialog").dialog("open");
-            // focus.select("text").text(d.y);
-            // $(this).parent().find('.focus').attr("display")
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // scales
-        /*    var yScale = d3.scaleLinear()
-                .domain([0, plotData.length])
-                .range([sideP, width - sideP]);*/
-
-        // var xScale = d3.scaleLinear()
-        //     .domain([0, xAxis_max])
-        //     .range([0, width - marginLeft]);
-
-
-        // // Define X axis
-        // var xAxis = d3.axisBottom()
-        //     .scale(xScale)
-        //     .ticks(xAxis_max); // Set rough # of ticks
-        // .tickFormat(formatAsPercentage);
-
-        // Add chart
-        // var chart = svgElement.append("g")
-        //     .attr("class", "chart " + auId)
-        //     .attr("visibility", visibility)
-        //     .attr("transform", "translate(" + marginLeft + "," + (marginTop + (barPadding / 2)) + ")");
-
-        // Add bar groups (bars + texts)
-        // var bar = chart.selectAll("g")
-        //     .data(plotData)
-        //     .enter()
-        //     .append("g")
-        //     .attr("class", "bar")
-        //     .attr("transform", function(d, i) {
-        //         return "translate(" + marginLeft + "," + (i * (barHeight + barPadding)) + ")";
-        //     })
-        //     .attr("id", function(d, i) {
-        //         if (barId) {
-        //             return auIdList[i];
-        //         }
-        //     });
-
-        // // Add bars
-        // bar.append("rect")
-        //     // .attr("class", "rect")
-        //     .attr("width", function(d) {
-        //         return (d.x / xAxis_max) * (width - marginLeft);
-        //     })
-        //     .attr("height", barHeight)
-        //     .attr("fill", barColour_plot1_default);
-
-        // // Add text (number of publications)
-        // bar.append("text")
-        //     .attr("x", function(d) {
-        //         return (d.x / xAxis_max) * (width - marginLeft) - fontSize;
-        //     })
-        //     .attr("y", function(d, i) {
-        //         return (barHeight) / 2 + fontSize * (1 / 3);
-        //     })
-        //     .attr("class", "pubNum")
-        //     .attr("font-family", "sans-serif")
-        //     .attr("font-size", fontSize)
-        //     .attr("font-weight", "bold")
-        //     .attr("fill", "black")
-        //     .attr("text-anchor", "middle")
-        //     .text(function(d) {
-        //         return d.x;
-        //     });
-
-        // // Add text (y axis)
-        // bar.append("text")
-        //     .text(function(d) {
-        //         return d.y;
-        //     })
-        //     .attr("x", function(d) {
-        //         return -fontSize / 2;
-        //     })
-        //     .attr("y", function(d, i) {
-        //         return (barHeight) / 2 + fontSize * (1 / 3);
-        //     })
-        //     .attr("font-family", "sans-serif")
-        //     .attr("font-size", fontSize + "px")
-        //     .attr("font-weight", "bold")
-        //     .attr("fill", "black")
-        //     .attr("text-anchor", "end");
-
-        // // Create X axis
-        // chart.append("g")
-        //     .attr("class", "axis")
-        //     .call(xAxis)
-        //     .attr("transform", "translate(" + marginLeft + "," + ((barHeight + barPadding) * dataCount + fontSize) + ")")
-        //     .append("text")
-        //     .attr("x", (width - marginLeft) / 2)
-        //     .attr("text-anchor", "middle")
-        //     .attr("font-size", fontSize)
-        //     .attr("font-weight", "bold")
-        //     .text("Number of publications");
-
-
-
-        // // interact with bars and text within them
-        // var oldBarId;
-        // var barId;
-
-        // $("rect, .pubNum")
-        //     .mouseover(function() {
-        //         // bar
-        //         if ($(this).prop("tagName") == "rect") { // http://stackoverflow.com/a/5347371
-        //             $(this).attr("fill", barColour_plot23_default);
-        //         }
-        //         // text in rect
-        //         else {
-        //             $(this).closest('rect').attr("fill", barColour_plot23_default);
-        //             // alternative code (http://stackoverflow.com/a/2679026):
-        //             // $(this).closest(':has(rect)').find('rect').attr("fill", barColour_plot23_default);
-        //         }
-        //     })
-
-        // .mouseleave(function() {
-        //     if ($(this).prop("tagName") == "rect") {
-        //         $(this).attr("fill", barColour_plot1_default);
-        //     } else {
-        //         $(this).closest('rect').attr("fill", barColour_plot1_default);
-        //     }
-        // })
-
-        // .click(function() {
-
-        //     // get bar group ID (author) of clicked bar
-        //     barId = $(this).closest('.bar').attr("id");
-
-        //     // do nothing if same bar was clicked before
-        //     if (oldBarId == barId) {}
-
-        //     // if different bar is clicked
-        //     else {
-        //         // hide previously displayed plot
-        //         $('.' + oldBarId).attr("visibility", "hidden");
-        //         // display plots 2 and 3 of corresponding author
-        //         $('.' + barId).attr("visibility", "visible");
-
-        //         oldBarId = barId;
-        //     }
-        // })
     }
 }
-
-/*
-    // Define Y axis
-    var yAxis = d3.axisLeft()
-        .scale(yScale)
-        .ticks(3) // Set rough # of ticks
-        // .tickFormat(formatAsPercentage);
-
-    // Create Y axis
-    svg1.append("g")
-        .attr("class", "axis")
-        .call(yAxis)
-        .transition()
-        .duration(500)
-        .attr("transform", "translate(" + sideP + ", 0)");
-*/
-// data for plot 2 (journals and number of publications)
-
-
-
-
 
 /*
 
