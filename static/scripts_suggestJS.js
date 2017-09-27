@@ -11,7 +11,7 @@ $(function() {
     // get search option ("Keyword" or "Author")
     searchOption = $('#' + searchOption_id).find(":selected").text(); // code from https://stackoverflow.com/a/10659117/7194743;
 
-    // get database option ("original" or "extract")
+    // get database option ("original" or "extracts")
     databaseOption = $('#' + databaseOption_id).find(":selected").attr("id");
 
     // update search option and reload typeahead on change
@@ -631,7 +631,7 @@ function records(parameters) {
                 // notify user if server database is outdated (i.e. being updated right now)
                 var searchDetail2_tooltip = null;
                 var dbUpdating = data["dbUpdating"];
-                if ((databaseOption == "extract") && (dbUpdating)) {
+                if ((databaseOption == "extracts") && (dbUpdating)) {
                     displaySearchDetail(searchDetail4_class, "<b>*Server database outdated</b>", null, "The server database is being updated at the moment.<br><br>This means one of the following.<br>(1) Some articles found on Pubmed may have been missed. Or<br>(2)The info fetched from the server database may be outdated for some articles.");
                 }
                 // prepare notifification message if server is up-to-date, but fewer articles than the requested number has been fetched

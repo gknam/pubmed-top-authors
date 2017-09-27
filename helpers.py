@@ -26,13 +26,13 @@ from operator import itemgetter
 # prevent null bytes ('\x00') being written and remove them if already written
 #
 ## Note 2 ###
-# Functions are marked with "original", "extract", or "both". This shows
+# Functions are marked with "original", "extracts", or "both". This shows
 # whether the function is required in both versions or only one of them.
 #
 # The versions are called so because article details are fetched either
 # directly from Pubmed using eFetch ("original") or
 # from server database which contains extracts from Pubmed database
-# of NCBI ("extract").
+# of NCBI ("extracts").
 #
 # The only functions whose names indicate these versions are getFullRecs_ori
 # and getFullRecs_ext.
@@ -104,7 +104,7 @@ def getFullRecs_ext(db, pmids):
     """
     For each PMID, get full records from database
 
-    version required by: extract
+    version required by: extracts
     """
 
     # file name
@@ -802,7 +802,7 @@ def removeFromLog(logName, key):
     """
     Removes key from log
 
-    version required by: extract
+    version required by: extracts
     """
     with open(logName, "a+") as f:
         f.seek(os.SEEK_SET)
@@ -825,7 +825,7 @@ def call_in_background(target, db, *, loop=None, executor=None):
 
     Returns the scheduled task.
 
-    version required by: extract
+    version required by: extracts
     """
 
     if loop is None:
@@ -850,7 +850,7 @@ def ftpJob(ftpAddress, directory, *args):
                     Second value is the result of the command if "returnVal"
                         assignment was indicated in args.
 
-    version required by: extract
+    version required by: extracts
     """
 
     ftp = ""
@@ -904,7 +904,7 @@ def ftpJob(ftpAddress, directory, *args):
 
 def ftpQuit(ftp):
     """
-    version required by: extract
+    version required by: extracts
     """
 
     if type(ftp) == FTP:
@@ -920,7 +920,7 @@ def ftpGetMd5(f, ftp):
 
     Fetches MD5 of specified file on FTP server.
 
-    version required by: extract
+    version required by: extracts
     """
     f_md5 = hashlib.md5()
     ftp.retrbinary('RETR {}'.format(f), f_md5.update)
@@ -951,7 +951,7 @@ def dbConExe(db, command, **kwargs):
     """
     Temporarily connect to db and return rows if available
 
-    version required by: extract
+    version required by: extracts
     """
 
     done = False
@@ -983,7 +983,7 @@ def getXmlIterTreeAndRoot(f):
 
     version required by: both
     """
-    # This line is needed in xmlToDb function in "extract" version.
+    # This line is needed in xmlToDb function in "extracts" version.
     # This is because XML file is read twice. At second reading, this returns
     # the file position indicator (or "cursor", so-to-speak) to the beginning
     # of the XML.
@@ -1042,7 +1042,7 @@ def updateDb(db):
     Note 3:
         set is often used instead of list to ensure there are no repeating values.
 
-    version required by: extract
+    version required by: extracts
     """
 #    print("db update started")
     global dbUpdating
@@ -1389,7 +1389,7 @@ def xmlToDb(db, xml):
                         essential info, but they cannot have been missed if the
                         logging stage has been reached.
 
-    version required by: extract
+    version required by: extracts
     """
     # file and directory paths
     dePmids_file = "logs_xmlToDb/deletedPmids.txt"
@@ -1917,7 +1917,7 @@ def saveVarAsLog(logName, key, value):
     Creates and or update a dictionary with "key" and "value",
     then saves the dicitonary into a log ("logName").
 
-    version required by: extract
+    version required by: extracts
     """
 
     with open(logName, "a+") as f:
@@ -1946,7 +1946,7 @@ def logToDic(logName):
     "logName" is a log with dict saved as string.
     Returns dict converted from the string.
 
-    version required by: extract
+    version required by: extracts
     """
     with open(logName, "a+") as f:
         f.seek(os.SEEK_SET)
@@ -1970,7 +1970,7 @@ def getListsInDic(dic):
     dic is a dictionary whose values are lists.
     Combines and returns all lists in dic.
 
-    version required by: extract
+    version required by: extracts
     """
     out = []
 
@@ -1994,7 +1994,7 @@ def updateDbStart(db):
     Then, it's repeatedly updated within function by return value of
     "updateDb" function.
 
-    version required by: extract
+    version required by: extracts
     """
     global dbUpdating
     upDbFail_part2_file = "logs_updateDb/updateDbFailed_part2.log"

@@ -86,7 +86,7 @@ def records():
 
     # get full records from pmids
     if pmids:
-        if databaseOption == "extract":
+        if databaseOption == "extracts":
             records, pmidsAll_len, pmidsInc_len, pubYear_oldest = getFullRecs_ext(db, pmids)
         elif databaseOption == "original":
             records, pmidsAll_len, pmidsInc_len, pubYear_oldest = getFullRecs_ori(pmids)
