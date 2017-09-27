@@ -2055,8 +2055,10 @@ def sortRefs(ref):
 
 def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath="xml_efetch/"):
     """
-    Generate random strings of 8 digits as an XML filename, making sure that
-    the filename is different from an existing one.
+    Generate an XML filename with 8-digit strings. The strings are 
+    a combination of randomly chosen lowercase aplphabet letters ([a-z]) and
+    numbers ([0-9]). This function makes sure that a new filename is different
+    from an existing one.
 
     This is done to prevent one XML overwriting another in case multiple XML
     downloads are invoked at the same time (e.g. if several users submit queries
