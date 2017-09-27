@@ -11,6 +11,7 @@ import re
 import time
 import socket
 import string
+import urllib, json
 import xml.etree.ElementTree as ET
 
 from ftplib import FTP
@@ -19,7 +20,6 @@ from unidecode import unidecode
 from urllib.request import urlretrieve
 from operator import itemgetter
 
-import urllib, json
 
 ### Note 1 ###
 # Each time a file is read or written, ".replace('\x00', '')" is added to
@@ -98,7 +98,6 @@ def getPmids(term, retmax, reldate, searchOption):
 
         retstart += retmax_limit
 
-    # return results
     return pmids
 
 def getFullRecs_ext(db, pmids):
