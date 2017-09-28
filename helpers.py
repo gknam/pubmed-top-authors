@@ -1,38 +1,34 @@
-import os
-import re
 import collections
-from unidecode import unidecode
-from operator import itemgetter
+import os
+import random
+import re
+import string
 import urllib, json
 import xml.etree.ElementTree as ET
-import string
-import random
+
 from glob import glob
+from unidecode import unidecode
+from operator import itemgetter
 
-def getXmlIterTreeAndRoot(f):
-    """
-    f is a file object for XML.
-    Creates an iterator object for XML, iterates until root element is found,
-    then returns the iterator object (xmlIterTree) and root.
+# tool name and developer's email
+# (NCBI will contact the developer with this in case there is a problem
+# (http://bit.ly/2whcAzM))
+tool = "pubmedTopAuthors"
+email = "simon_nam@hotmail.com"
 
-    Root element is acquired for memory management purpose. While iterating
-    through xmlIterTree, root element will be cleared every time an element's
-    end is reached. Otherwises memory usage keeps increasing
-    (see http://effbot.org/zone/element-iterparse.htm).
-    """
-    xmlIterTree = ET.iterparse(f, events=('start', 'end'))
+# xml directory
+xml_original_dir = "xml_original/"
 
-    # get XML's root element (for memory management)
-    # (based on http://effbot.org/zone/element-iterparse.htm)
-    for event, elem in xmlIterTree:
-        if event == 'start':
-            root = elem
-            break
-
-    return xmlIterTree, root
+# remove pre-existing XML files
+for x in glob(xml_original_dir + "*.xml"):
+    os.remove(x)
 
 def getPmids(term, retmax, reldate, searchOption):
-    """Get PMIDs for term."""
+    """
+    Get PMIDs for term.
+
+    version required by: both
+    """
 
     retmax = round(int(retmax))
     reldate = round(int(reldate))
@@ -56,7 +52,7 @@ def getPmids(term, retmax, reldate, searchOption):
         retmax_part = retmax if retmax <=retmax_limit else retmax_limit
 
         # retrieve PMIDs
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)))
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term={}&retmax={}&retstart={}&reldate={}&tool={}&email={}&datetype=pdat&sort=pub+date".format(urllib.parse.quote(term), urllib.parse.quote(str(retmax_part)), urllib.parse.quote(str(retstart)), urllib.parse.quote(str(reldate)), urllib.parse.quote(tool), urllib.parse.quote(email))
         feed = urllib.request.urlopen(url)
         obj = json.loads(feed.read().decode("utf-8"))
 
@@ -71,11 +67,14 @@ def getPmids(term, retmax, reldate, searchOption):
 
         retstart += retmax_limit
 
-    # return results
     return pmids
 
-def getFullRecs(pmids):
-    """ Get full records from PMID """
+def getFullRecs_ori(pmids):
+    """
+    Get full records from PMID
+
+    version required by: original
+    """
 
     # info for a summary report to be given in the front-end.
     # pmidsInc_len: number of articles checked (after excluding inappropriate ones)
@@ -113,11 +112,11 @@ def getFullRecs(pmids):
 
     # 1. using GET method
     try:
-        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml".format(pmids)
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={}&retmode=xml&tool={}&email={}".format(pmids, urllib.parse.quote(tool), urllib.parse.quote(email))
         xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename())
     # 2. using POST method (if pmids is too long)
     except urllib.error.HTTPError:
-        ids = urllib.parse.urlencode({"id": pmids}).encode("utf-8")
+        ids = urllib.parse.urlencode({"id": pmids, "tool": tool, "email": email}).encode("utf-8")
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
         xml, headers = urllib.request.urlretrieve(url, filename=generateXmlFilename(), data=ids)
 
@@ -421,7 +420,11 @@ def getFullRecs(pmids):
     return records, pmidsAll_len, pmidsInc_len, pubYear_oldest
 
 def topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors):
-    """ get records of authors with most publication """
+    """
+    get records of authors with most publication
+
+    version required by: both
+    """
 
     # max plot dimensions (for equalising plot dimensions in the browser)
     # "scripts_suggestJS.js" file --> "chartDim" function --> "dataCount" variable
@@ -482,6 +485,7 @@ def topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAu
 
                 # fill in missing years with 0
                 # (e.g. if record exists for only 2014 and 2016, add {'2015': 0})
+                # (referred to code from https://stackoverflow.com/a/16974075)
                 yearS = topAuthorsRecs[total][rec][author][2]["years"]
                 yearsFillGap = list(yearS.items())
                 if len(yearS) > 1:
@@ -520,7 +524,6 @@ def topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAu
 
     return topAuthorsRecs
 
-
 def toASCII(s):
     """
     Converts extended-ASCII character to regular ASCIIi character
@@ -529,6 +532,8 @@ def toASCII(s):
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
     https://stackoverflow.com/a/518232
+
+    version required by: both
     """
 
     # if all chracters are regular ASCII, return original string
@@ -540,12 +545,15 @@ def toASCII(s):
 
     return d
 
-def dashToSpace(string):
+
+def dashToSpace(chars):
     """
-    Remove dash characters from string.
+    Remove dash characters from chars.
 
     Dash characters have been collected from Wikipedia
     (https://en.wikipedia.org/wiki/Dash#Similar_Unicode_characters)
+
+    version required by: both
     """
     return re.sub('\u2012|\u2013|\u2014|\u2015|\u2053|\u2E3A|\u2E3B|\u2012|\
                   \u2013|\u2014|\u2015|\u2053|\u007E|\u02DC|\u223C|\u301C|\
@@ -556,7 +564,39 @@ def dashToSpace(string):
                   \u1428|\u1806|\u1B78|\u2E0F|\u2E17|\u2E1A|\u2E40|\u30A0|\
                   \u3161|\u1173|\u301C|\u3030|\u30FC|\u4E00|\uA4FE|\uFE31|\
                   \uFE32|\uFE58|\uFF5E|\uFE63|\uFF0D|\u10110|\u1104B|\u11052|\
-                  \u110BE|\u1D360', ' ', string)
+                  \u110BE|\u1D360', ' ', chars)
+
+
+def getXmlIterTreeAndRoot(f):
+    """
+    f is a file object for XML.
+    Creates an iterator object for XML, iterates until root element is found,
+    then returns the iterator object (xmlIterTree) and root.
+
+    Root element is acquired for memory management purpose. While iterating
+    through xmlIterTree, root element will be cleared every time an element's
+    end is reached. Otherwises memory usage keeps increasing
+    (see http://effbot.org/zone/element-iterparse.htm).
+
+    version required by: both
+    """
+    # This line is needed in xmlToDb function in "extract" version.
+    # This is because XML file is read twice. At second reading, this returns
+    # the file position indicator (or "cursor", so-to-speak) to the beginning
+    # of the XML.
+    f.seek(os.SEEK_SET)
+
+    xmlIterTree = ET.iterparse(f, events=('start', 'end'))
+
+    # get XML's root element (for memory management)
+    # (based on http://effbot.org/zone/element-iterparse.htm)
+    for event, elem in xmlIterTree:
+        if event == 'start':
+            root = elem
+            break
+
+    return xmlIterTree, root
+
 
 def sortRefs(ref):
     '''
@@ -564,6 +604,8 @@ def sortRefs(ref):
 
     Code based on https://stackoverflow.com/ref/5212885/7194743
     Alternative method at https://stackoverflow.com/a/4233482/7194743
+
+    version required by: both
     '''
 
     indices = []
@@ -584,14 +626,18 @@ def sortRefs(ref):
 
     return ref_sorted
 
-def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath="xml_efetch/"):
+def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath=xml_original_dir):
     """
-    Generate random strings of 8 digits as an XML filename, making sure that
-    the filename is different from an existing one.
+    Generate an XML filename with 8-digit strings. The strings are 
+    a combination of randomly chosen lowercase aplphabet letters ([a-z]) and
+    numbers ([0-9]). This function makes sure that a new filename is different
+    from an existing one.
 
     This is done to prevent one XML overwriting another in case multiple XML
     downloads are invoked at the same time (e.g. if several users submit queries
     at similar times).
+
+    version required by: original
     """
     notDone = True
 
@@ -616,6 +662,8 @@ def toASCII(s):
     Codes are based on those at following pages
     https://stackoverflow.com/a/2633310
     https://stackoverflow.com/a/518232
+
+    version required by: both
     """
 
     # if all chracters are regular ASCII, return original string

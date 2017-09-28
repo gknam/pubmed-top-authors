@@ -17,22 +17,23 @@
     <meta content="initial-scale=1, width=device-width" name="viewport" />
     <!-- http://jquery.com/ -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <!-- D3.js -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <!-- http://getbootstrap.com/ -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- http://getbootstrap.com/ -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- D3.js, file downloaded from https://d3js.org/d3.v4.min.js at 2017-09-28 15:41:47.000000000 -->
+    <script src="{{ url_for('static', filename='d3_v4_10_2_min.js') }}"></script>
+    <!-- http://getbootstrap.com/, file downloaded from https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css at 2017-09-28 15:43:49.739696119 -->
+    <link href="{{ url_for('static', filename='bootstrap_v3_3_7_min.css') }}" rel="stylesheet" />
+    <!-- http://getbootstrap.com/, file downloaded from https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js at 2017-09-28 15:45:15.269099460 -->
+    <script src="{{ url_for('static', filename='bootstrap_v3_3_7_min.js') }}"></script>
     <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- jQuery UI js; jQuery UI has been specified after bootstrap to avoid being overrun. Otherwise, dialog title bar's close button ("X") becomes invisible -->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- app's own CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
-    <!-- https://github.com/corejavascript/typeahead.js/blob/master/doc/jquery_typeahead.md -->
-    <script src="https://cdn.rawgit.com/corejavascript/typeahead.js/master/dist/typeahead.jquery.js"></script>
-    <!-- http://handlebarsjs.com/ -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <!-- https://github.com/corejavascript/typeahead.js/blob/master/doc/jquery_typeahead.md
+    , file downloaded from https://cdn.rawgit.com/corejavascript/typeahead.js/master/dist/typeahead.jquery.js at 2017-09-28 15:49:43.553605372 -->
+    <script src="{{ url_for('static', filename='typeahead_jQuery_v1_2_0.js') }}"></script>
+    <!-- http://handlebarsjs.com/, file downloaded from https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js at 2017-09-28 15:51:12.043090587 -->
+    <script src="{{ url_for('static', filename='handlebars_v4_0_5_min.js') }}"></script>
     <!-- http://stewartjpark.com/Flask-JSGlue/ -->
     {{ JSGlue.include() }}
     <!-- app's own JavaScript -->
@@ -45,14 +46,30 @@
         <h2>Overview</h2>
         <h4>
             <p>
-                When a user types in a keyword (or keywords), this website finds relevant publications in Pubmed. Records of maximum 100,000 publications published within the last 5 years are fetched. Then, 5 <b>authors</b> with most publications are displayed. 
+                When a user submits a search term (keyword or author name), this website finds relevant publications in Pubmed and displays plots for <b>authors</b> who published most papers (1) on the keyword or (2) with the specified author.
             </p>
             <p>
-                Clicking the bar for each author will display his/her publications per <b>year</b> and per <b>journal</b>.
+                Clicking the bar for each author will display two plots showing the author's publications per <b>year</b> and per <b>journal</b>.
             </p>
             <p>
-                Then, clicking the bar or circle for each year or journal will display full reference info in a format similar to APA style.
+                Then, clicking the bar or circle for each year or journal will display full reference info in a format similar to <a href="https://en.wikipedia.org/wiki/APA_style" target="_blank">APA style</a>.<br>
             </p>
+            <p>
+                Following are available search options.
+            </p>
+                <ul>
+                    <li><b>Number of most-published authors to identify</b></li>
+                    This is the number of authors to identify who published the most based on the search term. <u>Too high a number can freeze the browser</u>.<br><br>
+                    
+                    <li><b>Max number of days from today</b></li>
+                    When the user specifies, for example 10 days, articles published in the last 10 days will be checked. <u>Too big a number can cause error</u>.<br><br>
+                    
+                    <li><b>Max number of articles to check</b></li>
+                    When the user specifies, for example 100, up to 100 articles will first be identified. Some could be excluded later as explained in "Excluded articles" section below.<br><br>
+
+                    <li><b>Keyword or Author</b></li>
+                    For a general search, use "Keyword" option. If looking for most published co-authors of an author, use "Author" option - using "Keyword" option will produce similar, but inaccurate results.
+                </ul>
         </h4>
         <br>
         <h2>
@@ -60,29 +77,59 @@
         </h2>
         <h4>
             <p>
-                This website accesses Pubmed database at the National Center for Biotechnology Information (NCBI) using its "E-utilities" (particularly "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_" target="_blank">ESearch</a>" and "<a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_" target="_blank">EFetch</a>"). NCBI's Disclaimer and Copyright notice can be found <a href="https://www.ncbi.nlm.nih.gov/home/about/policies/" target="_blank">here</a>.
+                Data are retrieved direclty from from Pubmed database at the National Center for Biotechnology Information (NCBI) using <a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_" target="_blank">ESearch</a> and <a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_" target="_blank">EFetch</a>, which are part of NCBI's <a href="https://www.ncbi.nlm.nih.gov/books/NBK25500/" target="_blank">E-utilities</a> for accessing their databases.<br><br>
+
+                Relevant articles are first identified from Pubmed database at the NCBI using ESearch. Then, info on each article are fetched in an XML file using EFetch.<br><br>
+
+                Then, following elements are extracted from the XML file.<br><br>
             </p>
-            Publications are excluded if they ...
-            <br>
+            <p>
+                <b><i>Article details</i></b>
+            </p>
+            <ul>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#pmid"><b>PMID</b></a>: Pubmed ID which uniquely identifies each article</li>
+                <li><b>LastName</b>, <b>ForeName</b> and <b>Initials</b> (under <a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#authorlist">Author</a>)</li>
+                <li><b>Year</b>, <b>Month</b> and <b>Day</b> (under <a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#pubdate">Pubdate</a>)</li>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#medlineta"><b>MedlineTA</b></a>: <i>Abbreviated journal title</i></li>
+                <li><b>Title</b> (under <a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#journal">Journal</a>): <i>Full journal title</i></li>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#articletitle"><b>ArticleTitle</b></a></li>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#volume"><b>Volume</b></a></li>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#issue"><b>Issue</b></a></li>
+                <li><b>MedlinePgn</b> (under <a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#pagination">Pagination</a>): <i>Page number</i></li>
+                <li><b>DOI</b> (under <a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#elocationid">ELocationID</a>)</li>
+                <li><a href="https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#country"><b>Country</b></a> - This info is not used currently.</li>
+            </ul><br>
+        </h4>
+        <p>
+            <h2>Excluded articles</h2>
+        </p>
+        <h4>
+            Among the articles initially identified to be relevent to the search term, some could be excluded if they ...<br><br>
             <ul>
                 <li>have been retracted,</li>
                 <li>are retraction notifications for other publications,</li>
                 <li>are correction notifications,</li>
                 <li>are supplementary materials for other publications, or</li>
-                <li>have been replaced by later versions.</li>
             </ul>
         </h4>
         <br>
-        <h2>Limitations</h2>
+        <p>
+            <h2>Limitations</h2>
+        </p>
         <h4>
             <ul>
-                <li>Different authors with same names are considered the same author because Pubmed does not provide author ID.</li>
-                <li>Dash-like characters in author names will be replaced with space. This is to enforce consistency in case the same author inconsistently has the dash-like characters in his/her name.</li>
+                <p><li>Pubmed does not provide a unique ID for each author. This means that, when identifying relevant articles with ESearch, different authors are considered the same author if their names are spelled exactly the same way. Likewise, an author whose name was published with different spellings (e.g. "Kie-Woo Nam" and "Kie Woo Nam") can be considered different authors.</li></p>
+                <p><li>In each identified article's details, dash-like characters (e.g. '-') in author names will be replaced with space. This is to enforce consistency in case the same author inconsistently has the dash-like characters in his/her name. However, this can also result in different authors being considered the same author.</li></p>
+                <p><li>The process can be very slow if the number of articles to fetch are high (searching with 100,000 in "Max number of articles to check" took 1 minute and 36 seconds in a test session.). Most of the time is spent on downloding the article details as an XML file in EFetch. The code's efficiency and machine's performance has only marginal effects on the speed.</li></p>
+                <p><li>DOI links are missing in some Pubmed records even though the articles have them.</li></p>
             </ul>
         </h4>
     </div>
     <div id="dialog_contact" style="display: none">
-        <a href="mailto:simon_nam@hotmail.com">simon_nam@hotmail.com</a>
+        <b>Email</b><br>
+        <a href="mailto:simon_nam@hotmail.com">simon_nam@hotmail.com</a><br><br>
+        <b>LinkedIn</b><br>
+        <a href="https://www.linkedin.com/in/kie-woo-nam-1305638/" target="_blank">https://www.linkedin.com/in/kie-woo-nam-1305638/</a><br><br>
     </div>
     <center>
         <div class="extra">
@@ -92,7 +139,7 @@
         </div>
         <br>
         <div class="titles">
-            <p id="title">Find Pubmed's authors with most publications</p>
+            <p id="title">Who published the most on Pubmed?</p>
         </div>
     </center>
     <!-- http://getbootstrap.com/css/#forms -->
@@ -103,10 +150,10 @@
             </select>
             Number of most-published authors to identify
             <div class="inputBox">
-                <select id="invisel" id="invisel">
+                <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="1" autocomplete="off" />
+                <input class="form-control" id="n" placeholder="e.g. 5" type="text" value="5" tabindex="2" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
@@ -116,7 +163,7 @@
                 <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="1" autocomplete="off" />
+                <input class="form-control" id="d" placeholder="e.g. 365" type="text" value="365" tabindex="3" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
@@ -126,19 +173,19 @@
                 <select id="invisel">
                     <option>Keyword</option>
                 </select>
-                <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="2" autocomplete="off" />
+                <input class="form-control" id="a" placeholder="e.g. 1000" type="text" value="100" tabindex="4" autocomplete="off" />
             </div>
             <select id="invisel">
                 <option>Keyword</option>
             </select>
             Keyword or Author
             <div class="inputBox">
-                <select id="soption" tabindex="3">
+                <select id="soption" tabindex="5">
                     <option>Author</option>
                     <option selected="selected">Keyword</option>
                 </select>
-                <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="4" autocomplete="off" autofocus/>
-                <button type="submit" class="btn" id="fetch" tabindex="5">Fetch!</button>
+                <input class="form-control" id="q" placeholder="e.g. psychology" type="text" tabindex="6" autocomplete="off" autofocus/>
+                <button type="submit" class="btn" id="fetch" tabindex="7">Fetch!</button>
             </div>
         </div>
     </form>

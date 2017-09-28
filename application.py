@@ -1,8 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 from flask_jsglue import JSGlue
-
-from helpers import getPmids, getFullRecs, topAuthorsRecs
-
+from helpers import getPmids, getFullRecs_ori, topAuthorsRecs
 
 # configure application
 app = Flask(__name__)
@@ -18,18 +16,15 @@ if app.config["DEBUG"]:
         response.headers["Pragma"] = "no-cache"
         return response
 
-# configure CS50 Library to use SQLite database
-#db = SQL("sqlite:///mashup.db")
-
 @app.route("/")
 def index():
-    """Render map."""
+    """Load homepage"""
     return render_template("index.html")
 
 @app.route("/records")
 def records():
     """Retreive key records of authors with most publications."""
-    
+
     # ensure parameter is present
     if not request.args.get("term"):
         raise RuntimeError("missing term")
@@ -40,18 +35,18 @@ def records():
     reldate = request.args.get('reldate')
     numTopAuthors = int(request.args.get('numTopAuthors'))
     searchOption = request.args.get('searchOption')
-    
+
     try:
         pmids = getPmids(term, retmax, reldate, searchOption)
     except:
         return jsonify("error")
-    
+
     # get full records from pmids
     if pmids:
-        records, pmidsAll_len, pmidsInc_len, pubYear_oldest = getFullRecs(pmids)
+        records, pmidsAll_len, pmidsInc_len, pubYear_oldest = getFullRecs_ori(pmids)
     else:
         return jsonify({})
-    
+
     # get summary from full records
     topRecs = topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors)
     return jsonify(topRecs)
