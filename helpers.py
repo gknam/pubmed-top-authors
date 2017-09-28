@@ -54,6 +54,16 @@ socket.setdefaulttimeout(30)
 tempLog = 'logs_others/temp.log'
 logging.basicConfig(level=logging.DEBUG, filename=tempLog)
 
+# xml directories
+# "xml_extracts/": For "extracts" mode. For XMLs downloaded from Pubmed's FTP site.
+# "xml_original/": For "original mode. For XMLs downloaded via efetch.
+xml_extracts_dir = "xml_extracts/"
+xml_original_dir = "xml_original/"
+
+# remove pre-existing XML files
+for x in (glob(xml_extracts_dir + "*.xml.gz") + glob(xml_original_dir + "*.xml")):
+    os.remove(x)
+
 def getPmids(term, retmax, reldate, searchOption):
     """
     Get PMIDs for term.
@@ -1047,8 +1057,7 @@ def updateDb(db):
 #    print("db update started")
     global dbUpdating
 
-    # file and directory names
-    xml_dir = "xml/"
+    # file names
     upDbFail_part1_file = "logs_updateDb/updateDbFailed_part1.log"
     loc_file = "logs_updateDb/xmls_onlyLocal.txt"
     x_rename_log_file = "logs_updateDb/xmls_Renamed.txt"
@@ -1263,15 +1272,15 @@ def updateDb(db):
                 try:
                     # download XML and get its MD5
 #                    print("Trying to download " + newX)
-                    urlretrieve('ftp://' + ftpAddress + currentDir + '/' + newX, xml_dir + newX)
+                    urlretrieve('ftp://' + ftpAddress + currentDir + '/' + newX, xml_extracts_dir + newX)
 #                    print("Getting MD5 of downloaded " + newX)
-                    newM_loc = hashlib.md5(open(xml_dir + newX, "rb").read()).hexdigest()
+                    newM_loc = hashlib.md5(open(xml_extracts_dir + newX, "rb").read()).hexdigest()
                 except:
                     pass
 
                 # 4.4 if the MD5 extracted from the downloaded XML and the one on
                 # Pubmed FTP server match, ...
-                if glob(xml_dir + newX) and newM_ftp == newM_loc:
+                if glob(xml_extracts_dir + newX) and newM_ftp == newM_loc:
 #                    print(newX + " downloaded correctly")
                     downloadStatus = "downloadSuccess"
                     downloaded = True
@@ -1282,7 +1291,7 @@ def updateDb(db):
                     # transfer key XML contents to database
                     try:
 #                        print(newX + ": xmlToDb executing")
-                        xmlToDb_success = xmlToDb(db, xml_dir + newX)
+                        xmlToDb_success = xmlToDb(db, xml_extracts_dir + newX)
                     except:
                         xmlToDb_success = False
 
@@ -1291,7 +1300,7 @@ def updateDb(db):
                         logging.exception("xmls_toDbFailed:")
 
                     # remove XML (to save space)
-                    os.remove(xml_dir + newX)
+                    os.remove(xml_extracts_dir + newX)
 #                    print(newX + " removed")
 
                     # if xmlToDb succeeded, ...
@@ -2053,7 +2062,7 @@ def sortRefs(ref):
 
     return ref_sorted
 
-def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath="xml_efetch/"):
+def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, filepath=xml_original_dir):
     """
     Generate an XML filename with 8-digit strings. The strings are 
     a combination of randomly chosen lowercase aplphabet letters ([a-z]) and
