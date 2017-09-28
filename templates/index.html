@@ -17,22 +17,23 @@
     <meta content="initial-scale=1, width=device-width" name="viewport" />
     <!-- http://jquery.com/ -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <!-- D3.js -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <!-- http://getbootstrap.com/ -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- http://getbootstrap.com/ -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- D3.js, file downloaded from https://d3js.org/d3.v4.min.js at 2017-09-28 15:41:47.000000000 -->
+    <script src="{{ url_for('static', filename='d3_v4_10_2_min.js') }}"></script>
+    <!-- http://getbootstrap.com/, file downloaded from https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css at 2017-09-28 15:43:49.739696119 -->
+    <link href="{{ url_for('static', filename='bootstrap_v3_3_7_min.css') }}" rel="stylesheet" />
+    <!-- http://getbootstrap.com/, file downloaded from https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js at 2017-09-28 15:45:15.269099460 -->
+    <script src="{{ url_for('static', filename='bootstrap_v3_3_7_min.js') }}"></script>
     <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- jQuery UI js; jQuery UI has been specified after bootstrap to avoid being overrun. Otherwise, dialog title bar's close button ("X") becomes invisible -->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- app's own CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
-    <!-- https://github.com/corejavascript/typeahead.js/blob/master/doc/jquery_typeahead.md -->
-    <script src="https://cdn.rawgit.com/corejavascript/typeahead.js/master/dist/typeahead.jquery.js"></script>
-    <!-- http://handlebarsjs.com/ -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <!-- https://github.com/corejavascript/typeahead.js/blob/master/doc/jquery_typeahead.md
+    , file downloaded from https://cdn.rawgit.com/corejavascript/typeahead.js/master/dist/typeahead.jquery.js at 2017-09-28 15:49:43.553605372 -->
+    <script src="{{ url_for('static', filename='typeahead_jQuery_v1_2_0.js') }}"></script>
+    <!-- http://handlebarsjs.com/, file downloaded from https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js at 2017-09-28 15:51:12.043090587 -->
+    <script src="{{ url_for('static', filename='handlebars_v4_0_5_min.js') }}"></script>
     <!-- http://stewartjpark.com/Flask-JSGlue/ -->
     {{ JSGlue.include() }}
     <!-- app's own JavaScript -->
@@ -137,7 +138,7 @@
                 <li>are supplementary materials for other publications, or</li>
                 <li>have been replaced by later versions - this is done only in <i>Extracts from original</i> mode</li>
             </ul>
-        </h4>
+        </h4>Limitations
         <br>
         <p>
             <h2>Limitations</h2>
@@ -146,11 +147,12 @@
             <ul>
                 <p><li>Pubmed does not provide a unique ID for each author. This means that, when identifying relevant articles with ESearch, different authors are considered the same author if their names are spelled exactly the same way. Likewise, an author whose name was published with different spellings (e.g. "Kie-Woo Nam" and "Kie Woo Nam") can be considered different authors.</li></p>
                 <p><li>In each identified article's details, dash-like characters (e.g. '-') in author names will be replaced with space. This is to enforce consistency in case the same author inconsistently has the dash-like characters in his/her name. However, this can also result in different authors being considered the same author.</li></p>
+                <li>Updating server database (for <i>Extracts from original</i>) requires some memory. Memory usage increases as the server database becomes more up-to-date.</li>
                 <p><li>Regarding <i>Extracts from original</i> mode:
                     <ul style="list-style-type:circle">
                         <li>The database update method has not been fully tested, so the reliability of the outcome produced by this website has not been confirmed.</li>
                         <li>Server database will be <u>outdated</u> occasionally. This is because the server database update is initiated every 10 minutes and each update will likely take minimum several hours.</li>
-                        <li>Initial update of server database will take a long time (possibly up to a few months). This will be partly due to the code's efficiency, but it will also depend on the performance of machines acting as this website's server.
+                        <li>Initial update of server database will take a long time (possibly up to a few months). This will be partly due to the code's efficiency, but it will also depend on the performance of machines acting as this website's server.</li>
                     </ul>
                 </li></p>
                 <p><li>Regarding <i>Original</i> mode: This can be very slow if the number of articles to fetch are high (searching with 100,000 in "Max number of articles to check" took 1 minute and 36 seconds in a test session.). Most of the time is spent on downloding the article details as an XML file in EFetch. The code's efficiency and machine's performance has only marginal effects on the speed.</li></p>
