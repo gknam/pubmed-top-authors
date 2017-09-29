@@ -1285,8 +1285,7 @@ def updateDb(db):
                     downloadStatus = "downloadSuccess"
                     downloaded = True
 
-                    with open(downSuccess_file, "a") as f:
-                        f.write("{}\n".format(newX).replace('\x00', ''))
+                    saveVarAsLog(downSuccess_file, newX, 1, increment=True)
 
                     # transfer key XML contents to database
                     try:
@@ -1921,7 +1920,7 @@ def xmlToDb(db, xml):
     # indicate if function finished successfully
     return True
 
-def saveVarAsLog(logName, key, value):
+def saveVarAsLog(logName, key, value, increment=False):
     """
     Creates and or update a dictionary with "key" and "value",
     then saves the dicitonary into a log ("logName").
@@ -1939,8 +1938,11 @@ def saveVarAsLog(logName, key, value):
             log = ast.literal_eval(log)
         except:
             log = eval(log)
-
-        log[key] = value
+        
+        if increment and (key in log):
+            log[key] += 1
+        else:
+            log[key] = value
 
     # or create log
     else:
