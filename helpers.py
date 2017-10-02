@@ -310,17 +310,13 @@ def getFullRecs_ext(db, pmids):
                         yearRec[0] += 1
                         yearRec[1].append(ref)
 
+        # Merge two author records if their names are spelled the same way, but in
+        # different letter cases (e.g. Mike vs mike).
+        #TODO: Should this be done in xmlToDb function?
+        mergeSimilarSpelledAuthors(records)
+    
         # sort reference info
-        for author in records:
-            # for each journal
-            for j in records[author][1]["journals"]:
-                jRec = records[author][1]["journals"][j]
-                jRec[1] = sortRefs(jRec[1])
-            # for each year
-            for y in records[author][2]["years"]:
-                yRec = records[author][2]["years"][y]
-                yRec[1] = sortRefs(yRec[1])
-
+        sortRefInfo(records)
 
         # sort whole records
         records = collections.OrderedDict(sorted(records.items()))
@@ -661,19 +657,12 @@ def getFullRecs_ori(pmids):
                     elem.clear()
                 root.clear()
     
+    # Merge two author records if their names are spelled the same way, but in
+    # different letter cases (e.g. Mike vs mike).
     mergeSimilarSpelledAuthors(records)
-    
+
     # sort reference info
-    for author in records:
-        # sort ref for journals by year, then authors
-        # (code from https://stackoverflow.com/a/4233482/7194743)
-        for j in records[author][1]["journals"]:
-            jRec = records[author][1]["journals"][j]
-            jRec[1] = sortRefs(jRec[1])
-        # sort ref for years by year, then authors
-        for y in records[author][2]["years"]:
-            yRec = records[author][2]["years"][y]
-            yRec[1] = sortRefs(yRec[1])
+    sortRefInfo(records)
 
     records = collections.OrderedDict(sorted(records.items()))
 
@@ -2091,7 +2080,7 @@ def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, file
 def mergeSimilarSpelledAuthors(records):
     """
     Merge two author records if their names are spelled the same way, but in
-    different cases (e.g. Mike vs mike).
+    different letter cases (e.g. Mike vs mike).
     
     version required by: both
     """
@@ -2099,24 +2088,31 @@ def mergeSimilarSpelledAuthors(records):
     def mergeJournalsYears(ind, key):
         """
         Merge "journals" and "years" of records.
-        """
-        auK_jRec = records[auK][ind][key]
-        auK_j = set([j for j in auK_jRec])
         
-        auR_jRec = records[auR][ind][key]
-        auR_j = set([j for j in auR_jRec])
+        Variable names:
+        "k": to keep (e.g. "auK": author spelling to keep)
+        "r": to remove (e.g. auR": author spelling to discard
+                        (after adding its record to "auK"))
+        "i": item (e.g. "i" in "Journals" is a journal name)
+        "rec": records for the item
+        
+        """
+        auK_iRec = records[auK][ind][key]
+        auK_i = set([i for i in auK_iRec])
+        
+        auR_iRec = records[auR][ind][key]
+        auR_i = set([i for i in auR_iRec])
 
-        # merge "journals"
-        for jk in auK_j:
-            for jr in auR_j:
+        for ik in auK_i:
+            for ir in auR_i:
                 
-                jkRec = auK_jRec[jk]
-                jrRec = auR_jRec[jr]
+                ikRec = auK_iRec[ik]
+                irRec = auR_iRec[ir]
                 
-                if jk != jr:
-                    auK_jRec[jr] = jrRec
+                if ik != ir:
+                    auK_iRec[ir] = irRec
                 else:
-                    auK_jRec[jk] = sumLists(jkRec, jrRec)
+                    auK_iRec[ik] = sumLists(ikRec, irRec)
 
     def sumLists(l1, l2):
         return [ l1 + l2 for l1, l2 in zip(l1, l2) ]
@@ -2140,21 +2136,13 @@ def mergeSimilarSpelledAuthors(records):
                 au2_t = records[au2][0]["total"]
                 
                 # keep the name with more records
-                # "auK": author spelling to keep
-                # "auR": author spelling to discard (after adding its record
-                # to "auK")
                 auK, auR = (au1, au2) if au1_t >= au2_t else (au2, au1)
 
                 # get records
-                # "t": total
-                # "j": journals
-                # "y": years
-                # "Rec": full records (e.g. jRec: full records of journals)
                 auR_t = records[auR][0]["total"]
 
-                # merge "total"
+                # merge authors
                 records[auK][0]["total"] += auR_t
-
                 mergeJournalsYears(1, "journals")
                 mergeJournalsYears(2, "years")
                             
@@ -2170,6 +2158,29 @@ def mergeSimilarSpelledAuthors(records):
     
     return records
 
+def sortRefInfo(records):
+    """
+    Sort reference info for "journals" and "years" in records
+    
+    version required by: both
+    """
+    
+    def sortRefInfoJournalsYears(author, ind, key):
+        """
+        Sort reference info for "journals" and "years" in records
+        
+        version required by: both
+        """
+
+        for i in records[author][ind][key]:
+            iRec = records[author][ind][key][i]
+            iRec[1] = sortRefs(iRec[1])
+    
+    for author in records:
+        sortRefInfoJournalsYears(author, 1, "journals")
+        sortRefInfoJournalsYears(author, 2, "years")
+    
+    return records
 
 '''
 This is a different version of toASCII, discarded due to slow performance.
