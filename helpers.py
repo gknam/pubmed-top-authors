@@ -403,17 +403,12 @@ def getFullRecs_ori(pmids):
                     elem.clear()
                 root.clear()
 
+    # Merge two author records if their names are spelled the same way, but in
+    # different letter cases (e.g. Mike vs mike).
+    mergeSimilarSpelledAuthors(records)
+
     # sort reference info
-    for author in records:
-        # sort ref for journals by year, then authors
-        # (code from https://stackoverflow.com/a/4233482/7194743)
-        for j in records[author][1]["journals"]:
-            jRec = records[author][1]["journals"][j]
-            jRec[1] = sortRefs(jRec[1])
-        # sort ref for years by year, then authors
-        for y in records[author][2]["years"]:
-            yRec = records[author][2]["years"][y]
-            yRec[1] = sortRefs(yRec[1])
+    sortRefInfo(records)
 
     records = collections.OrderedDict(sorted(records.items()))
 
@@ -647,6 +642,111 @@ def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, file
         notDone = glob(xml)
 
     return xml
+
+def mergeSimilarSpelledAuthors(records):
+    """
+    Merge two author records if their names are spelled the same way, but in
+    different letter cases (e.g. Mike vs mike).
+    
+    version required by: both
+    """
+    
+    def mergeJournalsYears(ind, key):
+        """
+        Merge "journals" and "years" of records.
+        
+        Variable names:
+        "k": to keep (e.g. "auK": author spelling to keep)
+        "r": to remove (e.g. auR": author spelling to discard
+                        (after adding its record to "auK"))
+        "i": item (e.g. "i" in "Journals" is a journal name)
+        "rec": records for the item
+        
+        """
+        auK_iRec = records[auK][ind][key]
+        auK_i = set([i for i in auK_iRec])
+        
+        auR_iRec = records[auR][ind][key]
+        auR_i = set([i for i in auR_iRec])
+
+        for ik in auK_i:
+            for ir in auR_i:
+                
+                ikRec = auK_iRec[ik]
+                irRec = auR_iRec[ir]
+                
+                if ik != ir:
+                    auK_iRec[ir] = irRec
+                else:
+                    auK_iRec[ik] = sumLists(ikRec, irRec)
+
+    def sumLists(l1, l2):
+        return [ l1 + l2 for l1, l2 in zip(l1, l2) ]
+    
+    # list of all authors
+    auAll = set([k for k in records])
+    
+    # authors to remove
+    toRemove = set()
+    
+    # iterate over authors
+    for au1 in records:
+        for au2 in auAll:
+            au1lo = au1.lower()
+            au2lo = au2.lower()
+            
+            # if two authors' names are spelled the same, but in different cases
+            if au1 != au2 and au1lo == au2lo:
+
+                au1_t = records[au1][0]["total"]
+                au2_t = records[au2][0]["total"]
+                
+                # keep the name with more records
+                auK, auR = (au1, au2) if au1_t >= au2_t else (au2, au1)
+
+                # get records
+                auR_t = records[auR][0]["total"]
+
+                # merge authors
+                records[auK][0]["total"] += auR_t
+                mergeJournalsYears(1, "journals")
+                mergeJournalsYears(2, "years")
+                            
+                toRemove.add(auR)
+                    
+                # merge "journals"
+
+            
+        auAll.remove(au1)
+             
+    for e in toRemove:
+        records.pop(e)
+    
+    return records
+
+def sortRefInfo(records):
+    """
+    Sort reference info for "journals" and "years" in records
+    
+    version required by: both
+    """
+    
+    def sortRefInfoJournalsYears(author, ind, key):
+        """
+        Sort reference info for "journals" and "years" in records
+        
+        version required by: both
+        """
+
+        for i in records[author][ind][key]:
+            iRec = records[author][ind][key][i]
+            iRec[1] = sortRefs(iRec[1])
+    
+    for author in records:
+        sortRefInfoJournalsYears(author, 1, "journals")
+        sortRefInfoJournalsYears(author, 2, "years")
+    
+    return records
 
 '''
 This is a different version of toASCII, discarded due to slow performance.
