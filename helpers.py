@@ -660,7 +660,9 @@ def getFullRecs_ori(pmids):
 
                     elem.clear()
                 root.clear()
-
+    
+    mergeSimilarSpelledAuthors(records)
+    
     # sort reference info
     for author in records:
         # sort ref for journals by year, then authors
@@ -2085,6 +2087,89 @@ def generateXmlFilename(size=8, chars=string.ascii_letters + string.digits, file
         notDone = glob(xml)
 
     return xml
+
+def mergeSimilarSpelledAuthors(records):
+    """
+    Merge two author records if their names are spelled the same way, but in
+    different cases (e.g. Mike vs mike).
+    
+    version required by: both
+    """
+    
+    def mergeJournalsYears(ind, key):
+        """
+        Merge "journals" and "years" of records.
+        """
+        auK_jRec = records[auK][ind][key]
+        auK_j = set([j for j in auK_jRec])
+        
+        auR_jRec = records[auR][ind][key]
+        auR_j = set([j for j in auR_jRec])
+
+        # merge "journals"
+        for jk in auK_j:
+            for jr in auR_j:
+                
+                jkRec = auK_jRec[jk]
+                jrRec = auR_jRec[jr]
+                
+                if jk != jr:
+                    auK_jRec[jr] = jrRec
+                else:
+                    auK_jRec[jk] = sumLists(jkRec, jrRec)
+
+    def sumLists(l1, l2):
+        return [ l1 + l2 for l1, l2 in zip(l1, l2) ]
+    
+    # list of all authors
+    auAll = set([k for k in records])
+    
+    # authors to remove
+    toRemove = set()
+    
+    # iterate over authors
+    for au1 in records:
+        for au2 in auAll:
+            au1lo = au1.lower()
+            au2lo = au2.lower()
+            
+            # if two authors' names are spelled the same, but in different cases
+            if au1 != au2 and au1lo == au2lo:
+
+                au1_t = records[au1][0]["total"]
+                au2_t = records[au2][0]["total"]
+                
+                # keep the name with more records
+                # "auK": author spelling to keep
+                # "auR": author spelling to discard (after adding its record
+                # to "auK")
+                auK, auR = (au1, au2) if au1_t >= au2_t else (au2, au1)
+
+                # get records
+                # "t": total
+                # "j": journals
+                # "y": years
+                # "Rec": full records (e.g. jRec: full records of journals)
+                auR_t = records[auR][0]["total"]
+
+                # merge "total"
+                records[auK][0]["total"] += auR_t
+
+                mergeJournalsYears(1, "journals")
+                mergeJournalsYears(2, "years")
+                            
+                toRemove.add(auR)
+                    
+                # merge "journals"
+
+            
+        auAll.remove(au1)
+             
+    for e in toRemove:
+        records.pop(e)
+    
+    return records
+
 
 '''
 This is a different version of toASCII, discarded due to slow performance.
