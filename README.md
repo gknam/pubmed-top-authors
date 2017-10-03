@@ -40,7 +40,7 @@ Initiate server.
 
 `flask run --host=0.0.0.0 --port=8080`
 
-Open website: In the terminal, left-click on **http****://0.0.0.0:8080/** and select **Open**.
+Open website: In the terminal, left-click on **http://0.0.0.0:8080/** and select **Open**.
 
 ### Version 2
 *Data are fetched from a database file in this website's server. When the server starts, data are constantly
@@ -54,7 +54,7 @@ Initiate server.
 
 `flask run --no-reload --host=0.0.0.0 --port=8080`
 
-Open website: In the terminal, left-click on **http****://0.0.0.0:8080/** and select **Open**.
+Open website: In the terminal, left-click on **http://0.0.0.0:8080/** and select **Open**.
 
 
 **Warning**: The database file (**database/pubmed.db**) is initially empty, and complete update of the database file is assumed to take a few months.
