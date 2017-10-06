@@ -60,6 +60,10 @@ logging.basicConfig(level=logging.DEBUG, filename=tempLog)
 xml_extracts_dir = "xml_extracts/"
 xml_original_dir = "xml_original/"
 
+# Error logs to check when crashed
+upDbFail_part1_file = "logs_updateDb/updateDbFailed_part1.log"
+upDbFail_part2_file = "logs_updateDb/updateDbFailed_part2.log"
+
 # remove pre-existing XML files
 for x in (glob(xml_extracts_dir + "*.xml.gz") + glob(xml_original_dir + "*.xml")):
     os.remove(x)
@@ -1049,7 +1053,6 @@ def updateDb(db):
     global dbUpdating
 
     # file names
-    upDbFail_part1_file = "logs_updateDb/updateDbFailed_part1.log"
     loc_file = "logs_updateDb/xmls_onlyLocal.txt"
     x_rename_log_file = "logs_updateDb/xmls_Renamed.txt"
     log_file = "logs_updateDb/xmls_toDbDone.txt"
@@ -1319,7 +1322,7 @@ def updateDb(db):
 
                         saveVarAsLog(toDbFail_file, newX, value)
 
-                        errMessage = newX + ": xmlToDb failed, aborting update, fix problem and retry"
+                        errMessage = newX + ": xmlToDb failed, aborting update, fix problem and retry. Error details can be found at {}, {} and {}".format(tempLog, upDbFail_part1_file, upDbFail_part2_file)
 
                         print(errMessage)
                         with open(upDbFail_part1_file, "w") as f:
@@ -1999,7 +2002,6 @@ def updateDbStart(db):
     version required by: extracts
     """
     global dbUpdating
-    upDbFail_part2_file = "logs_updateDb/updateDbFailed_part2.log"
 
     interval = 600
     if dbUpdating == "failed":
