@@ -1,5 +1,5 @@
 # pubmed-top-authors
-Find authors on Pubmed who published most (1) on a keyword or (2) together with an author.
+Find authors on [Pubmed](https://www.ncbi.nlm.nih.gov/pubmed/) who published most (1) on a keyword or (2) together with an author.
 Then draw graphs on their publication records per year and per journal.
 
 # 1. Usage
