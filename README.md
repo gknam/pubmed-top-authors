@@ -1,9 +1,15 @@
 # pubmed-top-authors
-Find authors on Pubmed who published most (1) on a keyword or (2) together with an author.
+Find authors on [**Pubmed**](https://www.ncbi.nlm.nih.gov/pubmed/) who published most (1) on a keyword or (2) together with an author.
 Then draw graphs on their publication records per year and per journal.
 
-# Setup
+# 1. Usage
+## Setup
 1. Make an account at [Cloud9](https://c9.io), and [create a workspace](https://docs.c9.io/v1.0/docs/create-a-workspace) choosing **Python** as a template.
+
+2. Open a terminal (if there is none already open).
+
+*Now, copy the command in each of the following steps and paste it into the terminal.*
+<br>
 
 2. download repository.
 
@@ -27,12 +33,7 @@ Then draw graphs on their publication records per year and per journal.
 
    `export FLASK_DEBUG=1`
 
-# Execute
-
-There are two versions of this website.
-
-### Version 1 (recommended)
-*All data are fetched directly from Pubmed via [E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25501/).*
+## Start server
 
 1. Go to the branch for this version.
 
@@ -46,27 +47,18 @@ There are two versions of this website.
 
    In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
 
-### Version 2
-*Data can be fetched (1) the same way as Version 1 or (2) from a database file (DBF) stored in this website's server. The DBF (**database/pubmed.db**) contains data pre-fetched from Pubmed via [E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25501/).*
 
-**Data pre-fetching**: When the server starts (i.e. `flask` is run), data in XML format start getting fetched from Pubmed's FTP server ([baseline](http://bit.ly/2hMJru1) and [updatefiles](http://bit.ly/2y0kwcr)) and transferred into the DBF in the background. This continues until all update is finished. If the server is killed and resumed, update will resume from the last-fetched XML file.
 
-**Warning**: The DBF is initially empty, and complete update of the DBF is assumed to take a few *months*.
+## Kill server
 
-1. Go to the branch for this version.
+To kill the server, do the following with the the **terminal in which** `flask` **command is running**.
 
-   `git checkout master`
+* Click anywhere in the terminal and press `Ctrl` + `C`.
+* Close the terminal
 
-2. Initiate server.
+If you want to restart the server, follow the instructions in **Start server** section above.
 
-   `flask run --no-reload --host=0.0.0.0 --port=8080`
+*You might want to kill the server and restart it in case you want to stop a search and do a new one. Search will be slower with bigger numbers typed in "Max number of days from today and/or "Max number of articles to check" on the website.*
 
-3. Open website
-
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
-
-4. Select **Database to query**
-
-   **Original**: Fetch data directly from Pubmed (same as **Version 1**).
-
-   **Extracts from original**: Fetch data from DBF - Note **Warning** above.
+# 2. Technical note
+All data are fetched directly from Pubmed via [E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25501/).
