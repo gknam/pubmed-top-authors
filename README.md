@@ -1,4 +1,7 @@
 # pubmed-top-authors
+
+<a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
+
 Find authors on [**Pubmed**](https://www.ncbi.nlm.nih.gov/pubmed/) who published most (1) on a keyword or (2) together with an author.
 Then draw graphs on their publication records per year and per journal.
 
