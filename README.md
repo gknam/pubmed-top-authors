@@ -161,7 +161,7 @@ XML files are downloaded from Pubmed's FTP server - [baseline data](ftp://ftp.nc
 
 ### 2.2.1.2. [ETL (Extract, Transform, Load)](https://en.wikipedia.org/wiki/Extract,_transform,_load)
 
-From XML file, relevant elements (i.e. information) are extracted using [xml.etree.ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html), then transformed into a Python [set](https://docs.python.org/2/library/sets.html), and loaded into the DB using SQLite and [SQLAlchemy](https://www.sqlalchemy.org/). 
+From XML file, relevant elements (i.e. information) are **E**xtracted using [xml.etree.ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html), then **T**ransformed into a Python [set](https://docs.python.org/2/library/sets.html), and **L**oaded into the DB using SQLite and [SQLAlchemy](https://www.sqlalchemy.org/). 
 
 ### 3. Identify top authors (back-end)
 
