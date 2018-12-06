@@ -1,8 +1,14 @@
 
+
 # Visit Pubmed's top authors websites.
 
-- ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (recommended)
-- ## [Version 2](https://pubmed-top-authors-version-2-gknam.c9users.io/)
+- ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (NOT recommended)
+  - Faster, but less reliable
+  - Initial database update is expected to take months)
+
+- ## [Version 2](https://pubmed-top-authors-version-2-gknam.c9users.io/) (Recommended)
+  - Slower, but reliable
+  - Data are retrieved directly from Pubmed database
 
 <br /><br /><br />
 
@@ -45,23 +51,9 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
 ## Start server
 
-There are two versions of this website.
+There are two versions of this website. Version 2 is recommended.
 
-#### Version 1 (recommended)
-
-1. Go to the branch for this version.
-
-   `git checkout original_only`
-
-2. Initiate server.
-
-   `flask run --host=0.0.0.0 --port=8080`
-
-3. Open website
-
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
-
-#### Version 2
+#### Version 1 (NOT recommended)
 
 1. Go to the branch for this version.
 
@@ -82,6 +74,20 @@ There are two versions of this website.
    **Extracts from original**: Fetch data from a local database file*, which contains data pre-fetched from Pubmed.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
+
+#### Version 2 (Recommended)
+
+1. Go to the branch for this version.
+
+   `git checkout original_only`
+
+2. Initiate server.
+
+   `flask run --host=0.0.0.0 --port=8080`
+
+3. Open website
+
+   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
 
 ## Kill server
 
