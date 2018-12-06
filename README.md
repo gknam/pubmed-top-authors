@@ -153,7 +153,7 @@ The DB contains data which have been "pre"-fetched from Pubmed. This procedure i
 
 Data pre-fetching is run in the background. The following download-[**ETL**](https://en.wikipedia.org/wiki/Extract,_transform,_load) cycle continues until all update is finished.
 
-If the server is killed and resumed, update will resume from the last-fetched XML file. Once all data are pre-fetched, updates are checked every 10 minutes.
+If the server is killed and resumed, update will resume from the last-fetched XML file. Once all data are pre-fetched, updates are checked for every 10 minutes.
 
 ### 2.2.1.1. Download
 
