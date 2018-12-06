@@ -1,4 +1,8 @@
-# Visit [Pubmed's top authors](https://pubmed-top-authors-gknam.c9users.io/) website.
+
+# Visit Pubmed's top authors websites.
+
+- ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (recommended)
+- ## [Version 2](https://pubmed-top-authors-version-2-gknam.c9users.io/)
 
 <br /><br /><br />
 
@@ -113,43 +117,51 @@ If you want to restart the server, follow the instructions in **Start server** s
 
 ### 1. User submits query (front-end)
 
-The user types in a keyword (e.g. psychology) or an author's name in the search bar. The user can also specify the (1) data fetching method - which will be explained below - , (2) number of top authors to identify, (3) date range going backwards from today, and (4) maximum number of articles (i.e. publications) to check. The set of parameters is sent to the back-end in JSON format.
+The user types in a keyword (e.g. psychology) or an author's name in the search bar. The user can also specify the (1) data fetching method - which will be explained below - , (2) number of top authors to identify, (3) date range going backwards from today, and (4) maximum number of articles (i.e. publications) to check. The set of search criteria are sent to the back-end in JSON format.
 
 jQuery is used to use simplified syntax.
 
+### 2. Identify publications (back-end)
+
+In the back-end, identify publications that match the search criteria are identified.
+
 ### 2. Fetch data (back-end)
 
-In the back-end, data is fetched according to the parameters. The data to fetch includes various details of each publication (e.g. author name, publication year, journal title, etc.).
+Data are fetched for each identified publication. The fetched data include various details of each publication (e.g. author name, publication year, journal title, etc.).
 
 The data can be fetched from either of two sources.
 
 ### 2.1. Pubmed's database
 
-Data are fetched using [Pubmed API](https://www.ncbi.nlm.nih.gov/books/NBK25501/).
+Data are downloaded from Pubmed's database via [Pubmed API](https://www.ncbi.nlm.nih.gov/books/NBK25501/) as XML files. From the XML files, relevant elements (i.e. information) are **E**xtracted using [xml.etree.ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html), then **T**ransformed into a Python [dictionary](https://docs.python.org/3.7/tutorial/datastructures.html?highlight=dictionary#dictionaries). 
 
-Pro: Fetched data is reliable because this accesses the original database
-Cons: Retrieving data via Pubmed API can be slow especially when the query range (date range, maximum number of articles) is big. Also, Pubmed API sets a rather tight limit on query range.
+*Pro: Fetched data are reliable because this accesses the original database*
 
-### 2.2. SQLite database file (DB) stored in this website's server
+*Cons: Retrieving data via Pubmed API can be slow especially when the query range (date range, maximum number of articles) is big. Also, Pubmed API sets a rather tight limit on query range.*
 
-The DB contains data pre-fetched from Pubmed.
+### 2.2. Database in this website's server
 
-Pro: Depending on the computing resources, (1) the allowed query range can be bigger than that set by Pubmed API and (2) the retrieval speed can be quicker.
-Cons: Fetched data is less reliable because DB can never be 100% up-to-date with Pubmed's database - auto-update function runs every 10 minutes.
+Data are fetched from the SQLite database file (DB) in the server. The fetched data are transformed into a Python dictionary.
+
+The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections 2.2.1 to 2.2.1.2.
+
+*Pro: Depending on the computing resources, (1) the allowed query range can be bigger than that set by Pubmed API and (2) the retrieval speed can be quicker.*
+
+*Cons: Fetched data are less reliable because DB can never be 100% up-to-date with Pubmed's database - auto-update function runs every 10 minutes.*
 
 ### 2.2.1. Pre-fetch data
 
-Data pre-fetching is run in the background. The following download-ETL cycle continues until all update is finished.
+Data pre-fetching is run in the background. The following download-[**ETL**](https://en.wikipedia.org/wiki/Extract,_transform,_load) cycle continues until all update is finished.
 
-If the server is killed and resumed, update will resume from the last-fetched XML file. Once all data is pre-fetched, updates are checked for every 10 minutes.
+If the server is killed and resumed, update will resume from the last-fetched XML file. Once all data are pre-fetched, updates are checked every 10 minutes.
 
 ### 2.2.1.1. Download
 
 XML files are downloaded from Pubmed's FTP server - [baseline data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline) are downloaded and saved first before [update data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/)).
 
-### 2.2.1.2. ETL (Extract, Transform, Load)
+### 2.2.1.2. [ETL (Extract, Transform, Load)](https://en.wikipedia.org/wiki/Extract,_transform,_load)
 
-From XML file, relevant elements (i.e. information) are extracted using [xml.etree.ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html), then transformed into Python data type (e.g. [set](https://docs.python.org/2/library/sets.html)), and loaded into the DB using SQLite and [SQLAlchemy](https://www.sqlalchemy.org/). 
+From XML file, relevant elements (i.e. information) are extracted using [xml.etree.ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html), then transformed into a Python [set](https://docs.python.org/2/library/sets.html), and loaded into the DB using SQLite and [SQLAlchemy](https://www.sqlalchemy.org/). 
 
 ### 3. Identify top authors (back-end)
 
