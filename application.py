@@ -48,7 +48,7 @@ with open(db_file, "a") as f:
 
 dbConExe(db, "CREATE TABLE IF NOT EXISTS medline \
             (pmid INTEGER NOT NULL PRIMARY KEY, \
-            fiYmd TEXT NOT NULL, crYmd TEXT NOT NULL, coYmd TEXT, reYmd TEXT, \
+            fiYmd TEXT NOT NULL, crYmd TEXT, coYmd TEXT, reYmd TEXT, \
             fname TEXT NOT NULL, lname TEXT NOT NULL, initials TEXT, \
             pyear TEXT NOT NULL, pmonth TEXT, pday TEXT, \
             journal TEXT NOT NULL, journalNonAbbr TEXT, article TEXT, doi TEXT, \

@@ -1601,8 +1601,9 @@ def xmlToDb(db, xml):
 
                     # 2.2 as indicated by missing essential info
 
+                    record_dates = crYmdList + coYmdList + reYmdList # required to get fiYmd
                     essential = {"AuthorList": authorList, "PubDate": pYmdList, \
-                               "MedlineTA": journalList, "DateCreated": crYmdList}
+                               "MedlineTA": journalList, "record_dates": record_dates}
 
                     missing_elements = set([i for i in essential if not essential[i]])
 #                    print("checking for missing elements")
