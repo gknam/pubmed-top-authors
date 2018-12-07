@@ -3,12 +3,12 @@
 # Visit Pubmed's top authors websites.
 
 - ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (NOT recommended)
-  - Faster, but less reliable
-  - Initial database update is expected to take months)
+  - Faster, but less reliable* than version 2
+  - Data is fetched from this website's own database which is a partial copy of Pubmed's database
 
-- ## [Version 2](https://pubmed-top-authors-version-2-gknam.c9users.io/) (Recommended)
-  - Slower, but reliable
-  - Data are retrieved directly from Pubmed database
+- ## [Version 2](https://pubmed-top-authors-2-gknam.c9users.io/) (Recommended)
+  - Slower, but reliable than version 1
+  - Data is fetched directly from Pubmed database using Pubmed API
 
 <br /><br /><br />
 
@@ -71,7 +71,7 @@ There are two versions of this website. Version 2 is recommended.
 
    **Original**: Fetch data directly from Pubmed (same as **Version 1**).
 
-   **Extracts from original**: Fetch data from a local database file*, which contains data pre-fetched from Pubmed.
+   **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
 
@@ -147,7 +147,7 @@ Data are downloaded from Pubmed's database via [Pubmed API](https://www.ncbi.nlm
 
 ### 2.2. Database in this website's server
 
-Data are fetched from the SQLite database file (DB) in the server. The fetched data are transformed into a Python dictionary.
+Data are fetched from the SQLite** database file (DB) in the server. The fetched data are transformed into a Python dictionary.
 
 The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections 2.2.1 to 2.2.1.2.
 
@@ -177,4 +177,6 @@ Within the fetched data, top authors are identified who have most publications (
 
 Data are reorganised. Then, using [D3.js](https://d3js.org/), each author's publication counts are visualised in interactive plots (1) per year and (2) per journal.
 
-\*PostgreSQL would be a more appropriate choice than SQLite. This is because SQLite DB gets locked for a few milliseconds each time it gets updated, and DB is inaccessible during this. This is likely to be disruptive because the DB update constantly runs in the background.
+\*Version 1 is less reliable for the following reasons. This website's database is initially empty and the complete update is expected to take a few months. Once update is completed, Pubmed's database is checked for updates every 10 mintues. Each new update is expected to take some time (e.g. it will likely take a few hours on my computer (Lenovo T500, Intel Core 2 Duo processor T9600 (2.80 GHz), 8GB RAM).
+
+\*\*PostgreSQL would be a more appropriate choice than SQLite. This is because SQLite DB gets locked for a few milliseconds each time it gets updated, and DB is inaccessible during this. This is likely to be disruptive because the DB update constantly runs in the background.
