@@ -1,18 +1,20 @@
 
 
-# Visit Pubmed's top authors websites.
+# Try demos
 
 - ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (NOT recommended)
   - Faster, but less reliable* than version 2
-  - Data is fetched from this website's own database which is a partial copy of Pubmed's database
+  - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
+  - On `master` branch
 
 - ## [Version 2](https://pubmed-top-authors-2-gknam.c9users.io/) (Recommended)
   - Slower, but reliable than version 1
   - Data is fetched directly from Pubmed database using Pubmed API
+  - On `original_only` branch
 
 <br /><br /><br />
 
-# pubmed-top-authors
+# Pubmed's top authors
 
 <a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
 
