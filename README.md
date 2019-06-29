@@ -44,7 +44,7 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
 5. Install required packages
 
-   `sudo pip install -r requirements.txt`
+   `sudo /home/ubuntu/.local/bin/pip install -r requirements.txt`
 
 6. Setup Flask.
 
