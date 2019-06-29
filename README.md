@@ -37,9 +37,10 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
    `cd pubmed-top-authors`
 
-4. Change the default python version to 3.4
+4. Change the default python version to 3.7
 
-   `sudo ln -sfn python3.4 /usr/bin/python`
+   Open `~/.bashrc`. In the file, set `alias python` to `python3.7`.
+   After the update, you should see `alias python=python3.7`
 
 5. Install required packages
 
