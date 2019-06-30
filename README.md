@@ -37,16 +37,26 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
    `cd pubmed-top-authors`
 
-4. Change the default python version to 3.6
+4. Install `pip` for Python3.
+
+    `curl -O https://bootstrap.pypa.io/get-pip.py`
+    `python3 get-pip.py --user`
+    Open `~/.profile`. In the file, find `export PATH=` and add `~/.local/bin` to it.
+        An example of this update is shown below.
+        `export PATH="$PATH:$HOME/.rvm/bin` (before update)
+        `export PATH="~/.local/bin:$PATH:$HOME/.rvm/bin` (after update)
+    `source ./profile`
+
+5. Change the default python version to 3.6
 
    Open `~/.bashrc`. In the file, set `alias python` to `python3.6`.
    After the update, you should see `alias python=python3.6`
 
-5. Install required packages
+6. Install required packages
 
    `sudo pip install -r requirements.txt`
 
-6. Setup Flask.
+7. Setup Flask.
 
    `export FLASK_APP=application.py`
 
