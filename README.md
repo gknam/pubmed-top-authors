@@ -29,28 +29,20 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-2. download repository.
+3. Change the default python version to Python 3.
 
-   `git clone https://github.com/gknam/pubmed-top-authors.git`
+    Open `~/.bashrc`. In the file, set `alias python` to `python3`.</br>
+    An example of this update is shown below.</br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python27` (before update)</br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python3` (after update)
 
-3. Go into the repository.
+4. Download repository.
+
+   `git clone https://github.com/gknam/pubmed-top-authors`
+
+5. Go into the repository.
 
    `cd pubmed-top-authors`
-
-4. Install `pip` for Python3.
-
-    `curl -O https://bootstrap.pypa.io/get-pip.py`
-    `python3 get-pip.py --user`
-    Open `~/.profile`. In the file, find `export PATH=` and add `~/.local/bin` to it.
-        An example of this update is shown below.
-        `export PATH="$PATH:$HOME/.rvm/bin` (before update)
-        `export PATH="~/.local/bin:$PATH:$HOME/.rvm/bin` (after update)
-    `source ./profile`
-
-5. Change the default python version to 3.6
-
-   Open `~/.bashrc`. In the file, set `alias python` to `python3.6`.
-   After the update, you should see `alias python=python3.6`
 
 6. Install required packages
 
@@ -78,7 +70,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 4. Select **Database to query**
 
@@ -100,7 +92,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 ## Kill server
 
