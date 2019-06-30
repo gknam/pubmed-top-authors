@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import ast
 import asyncio
 import collections
