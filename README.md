@@ -29,23 +29,26 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-2. download repository.
+3. Change the default python version to Python 3.
 
-   `git clone https://github.com/gknam/pubmed-top-authors.git`
+    Open `~/.bashrc`. In the file, set `alias python` to `python3`.</br>
+    An example of this update is shown below.</br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python27` (before update)</br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python3` (after update)
 
-3. Go into the repository.
+4. Download repository.
+
+   `git clone https://github.com/gknam/pubmed-top-authors`
+
+5. Go into the repository.
 
    `cd pubmed-top-authors`
 
-4. Change the default python version to 3.4
-
-   `sudo ln -sfn python3.4 /usr/bin/python`
-
-5. Install required packages
+6. Install required packages
 
    `sudo pip install -r requirements.txt`
 
-6. Setup Flask.
+7. Setup Flask.
 
    `export FLASK_APP=application.py`
 
@@ -67,7 +70,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 4. Select **Database to query**
 
@@ -89,7 +92,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 ## Kill server
 
