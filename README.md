@@ -29,26 +29,23 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-3. Change the default python version to Python 3.
+2. download repository.
 
-    Open `~/.bashrc`. In the file, set `alias python` to `python3`.</br>
-    An example of this update is shown below.</br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python27` (before update)</br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`alias python=python3` (after update)
+   `git clone https://github.com/gknam/pubmed-top-authors.git`
 
-4. Download repository.
-
-   `git clone https://github.com/gknam/pubmed-top-authors`
-
-5. Go into the repository.
+3. Go into the repository.
 
    `cd pubmed-top-authors`
 
-6. Install required packages
+4. Change the default python version to 3.4
 
-   `sudo pip install -r requirements.txt`
+   `sudo ln -sfn python3.6 /usr/bin/python`
 
-7. Setup Flask.
+5. Install required packages
+
+   `sudo pip-3.6 install -r requirements.txt`
+
+6. Setup Flask.
 
    `export FLASK_APP=application.py`
 
