@@ -67,7 +67,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 4. Select **Database to query**
 
@@ -89,7 +89,7 @@ There are two versions of this website. Version 2 is recommended.
 
 3. Open website
 
-   In the terminal, *left*-click on `http://0.0.0.0:8080/` and select **Open**.
+   Go to `Preview` --> `Preview Running Application`
 
 ## Kill server
 
