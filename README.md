@@ -1,13 +1,13 @@
 
 
-# Try demos
+# Try demo
 
-- ## [Version 1](https://pubmed-top-authors-gknam.c9users.io/) (NOT recommended)
+- ## Version 1 (NOT recommended)
   - Faster, but less reliable* than version 2
   - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
   - On `master` branch
 
-- ## [Version 2](https://pubmed-top-authors-2-gknam.c9users.io/) (Recommended)
+- ## [Version 2](http://52.211.136.137:8080) (Recommended)
   - Slower, but reliable than version 1
   - Data is fetched directly from Pubmed database using Pubmed API
   - On `original_only` branch
