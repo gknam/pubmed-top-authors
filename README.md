@@ -1,5 +1,6 @@
 
 
+
 # Try demo
 
 - ## Version 1 (NOT recommended)
@@ -127,17 +128,17 @@ If you want to restart the server, follow the instructions in **Start server** s
 
 The user types in a keyword (e.g. psychology) or an author's name in the search bar. The user can also specify the (1) data fetching method - which will be explained below - , (2) number of top authors to identify, (3) date range going backwards from today, and (4) maximum number of articles (i.e. publications) to check. The set of search criteria are sent to the back-end in JSON format.
 
-jQuery is used to use simplified syntax.
+jQuery is used for simplified syntax.
 
 ### 2. Identify publications (back-end)
 
-In the back-end, identify publications that match the search criteria are identified.
+In the back-end, publications that match the search criteria are identified.
 
 ### 2. Fetch data (back-end)
 
 Data are fetched for each identified publication. The fetched data include various details of each publication (e.g. author name, publication year, journal title, etc.).
 
-The data can be fetched from either of two sources.
+The data can be fetched from either of two sources: **Pubmed's database** or the **database in this website's server**.
 
 ### 2.1. Pubmed's database
 
@@ -151,7 +152,7 @@ Data are downloaded from Pubmed's database via [Pubmed API](https://www.ncbi.nlm
 
 Data are fetched from the SQLite** database file (DB) in the server. The fetched data are transformed into a Python dictionary.
 
-The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections 2.2.1 to 2.2.1.2.
+The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections **2.2.1** to **2.2.1.2**.
 
 *Pro: Depending on the computing resources, (1) the allowed query range can be bigger than that set by Pubmed API and (2) the retrieval speed can be quicker.*
 
