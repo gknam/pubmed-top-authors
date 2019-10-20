@@ -1037,8 +1037,8 @@ def updateDb(db):
     Note 1 (regarding "xmls_onlyLocal.txt" and "xmls_Renamed.txt"):
         These files are for in case XML files are renamed in the Pubmed FTP server.
         I believe that such renaming could be an error, or part of annual update
-        (e.g. perhaps the filename begging will be changed from "medline17n" to
-        "medline18n" for the year 2018?).
+        (e.g. perhaps the filename begining will be changed from "medline17n" to
+        "medline18n" when the year changes from 2017 to 2018).
 
     Note 2 (regarding variable names):
         Often if not always,
@@ -1102,13 +1102,13 @@ def updateDb(db):
 
             # get MD5 from Pubmed FTP server
 #            print("Getting MD5 of " + xLf + " found both locally and FTP server")
-            ftpJobDone, xLf_m_ftp = ftpJob(ftpAddress, directory, "returnVal = ftpGetMd5(xLf, ftp)")
+            ftpJobDone, xLf_m_ftp = ftpJob(ftpAddress, directory, "returnVal = ftpGetMd5('{}', ftp)".format(xLf))
 #            print("Got MD5 of " + xLf)
 
             # get logged MD5
             for rec in xmLoc:
                 if xLf in rec:
-                    xmLf = re.sub("MD5\(|\)= .*", "", rec)
+                    xmLf = re.sub(".*= ", "", rec)
 
                     # if same MD5 is shared, remove XML from log
                     if xmLf == xLf_m_ftp:
@@ -1181,7 +1181,7 @@ def updateDb(db):
 #                        print("Getting MD5 of " + xRenamed + " whose filename matches the\
 #                              XML file previously processed, but is a different file\
 #                              (assumingly due to renaming on FTP server")
-                        ftpJobDone, xRenamed_m_ftp = ftpJob(ftpAddress, directory, "returnVal = ftpGetMd5(xRenamed, ftp)")
+                        ftpJobDone, xRenamed_m_ftp = ftpJob(ftpAddress, directory, "returnVal = ftpGetMd5('{}', ftp)".format(xRenamed))
 #                        print("Got MD5 of " + xRenamed)
 
                         # (2) the XML's MD5 is absent from xmls_toDbDone.txt
