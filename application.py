@@ -19,7 +19,7 @@ if app.config["DEBUG"]:
         response.headers["Pragma"] = "no-cache"
         return response
 
-# configure CS50 Library to use SQLite database
+# connect to database
 db_file = "database/pubmed.db"
 db = create_engine("sqlite:///" + db_file)
 
@@ -54,7 +54,7 @@ dbConExe(db, "CREATE TABLE IF NOT EXISTS medline \
             journal TEXT NOT NULL, journalNonAbbr TEXT, article TEXT, doi TEXT, \
             journalVol TEXT, journalIss TEXT, pageNum TEXT, country TEXT)")
 
-
+# start updating db in background
 threaded_ticker = call_in_background(updateDbStart, db)
 
 @app.route("/")
