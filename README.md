@@ -15,25 +15,38 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
 2. download repository.
 
-   `git clone https://github.com/gknam/pubmed-top-authors.git`
+   ```
+   git clone https://github.com/gknam/pubmed-top-authors.git
+   ```
 
-3. Go into the repository.
+4. Go into the repository.
 
-   `cd pubmed-top-authors`
+   ```
+   cd pubmed-top-authors
+   ```
 
-4. Change the default python version to 3.4
+6. Change the default python version to 3.4
 
-   `sudo ln -sfn python3.6 /usr/bin/python`
+   ```
+   sudo ln -sfn python3.6 /usr/bin/python
+   ```
 
-5. Install required packages
+8. Install required packages
+   
+   ```
+   sudo pip-3.6 install -r requirements.txt
+   ```
 
-   `sudo pip-3.6 install -r requirements.txt`
+10. Setup Flask
+   
+   ```
+   export FLASK_APP=application.py
+   ```
+   
+   ```
+   export FLASK_DEBUG=1
+   ```
 
-6. Setup Flask.
-
-   `export FLASK_APP=application.py`
-
-   `export FLASK_DEBUG=1`
 
 ## Start server
 
@@ -43,17 +56,21 @@ There are two versions of this website. Version 2 is recommended.
 
 1. Go to the branch for this version.
 
-   `git checkout master`
+   ```
+   git checkout master
+   ```
 
-2. Initiate server.
+3. Initiate server.
 
-   `flask run --no-reload --host=0.0.0.0 --port=8080`
+   ```
+   flask run --no-reload --host=0.0.0.0 --port=8080
+   ```
 
-3. Open website
+5. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
-4. Select **Database to query**
+6. Select **Database to query**
 
    **Original**: Fetch data directly from Pubmed (same as **Version 1**).
 
@@ -70,13 +87,17 @@ There are two versions of this website. Version 2 is recommended.
 
 1. Go to the branch for this version.
 
-   `git checkout original_only`
+   ```
+   git checkout original_only
+   ```
 
-2. Initiate server.
+3. Initiate server.
 
-   `flask run --host=0.0.0.0 --port=8080`
+   ```
+   flask run --host=0.0.0.0 --port=8080
+   ```
 
-3. Open website
+5. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
