@@ -28,13 +28,13 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 6. Change the default python version to 3.4
 
    ```
-   sudo ln -sfn python3.6 /usr/bin/python
+   sudo ln -sfn python3.7 /usr/bin/python
    ```
 
 8. Install required packages
    
    ```
-   sudo pip-3.6 install -r requirements.txt
+   sudo pip-3.7 install -r requirements.txt
    ```
 
 10. Setup Flask
