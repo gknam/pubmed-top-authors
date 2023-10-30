@@ -1,20 +1,3 @@
-
-
-
-# Try demo
-
-- ## Version 1 (NOT recommended)
-  - Faster, but less reliable* than version 2
-  - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
-  - On `master` branch
-
-- ## [Version 2](http://52.211.136.137:8080) (Recommended)
-  - Slower, but reliable than version 1
-  - Data is fetched directly from Pubmed database using Pubmed API
-  - On `original_only` branch
-
-<br /><br /><br />
-
 # Pubmed's top authors
 
 <a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
@@ -78,6 +61,11 @@ There are two versions of this website. Version 2 is recommended.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
 
+
+>   - This version is faster, but less reliable* than version 2
+>   - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this app's local database which is a partial copy of Pubmed's database
+
+
 #### Version 2 (Recommended)
 
 1. Go to the branch for this version.
@@ -91,6 +79,9 @@ There are two versions of this website. Version 2 is recommended.
 3. Open website
 
    Go to `Preview` --> `Preview Running Application`
+
+>   - This version is slower, but more reliable than version 1
+>   - Data is fetched directly from Pubmed database using Pubmed API
 
 ## Kill server
 
