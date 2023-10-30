@@ -13,7 +13,7 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-2. download repository.
+3. download repository.
 
    ```
    git clone https://github.com/gknam/pubmed-top-authors.git
@@ -25,19 +25,13 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
    cd pubmed-top-authors
    ```
 
-6. Change the default python version to 3.4
-
-   ```
-   sudo ln -sfn python3.7 /usr/bin/python
-   ```
-
-8. Install required packages
+5. Install required packages
    
    ```
-   sudo pip-3.7 install -r requirements.txt
+   sudo pip3 install -r requirements.txt
    ```
 
-10. Setup Flask
+6. Setup Flask
    
    ```
    export FLASK_APP=application.py
