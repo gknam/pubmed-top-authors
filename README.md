@@ -1,13 +1,11 @@
+# Versions
 
-
-# Try demo
-
-- ## Version 1 (NOT recommended)
+- ## Version 1 (NOT recommended; Currently NOT WORKING)
   - Faster, but less reliable* than version 2
   - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
   - On `master` branch
 
-- ## [Version 2](http://52.211.136.137:8080) (Recommended)
+- ## Version 2 (Recommended)
   - Slower, but reliable than version 1
   - Data is fetched directly from Pubmed database using Pubmed API
   - On `original_only` branch
@@ -29,27 +27,34 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-2. download repository.
+3. download repository.
 
-   `git clone https://github.com/gknam/pubmed-top-authors.git`
+   ```
+   git clone https://github.com/gknam/pubmed-top-authors.git
+   ```
 
-3. Go into the repository.
+4. Go into the repository.
 
-   `cd pubmed-top-authors`
-
-4. Change the default python version to 3.4
-
-   `sudo ln -sfn python3.6 /usr/bin/python`
+   ```
+   cd pubmed-top-authors
+   ```
 
 5. Install required packages
+   
+   ```
+   sudo pip3 install -r requirements.txt
+   ```
 
-   `sudo pip-3.6 install -r requirements.txt`
+6. Setup Flask
+   
+   ```
+   export FLASK_APP=application.py
+   ```
+   
+   ```
+   export FLASK_DEBUG=1
+   ```
 
-6. Setup Flask.
-
-   `export FLASK_APP=application.py`
-
-   `export FLASK_DEBUG=1`
 
 ## Start server
 
@@ -57,13 +62,21 @@ There are two versions of this website. Version 2 is recommended.
 
 #### Version 1 (NOT recommended)
 
+> [!IMPORTANT]
+> This version is currently **NOT WORKING**.
+
+
 1. Go to the branch for this version.
 
-   `git checkout master`
+   ```
+   git checkout master
+   ```
 
 2. Initiate server.
 
-   `flask run --no-reload --host=0.0.0.0 --port=8080`
+   ```
+   flask run --no-reload --host=0.0.0.0 --port=8080
+   ```
 
 3. Open website
 
@@ -77,15 +90,20 @@ There are two versions of this website. Version 2 is recommended.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
 
+
 #### Version 2 (Recommended)
 
 1. Go to the branch for this version.
 
-   `git checkout original_only`
+   ```
+   git checkout original_only
+   ```
 
 2. Initiate server.
 
-   `flask run --host=0.0.0.0 --port=8080`
+   ```
+   flask run --host=0.0.0.0 --port=8080
+   ```
 
 3. Open website
 
@@ -127,17 +145,17 @@ If you want to restart the server, follow the instructions in **Start server** s
 
 The user types in a keyword (e.g. psychology) or an author's name in the search bar. The user can also specify the (1) data fetching method - which will be explained below - , (2) number of top authors to identify, (3) date range going backwards from today, and (4) maximum number of articles (i.e. publications) to check. The set of search criteria are sent to the back-end in JSON format.
 
-jQuery is used to use simplified syntax.
+jQuery is used for simplified syntax.
 
 ### 2. Identify publications (back-end)
 
-In the back-end, identify publications that match the search criteria are identified.
+In the back-end, publications that match the search criteria are identified.
 
 ### 2. Fetch data (back-end)
 
 Data are fetched for each identified publication. The fetched data include various details of each publication (e.g. author name, publication year, journal title, etc.).
 
-The data can be fetched from either of two sources.
+The data can be fetched from either of two sources: **Pubmed's database** or the **database in this website's server**.
 
 ### 2.1. Pubmed's database
 
@@ -151,7 +169,7 @@ Data are downloaded from Pubmed's database via [Pubmed API](https://www.ncbi.nlm
 
 Data are fetched from the SQLite** database file (DB) in the server. The fetched data are transformed into a Python dictionary.
 
-The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections 2.2.1 to 2.2.1.2.
+The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections **2.2.1** to **2.2.1.2**.
 
 *Pro: Depending on the computing resources, (1) the allowed query range can be bigger than that set by Pubmed API and (2) the retrieval speed can be quicker.*
 
