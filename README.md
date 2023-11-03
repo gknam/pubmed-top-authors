@@ -48,6 +48,10 @@ There are two versions of this website. Version 2 is recommended.
 
 #### Version 1 (NOT recommended)
 
+> [!IMPORTANT]
+> This version is currently **NOT WORKING**.
+
+
 1. Go to the branch for this version.
 
    ```
