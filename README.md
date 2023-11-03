@@ -1,14 +1,11 @@
+# Versions
 
-
-
-# Try demo
-
-- ## Version 1 (NOT recommended)
+- ## Version 1 (NOT recommended; Currently NOT WORKING)
   - Faster, but less reliable* than version 2
   - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
   - On `master` branch
 
-- ## [Version 2](http://52.211.136.137:8080) (Recommended)
+- ## Version 2 (Recommended)
   - Slower, but reliable than version 1
   - Data is fetched directly from Pubmed database using Pubmed API
   - On `original_only` branch
@@ -30,27 +27,34 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-2. download repository.
+3. download repository.
 
-   `git clone https://github.com/gknam/pubmed-top-authors.git`
+   ```
+   git clone https://github.com/gknam/pubmed-top-authors.git
+   ```
 
-3. Go into the repository.
+4. Go into the repository.
 
-   `cd pubmed-top-authors`
-
-4. Change the default python version to 3.4
-
-   `sudo ln -sfn python3.6 /usr/bin/python`
+   ```
+   cd pubmed-top-authors
+   ```
 
 5. Install required packages
+   
+   ```
+   sudo pip3 install -r requirements.txt
+   ```
 
-   `sudo pip-3.6 install -r requirements.txt`
+6. Setup Flask
+   
+   ```
+   export FLASK_APP=application.py
+   ```
+   
+   ```
+   export FLASK_DEBUG=1
+   ```
 
-6. Setup Flask.
-
-   `export FLASK_APP=application.py`
-
-   `export FLASK_DEBUG=1`
 
 ## Start server
 
@@ -58,13 +62,21 @@ There are two versions of this website. Version 2 is recommended.
 
 #### Version 1 (NOT recommended)
 
+> [!IMPORTANT]
+> This version is currently **NOT WORKING**.
+
+
 1. Go to the branch for this version.
 
-   `git checkout master`
+   ```
+   git checkout master
+   ```
 
 2. Initiate server.
 
-   `flask run --no-reload --host=0.0.0.0 --port=8080`
+   ```
+   flask run --no-reload --host=0.0.0.0 --port=8080
+   ```
 
 3. Open website
 
@@ -78,15 +90,20 @@ There are two versions of this website. Version 2 is recommended.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
 
+
 #### Version 2 (Recommended)
 
 1. Go to the branch for this version.
 
-   `git checkout original_only`
+   ```
+   git checkout original_only
+   ```
 
 2. Initiate server.
 
-   `flask run --host=0.0.0.0 --port=8080`
+   ```
+   flask run --host=0.0.0.0 --port=8080
+   ```
 
 3. Open website
 
