@@ -1,3 +1,17 @@
+# Versions
+
+- ## Version 1 (NOT recommended; Currently NOT WORKING)
+  - Faster, but less reliable* than version 2
+  - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
+  - On `master` branch
+
+- ## Version 2 (Recommended)
+  - Slower, but reliable than version 1
+  - Data is fetched directly from Pubmed database using Pubmed API
+  - On `original_only` branch
+
+<br /><br /><br />
+
 # Pubmed's top authors
 
 <a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
@@ -58,27 +72,23 @@ There are two versions of this website. Version 2 is recommended.
    git checkout master
    ```
 
-3. Initiate server.
+2. Initiate server.
 
    ```
    flask run --no-reload --host=0.0.0.0 --port=8080
    ```
 
-5. Open website
+3. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
-6. Select **Database to query**
+4. Select **Database to query**
 
    **Original**: Fetch data directly from Pubmed (same as **Version 1**).
 
    **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
 
 *The local database file is initially empty, and complete update is assumed to take a few **months**.*
-
-
->   - This version is faster, but less reliable* than version 2
->   - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this app's local database which is a partial copy of Pubmed's database
 
 
 #### Version 2 (Recommended)
@@ -89,18 +99,15 @@ There are two versions of this website. Version 2 is recommended.
    git checkout original_only
    ```
 
-3. Initiate server.
+2. Initiate server.
 
    ```
    flask run --host=0.0.0.0 --port=8080
    ```
 
-5. Open website
+3. Open website
 
    Go to `Preview` --> `Preview Running Application`
-
->   - This version is slower, but more reliable than version 1
->   - Data is fetched directly from Pubmed database using Pubmed API
 
 ## Kill server
 
