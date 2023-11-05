@@ -9,6 +9,9 @@
 > * **`main`** branch contains Version 1. It fetches data directly from the Pubmed API
 > * **`both_versions`** also contains Version 2. It fetches data from a local database which contain local copies of those data.
 
+> [!NOTE]
+> This branch is currently **NOT WORKING** because [start server](#7-start-server) step fails.
+
 # Pubmed's top authors
 
 <a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
@@ -29,32 +32,32 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
 # 1. Usage
 ## Setup
-1. Make an account at [Cloud9](https://c9.io), and [create a workspace](https://docs.c9.io/v1.0/docs/create-a-workspace) choosing **Python** as a template.
+### 1. Make an account at [Cloud9](https://c9.io), and [create a workspace](https://docs.c9.io/v1.0/docs/create-a-workspace) choosing **Python** as a template.
 
-2. Open a terminal (if there is none already open).
+### 2. Open a terminal (if there is none already open).
 
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-3. download repository.
+### 3. download repository.
 
    ```
    git clone https://github.com/gknam/pubmed-top-authors.git
    ```
 
-4. Go into the repository.
+### 4. Go into the repository.
 
    ```
    cd pubmed-top-authors
    ```
 
-5. Install required packages
+### 5. Install required packages
    
    ```
    sudo pip3 install -r requirements.txt
    ```
 
-6. Setup Flask
+### 6. Setup Flask
    
    ```
    export FLASK_APP=application.py
@@ -64,59 +67,26 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
    export FLASK_DEBUG=1
    ```
 
-
-## Start server
-
-There are two versions of this website. Version 2 is recommended.
-
-#### Version 1 (NOT recommended)
-
-> [!IMPORTANT]
-> This version is currently **NOT WORKING**.
-
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout master
-   ```
-
-2. Initiate server.
+### 7. Start server
 
    ```
    flask run --no-reload --host=0.0.0.0 --port=8080
    ```
 
-3. Open website
+### 8. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
-4. Select **Database to query**
+### 9. Select **Database to query**
 
    **Original**: Fetch data directly from Pubmed (same as **Version 1**).
 
    **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
 
-*The local database file is initially empty, and complete update is assumed to take a few **months**.*
-
-
-#### Version 2 (Recommended)
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout original_only
-   ```
-
-2. Initiate server.
-
-   ```
-   flask run --host=0.0.0.0 --port=8080
-   ```
-
-3. Open website
-
-   Go to `Preview` --> `Preview Running Application`
+> [!NOTE]
+> 1. The local database is initially empty.
+> 2. When the server starts, it should start being updated by downloading data chunk by chunk from Pubmed API.
+> 3. Complete update is assumed to take a few **months** - this is only an assumption beause because it was never fully tested.
 
 ## Kill server
 
