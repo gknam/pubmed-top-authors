@@ -1,3 +1,15 @@
+> [!IMPORTANT]
+> Branches have been changed as shwon below on 2023-11-05 (Sunday).
+> 
+> * `original_only` -> **`main`**
+> * **`master`** -> `both_versions`
+> 
+> The two branches differ as described below.
+> 
+> * **`main`** branch contains Version 1. It fetches data directly from the Pubmed API
+> * **`both_versions`** also contains Version 2. It fetches data from a local database which contain local copies of those data.
+
+
 # Versions
 
 - ## Version 1 (NOT recommended; Currently NOT WORKING)
