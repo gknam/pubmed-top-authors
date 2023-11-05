@@ -1,16 +1,13 @@
-# Versions
-
-- ## Version 1 (NOT recommended; Currently NOT WORKING)
-  - Faster, but less reliable* than version 2
-  - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
-  - On `master` branch
-
-- ## Version 2 (Recommended)
-  - Slower, but reliable than version 1
-  - Data is fetched directly from Pubmed database using Pubmed API
-  - On `original_only` branch
-
-<br /><br /><br />
+> [!IMPORTANT]
+> In the last hour, I have renamed branches and set the default branch as main.
+> 
+> * `original_only` -> **`main`**
+> * **`master`** -> `both_versions`
+> 
+> The two branches differ as described below.
+> 
+> * **`main`** branch contains Version 1. It fetches data directly from the Pubmed API
+> * **`both_versions`** also contains Version 2. It fetches data from a local database which contain local copies of those data.
 
 # Pubmed's top authors
 
@@ -55,57 +52,13 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
    export FLASK_DEBUG=1
    ```
 
-
-## Start server
-
-There are two versions of this website. Version 2 is recommended.
-
-#### Version 1 (NOT recommended)
-
-> [!IMPORTANT]
-> This version is currently **NOT WORKING**.
-
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout master
-   ```
-
-2. Initiate server.
-
-   ```
-   flask run --no-reload --host=0.0.0.0 --port=8080
-   ```
-
-3. Open website
-
-   Go to `Preview` --> `Preview Running Application`
-
-4. Select **Database to query**
-
-   **Original**: Fetch data directly from Pubmed (same as **Version 1**).
-
-   **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
-
-*The local database file is initially empty, and complete update is assumed to take a few **months**.*
-
-
-#### Version 2 (Recommended)
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout original_only
-   ```
-
-2. Initiate server.
+7. Start server
 
    ```
    flask run --host=0.0.0.0 --port=8080
    ```
 
-3. Open website
+8. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
