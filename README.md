@@ -84,9 +84,10 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
    **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
 
 > [!NOTE]
+> **Extracts from original** is unreliable because it was not fully tested.
 > 1. The local database is initially empty.
 > 2. When the server starts, it should start being updated by downloading data chunk by chunk from Pubmed API.
-> 3. Complete update is assumed to take a few **months** - this is only an assumption beause because it was never fully tested.
+> 3. Complete update is assumed to take a few **months**.
 
 ## Kill server
 
