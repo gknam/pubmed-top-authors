@@ -1,16 +1,16 @@
-# Versions
+> [!IMPORTANT]
+> Branches have been changed as shwon below on 2023-11-05 (Sunday).
+> 
+> * `original_only` -> **`main`**
+> * **`master`** -> `both_versions`
+> 
+> The two branches differ as described below.
+> 
+> * In **`main`** branch, data is fetched directly from the Pubmed API.
+> * In **`both_versions`** branch, data can be fetched either [directly from the Pubmed API](#91-original-recommended) or [from a local database which contains copies of those data](#92-extracts-from-original).
 
-- ## Version 1 (NOT recommended; Currently NOT WORKING)
-  - Faster, but less reliable* than version 2
-  - Data is fetched either (1) directly from Pubmed database using Pubmed API or (2) from this website's own database which is a partial copy of Pubmed's database
-  - On `master` branch
-
-- ## Version 2 (Recommended)
-  - Slower, but reliable than version 1
-  - Data is fetched directly from Pubmed database using Pubmed API
-  - On `original_only` branch
-
-<br /><br /><br />
+> [!NOTE]
+> This branch is currently **NOT WORKING** because [start server](#7-start-server) step fails.
 
 # Pubmed's top authors
 
@@ -20,32 +20,32 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
 
 # 1. Usage
 ## Setup
-1. Make an account at [Cloud9](https://c9.io), and [create a workspace](https://docs.c9.io/v1.0/docs/create-a-workspace) choosing **Python** as a template.
+### 1. Make an account at [Cloud9](https://c9.io), and [create a workspace](https://docs.c9.io/v1.0/docs/create-a-workspace) choosing **Python** as a template.
 
-2. Open a terminal (if there is none already open).
+### 2. Open a terminal (if there is none already open).
 
 *Now, copy the command in each of the following steps and paste it into the terminal.*
 <br>
 
-3. download repository.
+### 3. download repository.
 
    ```
    git clone https://github.com/gknam/pubmed-top-authors.git
    ```
 
-4. Go into the repository.
+### 4. Go into the repository.
 
    ```
    cd pubmed-top-authors
    ```
 
-5. Install required packages
+### 5. Install required packages
    
    ```
    sudo pip3 install -r requirements.txt
    ```
 
-6. Setup Flask
+### 6. Setup Flask
    
    ```
    export FLASK_APP=application.py
@@ -55,59 +55,28 @@ This is a data visualisation website. When the user types in a keyword (e.g. psy
    export FLASK_DEBUG=1
    ```
 
-
-## Start server
-
-There are two versions of this website. Version 2 is recommended.
-
-#### Version 1 (NOT recommended)
-
-> [!IMPORTANT]
-> This version is currently **NOT WORKING**.
-
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout master
-   ```
-
-2. Initiate server.
+### 7. Start server
 
    ```
    flask run --no-reload --host=0.0.0.0 --port=8080
    ```
 
-3. Open website
+### 8. Open website
 
    Go to `Preview` --> `Preview Running Application`
 
-4. Select **Database to query**
+### 9. Select **Database to query**
+There are two options:
 
-   **Original**: Fetch data directly from Pubmed (same as **Version 1**).
-
-   **Extracts from original**: Fetch data from a local database file, which contains data pre-fetched from Pubmed.
-
-*The local database file is initially empty, and complete update is assumed to take a few **months**.*
-
-
-#### Version 2 (Recommended)
-
-1. Go to the branch for this version.
-
-   ```
-   git checkout original_only
-   ```
-
-2. Initiate server.
-
-   ```
-   flask run --host=0.0.0.0 --port=8080
-   ```
-
-3. Open website
-
-   Go to `Preview` --> `Preview Running Application`
+   #### 9.1. **Original** (recommended)
+   * This mode is **more reliable** although slower.
+   * Data is fetched directly from Pubmed (as explained [here](#21-pubmeds-database)).
+   #### 9.2. **Extracts from original**
+   * This mode is faster, but unreliable because it was not fully tested.
+   * Data is fetched from a local database file, which contains data pre-fetched from Pubmed (as explained [here](#22-database-in-this-websites-server)).
+     * The local database is initially empty.
+     * When the server starts, the local database should start being updated by downloading data chunk by chunk from Pubmed API.
+     * Complete update of the local database is assumed to take a few **months**.
 
 ## Kill server
 
@@ -167,13 +136,17 @@ Data are downloaded from Pubmed's database via [Pubmed API](https://www.ncbi.nlm
 
 ### 2.2. Database in this website's server
 
-Data are fetched from the SQLite** database file (DB) in the server. The fetched data are transformed into a Python dictionary.
+Data are fetched from the SQLite* database file (DB) in the server. The fetched data are transformed into a Python dictionary.
 
 The DB contains data which have been "pre"-fetched from Pubmed. This procedure is explained in the following subsections **2.2.1** to **2.2.1.2**.
 
 *Pro: Depending on the computing resources, (1) the allowed query range can be bigger than that set by Pubmed API and (2) the retrieval speed can be quicker.*
 
 *Cons: Fetched data are less reliable because DB can never be 100% up-to-date with Pubmed's database - auto-update function runs every 10 minutes.*
+
+> [!NOTE]
+> \*PostgreSQL would be a more appropriate choice than SQLite. This is because SQLite DB gets locked for a few milliseconds each time it gets updated, and DB is inaccessible during this. This is likely to be disruptive because the DB update constantly runs in the background.
+
 
 ### 2.2.1. Pre-fetch data
 
@@ -196,7 +169,3 @@ Within the fetched data, top authors are identified who have most publications (
 ### 4. Reorganise and visualise top authors' data (front-end)
 
 Data are reorganised. Then, using [D3.js](https://d3js.org/), each author's publication counts are visualised in interactive plots (1) per year and (2) per journal.
-
-\*Version 1 is less reliable for the following reasons. This website's database is initially empty and the complete update is expected to take a few months. Once update is completed, Pubmed's database is checked for updates every 10 mintues. Each new update is expected to take some time (e.g. it will likely take a few hours on my computer (Lenovo T500, Intel Core 2 Duo processor T9600 (2.80 GHz), 8GB RAM).
-
-\*\*PostgreSQL would be a more appropriate choice than SQLite. This is because SQLite DB gets locked for a few milliseconds each time it gets updated, and DB is inaccessible during this. This is likely to be disruptive because the DB update constantly runs in the background.
