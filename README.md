@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> Branches have been changed as shwon below on 2023-11-05 (Sunday).
+> Branches have been changed as shown below on 2023-11-05 (Sunday).
 > 
 > * `original_only` -> **`main`**
 > * **`master`** -> `both_versions`
