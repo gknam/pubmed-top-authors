@@ -9,6 +9,11 @@
 > * **`main`** branch contains Version 1. It fetches data directly from the Pubmed API
 > * **`both_versions`** also contains Version 2. It fetches data from a local database which contain local copies of those data.
 
+# Pubmed's top authors
+
+<a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
+
+This is a data visualisation website. When the user types in a keyword (e.g. psychology) or an author's name, the website identifies top authors (i.e. authors who published most) on Pubmed  (1) on a keyword or (2) together with a specified author. Then, each author's publication counts are visualised in interactive plots (1) per year and (2) per journal.
 
 # Versions
 
@@ -21,14 +26,6 @@
   - Slower, but reliable than version 1
   - Data is fetched directly from Pubmed database using Pubmed API
   - On `original_only` branch
-
-<br /><br /><br />
-
-# Pubmed's top authors
-
-<a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
-
-This is a data visualisation website. When the user types in a keyword (e.g. psychology) or an author's name, the website identifies top authors (i.e. authors who published most) on Pubmed  (1) on a keyword or (2) together with a specified author. Then, each author's publication counts are visualised in interactive plots (1) per year and (2) per journal.
 
 # 1. Usage
 ## Setup
