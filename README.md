@@ -1,3 +1,14 @@
+> [!IMPORTANT]
+> In the last hour, I have renamed branches and set the default branch as main.
+> 
+> * `original_only` -> **`main`**
+> * **`master`** -> `both_versions`
+> 
+> The two branches differ as described below.
+> 
+> * **`main`** branch contains Version 1. It fetches data directly from the Pubmed API
+> * **`both_versions`** also contains Version 2. It fetches data from a local database which contain local copies of those data.
+
 # Pubmed's top authors
 
 <a href="https://www.youtube.com/watch?v=jXctQUTaPcY" target="_blank"><img src="pubmed_top_authors.png" alt="pubmed_authors" style="float:left" /></a>
