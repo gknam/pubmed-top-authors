@@ -4,11 +4,14 @@ from helpers import getPmids, getFullRecs_ori, topAuthorsRecs
 
 # configure application
 app = Flask(__name__)
-app.config["JSON_SORT_KEYS"] = False # prevent jsonify from reordering dictionary (http://bit.ly/2qWaxhx)
+app.config[
+    "JSON_SORT_KEYS"
+] = False  # prevent jsonify from reordering dictionary (http://bit.ly/2qWaxhx)
 JSGlue(app)
 
 # ensure responses aren't cached
 if app.config["DEBUG"]:
+
     @app.after_request
     def after_request(response):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -16,10 +19,12 @@ if app.config["DEBUG"]:
         response.headers["Pragma"] = "no-cache"
         return response
 
+
 @app.route("/")
 def index():
     """Load homepage"""
     return render_template("index.html")
+
 
 @app.route("/records")
 def records():
@@ -30,11 +35,11 @@ def records():
         raise RuntimeError("missing term")
 
     # get pmids for term
-    term = request.args.get('term')
-    retmax = request.args.get('retmax')
-    reldate = request.args.get('reldate')
-    numTopAuthors = int(request.args.get('numTopAuthors'))
-    searchOption = request.args.get('searchOption')
+    term = request.args.get("term")
+    retmax = request.args.get("retmax")
+    reldate = request.args.get("reldate")
+    numTopAuthors = int(request.args.get("numTopAuthors"))
+    searchOption = request.args.get("searchOption")
 
     try:
         pmids = getPmids(term, retmax, reldate, searchOption)
@@ -48,5 +53,7 @@ def records():
         return jsonify({})
 
     # get summary from full records
-    topRecs = topAuthorsRecs(records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors)
+    topRecs = topAuthorsRecs(
+        records, pmidsAll_len, pmidsInc_len, pubYear_oldest, numTopAuthors
+    )
     return jsonify(topRecs)
